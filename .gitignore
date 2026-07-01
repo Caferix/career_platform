@@ -1,0 +1,72 @@
+# ====================================================================
+# PYTHON & ENVIRONMENT
+# ====================================================================
+# Isolated virtual environment for dependencies
+backend/venv/
+.env
+
+# Python bytecode/cache (Generated at runtime, no need to track)
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# ====================================================================
+# DOCKER & DATABASE
+# ====================================================================
+# Local database data storage (Kept in docker volumes or local directory)
+postgres_data/
+*.sql
+*.sqlite
+
+# ====================================================================
+# PROJECT SPECIFIC (Uploads & Logs)
+# ====================================================================
+# Directory for applicant CVs/PDFs (We will implement this in Phase 4)
+backend/uploads/
+
+# Application runtime logs
+backend/logs/
+*.log
+
+# ====================================================================
+# IDEs & EDITORS
+# ====================================================================
+# VS Code personal workspace settings
+.vscode/
+*.code-workspace
+
+# JetBrains PyCharm / IntelliJ settings
+.idea/
+
+# ====================================================================
+# SYSTEM FILES
+# ====================================================================
+.DS_Store
+Thumbs.db
+
+
+# Coverage reports
+htmlcov/
+.coverage
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# Hassas Çevre Değişkenleri (ASLA COMMITLENMEZ)
+.env
+
+# Python Sanal Ortamı
+venv/
+__pycache__/
+*.pyc
+
+# IDE Ayarları
+.vscode/
+.idea/
+
+

@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: career_platform_db
+    restart: always
+    environment:
+      POSTGRES_USER: career_admin
+      POSTGRES_PASSWORD: career_secure_password_2026
+      POSTGRES_DB: career_platform_prod
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
