@@ -1,25 +1,25 @@
 import random
-from datetime import datetime, timedelta
+import logging
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.security_models import OTPRecord  # Projendeki model adıyla eşleşmeli
-from app.core.security import encrypt_data
+from app.models.security_models import OTPRecord
+from app.core.security import encrypt_data, decrypt_data  # decrypt_data fonksiyonunu ekledik
 from app.core.settings import settings
+
+logger = logging.getLogger(__name__)
 
 def generate_otp() -> str:
     """6 haneli güvenli OTP kodu üretir."""
     return str(random.randint(100000, 999999))
 
 async def save_otp(db: AsyncSession, phone: str, code: str) -> OTPRecord:
-    """
-    Kullanıcının telefon numarasını şifreleyerek 
-    yeni bir OTP kaydını veritabanına yazar.
-    """
-    # KVKK Güvenliği: Telefon numarası ham haliyle DB'ye gidemez
+    """Kullanıcının telefon numarasını şifreleyerek yeni bir OTP kaydını veritabanına yazar."""
     encrypted_phone = encrypt_data(phone)
     
-    # Geçerlilik süresi hesaplama (Mevcut zaman + 3 dakika)
-    expires_at = datetime.utcnow() + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
+    # Windows-Docker saat senkronizasyonu için timezone-aware (saf UTC) yapıyoruz
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    expires_at = now + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
     
     otp_record = OTPRecord(
         phone=encrypted_phone,
@@ -35,43 +35,56 @@ async def save_otp(db: AsyncSession, phone: str, code: str) -> OTPRecord:
     return otp_record
 
 async def verify_otp(db: AsyncSession, phone: str, code: str) -> bool:
-    """
-    OTP doğrulama iş mantığı zinciri.
-    Şifreli telefona ait en güncel kodu bulur ve kuralları denetler.
-    """
-    # Sorgulama yapabilmek için gelen ham telefonu da aynı algoritmayla şifreliyoruz
-    encrypted_phone = encrypt_data(phone)
+    """OTP doğrulama iş mantığı zinciri."""
     
-    # Kural 4: Veritabanından bu telefona ait EN SON üretilen kaydı çekiyoruz
+    # 🎯 ÇÖZÜM: Fernet her seferinde farklı şifre ürettiği için WHERE ile telefon eşleyemeyiz.
+    # Son üretilen aktif/yarı-aktif son 20 kaydı çekip, kod içinde deşifre ederek eşleştiriyoruz.
     query = (
         select(OTPRecord)
-        .where(OTPRecord.phone == encrypted_phone)
         .order_by(OTPRecord.id.desc())
-        .limit(1)
+        .limit(20)
     )
     result = await db.execute(query)
-    otp_record = result.scalar_one_or_none()
+    otp_records = result.scalars().all()
     
+    # Gelen telefona ait en güncel kaydı bulalım
+    target_record = None
+    for record in otp_records:
+        try:
+            # DB'deki şifreli telefonu çözüp gelen telefonla karşılaştırıyoruz
+            decrypted_phone = decrypt_data(record.phone)
+            if decrypted_phone == phone:
+                target_record = record
+                break  # En güncel olanı bulduğumuz için döngüden çıkıyoruz
+        except Exception:
+            continue
+
     # Eğer bu telefona ait hiçbir kod üretilmemişse direkt reddet
-    if not otp_record:
+    if not target_record:
+        logger.warning(f"Doğrulama başarısız: Telefon numarasına ait OTP kaydı bulunamadı.")
         return False
         
+    # Windows/Docker saat dilimi karmaşasını önlemek için 'naive' UTC kıyaslaması
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    
     # Güvenlik Kontrolü 1: Kod daha önce kullanıldıysa veya süresi dolduysa iptal
-    if otp_record.is_used or datetime.utcnow() > otp_record.expires_at:
+    if target_record.is_used or now > target_record.expires_at.replace(tzinfo=None):
+        logger.warning(f"Doğrulama başarısız: Kod kullanılmış veya süresi dolmuş. Sınır: {target_record.expires_at}, Şu an: {now}")
         return False
         
     # Güvenlik Kontrolü 2: Maksimum deneme sınırı aşıldıysa direkt reddet
-    if otp_record.attempt_count >= settings.OTP_MAX_ATTEMPTS:
+    if target_record.attempt_count >= settings.OTP_MAX_ATTEMPTS:
+        logger.warning(f"Doğrulama başarısız: Maksimum deneme sınırı ({settings.OTP_MAX_ATTEMPTS}) aşıldı.")
         return False
         
     # Kod Eşleşme Kontrolü
-    if otp_record.code == code:
-        # Kod doğruysa tek kullanımlık hale getir (is_used = True)
-        otp_record.is_used = True
+    if target_record.code == code:
+        target_record.is_used = True
         await db.commit()
+        logger.info(f"OTP başarıyla doğrulandı.")
         return True
     else:
-        # Kod yanlışsa deneme sayacını 1 artır ve kilitlemeye yaklaştır
-        otp_record.attempt_count += 1
+        target_record.attempt_count += 1
         await db.commit()
+        logger.warning(f"Doğrulama başarısız: Hatalı OTP kodu girildi. Deneme: {target_record.attempt_count}")
         return False

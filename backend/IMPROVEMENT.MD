@@ -55,3 +55,23 @@ POST /auth/login endpoint'i Faz 6'da eklenecek.
 **İyileştirme:** asyncio.run_in_executor ile thread'e taşı  
 veya httpx ile direkt async HTTP isteği  
 **Etki:** Sadece sms.py değişir
+
+
+## CV Yükleme
+
+### CV Versiyon Geçmişi
+**Dosya:** `app/services/application.py`, `app/services/storage.py`
+**Şu an:** Yeni CV yüklenince eski silinir, üzerine yazılır
+**İyileştirme:** Her CV yüklemesinde eski versiyon saklanabilir.
+İK hangi CV'yi gördüğünü takip edebilir.
+Bunun için `cv_versions` tablosu eklenebilir:
+- application_id, cv_url, uploaded_at, is_current
+**Etki:** storage.py ve application.py güncellenir
+
+### Dosya Depolama Backend
+**Dosya:** `app/services/storage.py`
+**Şu an:** Dosyalar local diske kaydediliyor (backend/uploads/)
+**İyileştirme:** MinIO veya AWS S3'e taşınabilir.
+save_file(), get_file_url(), delete_file() arayüzü sabit kalır,
+sadece içi değişir.
+**Etki:** Sadece storage.py değişir, route ve servisler etkilenmez
