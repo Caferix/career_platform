@@ -18,7 +18,7 @@ MOCK_ADMIN_DB = {
     "manager_admin": {
         "role": "manager",
         "user_id": 100,
-        "hashed_password": "38bf0b38c2057d2a58d601b0723bfb3f683416ca315c102a0ff99818818f10b7"  # ManagerPass321
+        "hashed_password": "648d38b0699e3e8022c40ef7a1794ee79a7adb8ccf274dc2730866cd37b72504"  # ManagerPass321
     }
 }
 
