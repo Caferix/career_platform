@@ -4,6 +4,10 @@ from app.core.settings import settings
 from app.routes.candidates import router as candidate_router
 # Veritabanı el sıkışması (ping) testi için engine'i merkezi yerden çekiyoruz
 from app.db.database import engine
+from app.routes import auth
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.core.security import limiter
 
 app = FastAPI(
     title="Career Platform API",
@@ -11,9 +15,17 @@ app = FastAPI(
     version="1.0.0"
 )
 
+#slowapi yi fastapi'ye bağladık
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
 # --- ROUTER ENTEGRASYONLARI ---
-# Aday (Applicants) endpoint'lerini buraya temiz bir kol gibi bağlıyoruz
+# Aday (Applicants) endpoint'lerini buraya bağlıyoruz
 app.include_router(candidate_router)
+
+#Auth endpointlerini buraya bağlıyoruz
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 
 
 # --- TEMEL ENDPOINT'LER ---

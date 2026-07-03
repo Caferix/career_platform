@@ -31,7 +31,7 @@ class Candidate(Base):
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Kural 13: ON DELETE CASCADE kullanılmaz! 
-    # İlişkili verilerin silinme yönetimini veritabanına bırakmıyoruz, kod seviyesinde kontrollü yapacağız.
+    # İlişkili verilerin silinme yönetimini veritabanına bırakmıyoruz, kod seviyesinde kontrollü yapıyoruz.
     applications = relationship("Application", back_populates="candidate")
 
     # --- Şifreleme Kapsülleme (Getter / Setter) Mekanizması ---
