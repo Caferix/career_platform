@@ -1,6 +1,6 @@
 import os
-# Pydantic v2 ile birlikte ayar yönetimi artık bu bağımsız paketten import edilir:
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import List
 
 class Settings(BaseSettings):
     # 1. .env dosyasından okunacak hassas değişkenler ve Tipleri (Tip Güvenliği)
@@ -30,6 +30,17 @@ class Settings(BaseSettings):
 
     # SMS Mock Kontrolü
     SMS_MOCK_MODE: bool = True
+
+    # backend/uploads/ klasör yolunu projenin kök dizinine göre dinamik oluşturur
+    UPLOAD_DIR: str = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads")
+
+    # Maksimum dosya boyutu 5MB
+    MAX_FILE_SIZE_BYTES: int = 5 * 1024 * 1024  
+
+    # Güvenlik kuralı: Sadece izin verilen döküman formatları
+    ALLOWED_EXTENSIONS: List[str] = [".pdf", ".doc", ".docx"]
+
+    BASE_URL: str = "http://localhost:8000"
    
 
 

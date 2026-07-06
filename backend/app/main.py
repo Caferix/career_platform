@@ -4,10 +4,11 @@ from app.core.settings import settings
 from app.routes.candidates import router as candidate_router
 # Veritabanı el sıkışması (ping) testi için engine'i merkezi yerden çekiyoruz
 from app.db.database import engine
-from app.routes import auth
+from app.routes import auth, applications
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.core.security import limiter
+from app.routes.applications import router as applications_router
 
 app = FastAPI(
     title="Career Platform API",
@@ -26,6 +27,9 @@ app.include_router(candidate_router)
 
 #Auth endpointlerini buraya bağlıyoruz
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+
+# Başvuru ve CV Yönetimi endpoint'lerini buraya mühürlüyoruz
+app.include_router(applications.router)
 
 
 # --- TEMEL ENDPOINT'LER ---

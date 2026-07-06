@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from app.db.database import Base
 
@@ -6,12 +6,17 @@ class OTPRecord(Base):
     __tablename__ = "otp_records"
 
     id = Column(Integer, primary_key=True, index=True)
-    phone = Column(String(255), nullable=False) # Şifreli telefon formatı gelecek
+    phone = Column(String(255), nullable=False) 
+    hashed_phone = Column(String(64), nullable=False, index=True)
     code = Column(String(6), nullable=False)
     attempt_count = Column(Integer, nullable=False, default=0)
     is_used = Column(Boolean, nullable=False, default=False)
-    expires_at = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), 
+        default=lambda: datetime.now(timezone.utc), 
+        nullable=False
+    )
 
 
 class Consent(Base):
@@ -44,4 +49,4 @@ class AccessLog(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     # Kural 9: access_logs tablosundan ASLA VERİ SİLİNMEZ.
-    # Müfettiş denetimleri için bu veri ömür boyu kalıcıdır. Soft delete eklenmez.
+    # Müfettiş denetimleri için bu veri ömür boyu kalıcıdır.

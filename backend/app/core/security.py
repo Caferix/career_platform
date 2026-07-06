@@ -63,3 +63,10 @@ class JWTAuth:
         return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
 
 auth = JWTAuth()
+
+def hash_data(data: str) -> str:
+    """
+    Verilen metnin (Örn: telefon veya email) deterministik SHA-256 hash'ini üretir.
+    Veritabanında hızlı arama yapmak (WHERE) için kullanılır.
+    """
+    return hashlib.sha256(data.encode("utf-8")).hexdigest()

@@ -75,3 +75,9 @@ Bunun için `cv_versions` tablosu eklenebilir:
 save_file(), get_file_url(), delete_file() arayüzü sabit kalır,
 sadece içi değişir.
 **Etki:** Sadece storage.py değişir, route ve servisler etkilenmez
+
+### Dosya I/O — Asenkron Geçiş
+**Dosya:** `app/services/storage.py`
+**Şu an:** shutil.copyfileobj senkron çalışıyor
+**İyileştirme:** aiofiles kütüphanesi ile async I/O
+**Etki:** Sadece storage.py değişir
