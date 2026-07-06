@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field, EmailStr
 class SendOTPRequest(BaseModel):
     """Kullanıcı sadece telefon numarasını girerek kod ister"""
     phone: str = Field(..., description="Uluslararası formatta telefon numarası (Örn: +905510385838)")
+    kvkk_approved: bool
 
 class VerifyOTPRequest(BaseModel):
     """Kullanıcı kodu doğrulamak için hem telefonunu hem gelen kodu gönderir"""

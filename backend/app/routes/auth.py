@@ -47,6 +47,14 @@ async def admin_login(request: Request, payload: AdminLoginRequest):
 @router.post("/send-otp", status_code=status.HTTP_200_OK)
 @limiter.limit("3/minute")
 async def send_otp(request: Request, payload: SendOTPRequest, db: AsyncSession = Depends(get_db)):
+
+# Kullanıcı onay vermediyse alt satırlara hiç geçmeden burada kapıyı kapatıyoruz.
+    if not request.kvkk_approved:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="KVKK onayı olmadan işlem yapılamaz."
+        )
+
     """
     Kullanıcının telefonuna 6 haneli tek kullanımlık doğrulama kodu (OTP) gönderir.
     """

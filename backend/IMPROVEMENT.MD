@@ -81,3 +81,23 @@ sadece içi değişir.
 **Şu an:** shutil.copyfileobj senkron çalışıyor
 **İyileştirme:** aiofiles kütüphanesi ile async I/O
 **Etki:** Sadece storage.py değişir
+
+## Test
+
+### Unit Test Eksikliği
+**Şu an:** Manuel Swagger testi
+**İyileştirme:** pytest ile unit test yazılacak
+Öncelikli test edilecekler:
+- services/otp.py → verify_otp()
+- services/application.py → create_application() duplicate kontrolü
+- services/storage.py → dosya validasyonu
+**Kütüphane:** pytest + pytest-asyncio
+
+### Auth Akışı — Token İçinde Applicant ID FAZ 6 da düzeltilecek.
+**Şu an:** OTP doğrulandıktan sonra token üretiliyor,
+applicant henüz yok, token içinde applicant_id yok.
+**İyileştirme:** 
+1. GET /applicants/me endpoint'i ekle
+2. Token payload'ına applicant_id ekle
+3. Akış: OTP doğrula → applicant oluştur → token üret
+**Etki:** routes/auth.py, services/auth.py güncellenir
