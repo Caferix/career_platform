@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 from app.core.security import encrypt_data, decrypt_data
+from typing import Optional, Literal
 
 class Candidate(Base):
     __tablename__ = "applicants"
@@ -18,7 +19,7 @@ class Candidate(Base):
     _phone = Column("phone", String(255), nullable=False, unique=True, index=True)
     
     university = Column(String(100), nullable=True)
-    department = Column(String(100), nullable=True)
+    university_department = Column(String(100), nullable=True)
     graduation_year = Column(Integer, nullable=True)
     
     is_phone_verified = Column(Boolean, nullable=False, default=False)
@@ -33,6 +34,7 @@ class Candidate(Base):
     # Kural 13: ON DELETE CASCADE kullanılmaz! 
     # İlişkili verilerin silinme yönetimini veritabanına bırakmıyoruz, kod seviyesinde kontrollü yapıyoruz.
     applications = relationship("Application", back_populates="candidate")
+    ApplicationStatus = Literal["pending", "under_review", "accepted", "rejected"]
 
     # --- Şifreleme Kapsülleme (Getter / Setter) Mekanizması ---
     @property
@@ -82,3 +84,5 @@ class Application(Base):
 
     # Aday tablosuna geri bağlantı
     candidate = relationship("Candidate", back_populates="applications")
+
+    

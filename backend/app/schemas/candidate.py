@@ -11,7 +11,7 @@ class CandidateCreate(BaseModel):
     email: EmailStr
     phone: str = Field(min_length=10, max_length=20)
     university: Optional[str] = Field(None, max_length=100)
-    department: Optional[str] = Field(None, max_length=100)
+    university_department: Optional[str] = Field(None, max_length=100)
     graduation_year: Optional[int] = Field(None, ge=2000, le=2030)
 
 class CandidateUpdate(BaseModel):
@@ -20,7 +20,7 @@ class CandidateUpdate(BaseModel):
     first_name: Optional[str] = Field(default=None, min_length=2, max_length=50)
     last_name: Optional[str] = Field(default=None, min_length=2, max_length=50)
     university: Optional[str] = Field(default=None, max_length=100)
-    department: Optional[str] = Field(default=None, max_length=100)
+    university_department: Optional[str] = Field(default=None, max_length=100)
     graduation_year: Optional[int] = Field(default=None, ge=2000, le=2030)
 
 # --- DÖNEN VERİ (Response) ---
@@ -33,7 +33,7 @@ class CandidateResponse(BaseModel):
     email: str
     phone: str
     university: Optional[str]
-    department: Optional[str]
+    university_department: Optional[str]
     graduation_year: Optional[int]
     is_phone_verified: bool
     created_at: datetime

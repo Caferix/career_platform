@@ -30,7 +30,7 @@ async def create_candidate(db: AsyncSession, data: CandidateCreate) -> Candidate
         first_name=data.first_name,
         last_name=data.last_name,
         university=data.university,
-        department=data.department,
+        university_department=data.university_department,
         graduation_year=data.graduation_year
     )
     candidate.email = data.email  # modeldeki setter otomatik şifreler
