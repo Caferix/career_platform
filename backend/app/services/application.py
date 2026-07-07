@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.candidate import Application  # Daha önce candidate.py içine eklediğimiz model
 from app.schemas.application import ApplicationCreate, ApplicationStatusUpdate
 from app.services import storage
+from app.core.departments import expand_department_values, normalize_department
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ async def create_application(db: AsyncSession, payload: ApplicationCreate) -> Ap
     new_app = Application(
         applicant_id=payload.applicant_id,
         position=payload.position,
-        department=payload.department,
+        department=normalize_department(payload.department) or payload.department,
         experience_years=payload.experience_years,
         notes=payload.notes,
         status="Applied"
@@ -65,12 +66,18 @@ async def upload_cv_to_application(db: AsyncSession, app_id: int, file: UploadFi
     await db.refresh(app_record)
     return app_record
 
-async def list_applications(db: AsyncSession, department: str = None) -> list[Application]:
+
+async def get_application_by_id(db: AsyncSession, app_id: int) -> Application | None:
+    query = select(Application).where(and_(Application.id == app_id, Application.is_deleted == False))
+    result = await db.execute(query)
+    return result.scalar_one_or_none()
+
+async def list_applications(db: AsyncSession, departments: list[str] | None = None) -> list[Application]:
     """Aktif başvuruları kronolojik olarak listeler, isteğe bağlı departman filtresi sunar."""
     query = select(Application).where(Application.is_deleted == False).order_by(Application.id.desc())
     
-    if department:
-        query = query.where(Application.department == department)
+    if departments:
+        query = query.where(Application.department.in_(expand_department_values(departments)))
         
     result = await db.execute(query)
     return result.scalars().all()

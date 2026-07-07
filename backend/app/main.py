@@ -5,14 +5,17 @@ from app.core.settings import settings
 from app.routes.candidates import router as candidate_router
 # Veritabanı el sıkışması (ping) testi için engine'i merkezi yerden çekiyoruz
 from app.db.database import engine
-from app.routes import auth, applications
+from app.routes import auth, applications, consents
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from app.core.security import limiter
 from app.routes.applications import router as applications_router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from app.core.limiter import Limiter, limiter
 
 
 app = FastAPI(
@@ -21,7 +24,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
+
 #slowapi yi fastapi'ye bağladık
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -35,6 +43,9 @@ app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 
 # Başvuru ve CV Yönetimi endpoint'lerini buraya mühürlüyoruz
 app.include_router(applications.router)
+
+# KVKK onay endpoint'lerini buraya bağlıyoruz
+app.include_router(consents.router)
 
 # 2. CORS Yapılandırması
 # Frontend static dosyalar üzerinden geleceği için geliştirme aşamasında tüm kökenlere, 

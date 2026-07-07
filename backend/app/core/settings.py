@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     ALLOWED_EXTENSIONS: List[str] = [".pdf", ".doc", ".docx"]
 
     BASE_URL: str = "http://localhost:8000"
+    CONSENT_TEXT_VERSION: str = "v1.0"
    
 
 

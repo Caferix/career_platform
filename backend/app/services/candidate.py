@@ -59,6 +59,15 @@ async def get_candidate(db: AsyncSession, candidate_id: int) -> Candidate:
     return candidate
 
 
+async def get_candidate_by_phone(db: AsyncSession, phone: str) -> Candidate | None:
+    query = select(Candidate).where(
+        Candidate._phone == encrypt_data(phone),
+        Candidate.is_deleted == False
+    )
+    result = await db.execute(query)
+    return result.scalars().first()
+
+
 async def list_candidates(db: AsyncSession, skip: int = 0, limit: int = 10) -> list[Candidate]:
     """Aktif adayları sayfalayarak listeler. Kural 8 filtresi içerir."""
     query = select(Candidate).where(Candidate.is_deleted == False).offset(skip).limit(limit)

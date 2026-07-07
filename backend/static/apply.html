@@ -112,11 +112,13 @@
                             <select id="companyDepartment" required
                                 class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 transition-all focus:border-red-400">
                                 <option value="">Departman seçiniz...</option>
-                                <option value="Yazılım Geliştirme">Yazılım Geliştirme</option>
-                                <option value="Sistem ve Altyapı">Sistem ve Altyapı</option>
-                                <option value="Siber Güvenlik">Siber Güvenlik</option>
-                                <option value="İnsan Kaynakları">İnsan Kaynakları</option>
-                                <option value="Ürün Yönetimi">Ürün Yönetimi</option>
+                                <option value="embedded">Gömülü Sistemler</option>
+                                <option value="backend">Backend</option>
+                                <option value="frontend">Frontend</option>
+                                <option value="security">Siber Güvenlik</option>
+                                <option value="infrastructure">Sistem ve Altyapı</option>
+                                <option value="product">Ürün Yönetimi</option>
+                                <option value="people_ops">İnsan Kaynakları</option>
                             </select>
                         </div>
                         <div>
@@ -251,6 +253,16 @@
     <script>
         const BASE_URL = "http://localhost:8000";
         const token = localStorage.getItem("auth_token");
+        const marketingConsentCheckbox = document.getElementById("marketingConsent");
+        const DEPARTMENT_LABELS = {
+            embedded: "Gömülü Sistemler",
+            backend: "Backend",
+            frontend: "Frontend",
+            security: "Siber Güvenlik",
+            infrastructure: "Sistem ve Altyapı",
+            product: "Ürün Yönetimi",
+            people_ops: "İnsan Kaynakları"
+        };
 
         // --- AUTH KONTROLÜ ---
         if (!token) {
@@ -262,6 +274,15 @@
             document.getElementById("formContainer").classList.add("hidden");
             document.getElementById("successContainer").classList.remove("hidden");
         }
+
+        const savedMarketingConsent = localStorage.getItem("marketing_consent");
+        if (savedMarketingConsent !== null) {
+            marketingConsentCheckbox.checked = savedMarketingConsent === "true";
+        }
+
+        marketingConsentCheckbox.addEventListener("change", () => {
+            localStorage.setItem("marketing_consent", String(marketingConsentCheckbox.checked));
+        });
 
         // --- ELEMENTLER ---
         const statusAlert    = document.getElementById("statusAlert");
@@ -461,11 +482,45 @@
 
                 const applicationId = applicationData.id;
 
-                // ── ADIM 3: CV yükleme (opsiyonel) ──────────────────────
+                // ── ADIM 3: KVKK onayları ───────────────────────────────
+                showAlert("Adım 3/4: Onaylar kaydediliyor...", "info");
+
+                const kvkkRes = await fetch(`${BASE_URL}/consents/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ consent_type: "kvkk" })
+                });
+
+                const kvkkData = await kvkkRes.json();
+                if (!kvkkRes.ok) {
+                    throw new Error(`KVKK onayı kaydedilemedi: ${kvkkData.detail || "Bilinmeyen hata"}`);
+                }
+
+                const marketingConsentEnabled = localStorage.getItem("marketing_consent") === "true";
+                if (marketingConsentEnabled) {
+                    const iletisimRes = await fetch(`${BASE_URL}/consents/`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ consent_type: "iletisim" })
+                    });
+
+                    if (!iletisimRes.ok) {
+                        const iletisimData = await iletisimRes.json();
+                        console.warn("İletişim onayı kaydedilemedi:", iletisimData.detail || "Bilinmeyen hata");
+                    }
+                }
+
+                // ── ADIM 4: CV yükleme (opsiyonel) ──────────────────────
                 const cvFile = cvFileInput.files[0];
 
                 if (cvFile) {
-                    showAlert("Adım 3/3: CV yükleniyor...", "info");
+                    showAlert("Adım 4/4: CV yükleniyor...", "info");
 
                     const formData = new FormData();
                     formData.append("file", cvFile);
