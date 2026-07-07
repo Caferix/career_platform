@@ -1,8 +1,16 @@
-from fastapi import APIRouter, Depends, UploadFile, File, status, Query
+import os
+from fastapi import APIRouter, Depends, UploadFile, File, status, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.db.database import get_db  # Projendeki DB session dependency'si
 from app.schemas.application import ApplicationCreate, ApplicationResponse, ApplicationStatusUpdate
 from app.services import application as app_service
+from app.services import storage
+from fastapi.responses import FileResponse
+from app.models.candidate import Application
+
+
+
 
 router = APIRouter(prefix="/applications", tags=["Applications"])
 
@@ -29,6 +37,31 @@ async def upload_application_cv(
     Dosya boyutu ve uzantı denetimi arka planda storage servisiyle ortak yürütülür.
     """
     return await app_service.upload_cv_to_application(db=db, app_id=app_id, file=file)
+
+@router.get("/{app_id}/cv")
+async def download_cv(app_id: int, db: AsyncSession = Depends(get_db)):
+    # Başvuruyu getir
+    result = await db.execute(
+        select(Application).where(
+            Application.id == app_id,
+            Application.is_deleted == False
+        )
+    )
+    application = result.scalar_one_or_none()
+
+    if not application or not application.cv_url:
+        raise HTTPException(status_code=404, detail="CV bulunamadı.")
+
+    file_path = storage.get_file_path(application.cv_url)
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Dosya sistemde bulunamadı.")
+
+    return FileResponse(
+        path=file_path,
+        filename=f"cv_{app_id}.pdf",
+        media_type="application/octet-stream"
+    )
 
 
 @router.get("/", response_model=list[ApplicationResponse])

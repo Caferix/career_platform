@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İK Yönetim Paneli - Başvurular</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 min-h-screen text-slate-100 pb-12">
+
+    <div id="authGate" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl w-full max-w-md shadow-2xl space-y-4">
+            <h2 class="text-xl font-bold text-white">İK Paneli - Güvenli Giriş</h2>
+            <p class="text-xs text-slate-400">Faz 6 öncesi testler için lütfen geçici İK Yönetici Token'ınızı giriniz.</p>
+            <div>
+                <label class="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Admin Token</label>
+                <input type="text" id="adminTokenInput" placeholder="TOKEN_BURAYA" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+            </div>
+            <button id="saveTokenBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-xl transition-all text-sm shadow-lg shadow-indigo-600/30">
+                Sisteme Giriş Yap
+            </button>
+        </div>
+    </div>
+
+    <div id="panelContent" class="hidden">
+        
+        <nav class="bg-slate-800 border-b border-slate-700 px-6 py-4 mb-8 sticky top-0 z-40 shadow-md">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <span class="text-lg font-bold text-white tracking-tight">İK Başvuru Takip Paneli</span>
+                </div>
+                <button id="adminLogoutBtn" class="text-sm font-medium text-red-400 hover:text-red-500 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-950/30">
+                    Sistemden Çıkış
+                </button>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto px-4 space-y-6">
+            
+            <div id="adminAlert" class="hidden p-4 rounded-xl text-sm font-medium border bg-red-950/40 border-red-800 text-red-200 transition-all duration-300"></div>
+
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-4 shadow-xl">
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Arama (Ad, Soyad veya Pozisyon)</label>
+                    <input type="text" id="searchBar" placeholder="Adaylarda ara..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Pozisyon Filtresi</label>
+                    <select id="filterPosition" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all cursor-pointer">
+                        <option value="">Tüm Pozisyonlar</option>
+                        <option value="Android">Android Programları</option>
+                        <option value="Embedded">Gömülü Sistemler</option>
+                        <option value="Backend">Backend Pozisyonları</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 uppercase mb-1">Durum Filtresi</label>
+                    <select id="filterStatus" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all cursor-pointer">
+                        <option value="">Tüm Durumlar</option>
+                        <option value="Applied">Applied (Yeni Başvuru)</option>
+                        <option value="Under_Review">Under Review (İncelemede)</option>
+                        <option value="Accepted">Accepted (Kabul Edildi)</option>
+                        <option value="Rejected">Rejected (Reddedildi)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl">
+                
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-750 border-b border-slate-700 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                <th class="px-6 py-4">Aday Bilgisi</th>
+                                <th class="px-6 py-4">Pozisyon / Departman</th>
+                                <th class="px-6 py-4">Deneyim</th>
+                                <th class="px-6 py-4">Durum</th>
+                                <th class="px-6 py-4">Özgeçmiş</th>
+                            </tr>
+                        </thead>
+                        <tbody id="desktopTableBody" class="divide-y divide-slate-700/50 text-sm text-slate-300">
+                            </tbody>
+                    </table>
+                </div>
+
+                <div id="mobileCardsContainer" class="block md:hidden p-4 space-y-4">
+                    </div>
+
+                <div id="emptyState" class="hidden p-12 text-center text-slate-500 text-sm font-medium">
+                    Kriterlere uygun başvuru kaydı bulunamadı.
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+       const BASE_URL = window.location.origin;
+
+        // DOM Elemanları (Auth)
+        const authGate = document.getElementById("authGate");
+        const panelContent = document.getElementById("panelContent");
+        const adminTokenInput = document.getElementById("adminTokenInput");
+        const saveTokenBtn = document.getElementById("saveTokenBtn");
+        const adminLogoutBtn = document.getElementById("adminLogoutBtn");
+
+        // DOM Elemanları (Veri & Filtre)
+        const desktopTableBody = document.getElementById("desktopTableBody");
+        const mobileCardsContainer = document.getElementById("mobileCardsContainer");
+        const emptyState = document.getElementById("emptyState");
+        const adminAlert = document.getElementById("adminAlert");
+        const searchBar = document.getElementById("searchBar");
+        const filterPosition = document.getElementById("filterPosition");
+        const filterStatus = document.getElementById("filterStatus");
+
+        // Hafıza Kartlarımız (State & Cache)
+        let allApplications = [];  // Backend'den gelen ham başvurular
+        let applicantCache = {};   // N+1 krizini çözen "ID: Aday Bilgisi" hafızası
+
+        // Yardımcı Fonksiyon: Hata Gösterme
+        function showAdminError(text) {
+            adminAlert.textContent = text;
+            adminAlert.classList.remove("hidden");
+        }
+
+        // --- AUTH KONTROLÜ ---
+        function checkAdminAuth() {
+            const token = localStorage.getItem("admin_token");
+            if (!token) {
+                panelContent.classList.add("hidden");
+                authGate.classList.remove("hidden");
+            } else {
+                authGate.classList.add("hidden");
+                panelContent.classList.remove("hidden");
+                loadDashboardData(); 
+            }
+        }
+
+        // ---  OPTİMİZE VERİ ÇEKME MOTORU (BATCHING & CACHE) ---
+        async function loadDashboardData() {
+            const token = localStorage.getItem("admin_token");
+            adminAlert.classList.add("hidden");
+
+            try {
+                // 1. ADIM: Tüm başvuruları tek seferde çek
+                const appRes = await fetch(`${BASE_URL}/applications/`, {
+                    method: "GET",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (!appRes.ok) throw new Error(`Başvurular çekilemedi. Durum: ${appRes.status}`);
+                allApplications = await appRes.json();
+
+                // 2. ADIM: N+1 Süzgeci - Benzersiz applicant_id'leri topla
+                const uniqueApplicantIds = [...new Set(allApplications.map(app => app.applicant_id))];
+
+                // 3. ADIM: Sadece bu benzersiz ID'ler için backend kapısını birer kez çal
+                const applicantPromises = uniqueApplicantIds.map(async (id) => {
+                    if (applicantCache[id]) return; 
+
+                    try {
+                        const applicantRes = await fetch(`${BASE_URL}/applicants/${id}`, {
+                            method: "GET",
+                            headers: { "Authorization": `Bearer ${token}` }
+                        });
+                        if (applicantRes.ok) {
+                            applicantCache[id] = await applicantRes.json();
+                        }
+                    } catch (err) {
+                        console.error(`Aday ID ${id} çekilirken hata oluştu:`, err);
+                    }
+                });
+
+                await Promise.all(applicantPromises);
+
+                // 4. ADIM: Ekrana Bas
+                renderTable();
+
+            } catch (error) {
+                showAdminError(`Sistem Hatası: ${error.message}`);
+            }
+        }
+
+        // ---  ANLIK FRONTEND FİLTRELEME VE DİNAMİK RENDER ---
+        function renderTable() {
+            const searchTerm = searchBar.value.toLowerCase().trim();
+            const posFilter = filterPosition.value; 
+            const statusFilter = filterStatus.value; 
+
+            const filtered = allApplications.filter(app => {
+                const applicant = applicantCache[app.applicant_id] || { first_name: "Bilinmeyen", last_name: "Aday" };
+                const fullName = `${applicant.first_name} ${applicant.last_name}`.toLowerCase();
+                const positionStr = app.position.toLowerCase();
+
+                const matchesSearch = fullName.includes(searchTerm) || positionStr.includes(searchTerm);
+                const matchesPosition = !posFilter || app.position.includes(posFilter);
+                const matchesStatus = !statusFilter || app.status === statusFilter;
+
+                return matchesSearch && matchesPosition && matchesStatus;
+            });
+
+            desktopTableBody.innerHTML = "";
+            mobileCardsContainer.innerHTML = "";
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove("hidden");
+                return;
+            }
+            emptyState.classList.add("hidden");
+
+            filtered.forEach(app => {
+                const applicant = applicantCache[app.applicant_id] || { first_name: "Bilinmeyen", last_name: "Aday", email: "-" };
+                const createdDate = app.created_at ? new Date(app.created_at).toLocaleDateString("tr-TR") : "-";
+
+                // A) MASAÜSTÜ SATIRI OLUŞTURMA
+                const desktopRow = document.createElement("tr");
+                desktopRow.className = "hover:bg-slate-750/40 transition-colors border-b border-slate-700/50";
+                desktopRow.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="font-semibold text-white">${applicant.first_name} ${applicant.last_name}</div>
+                        <div class="text-xs text-slate-400">${applicant.email}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-slate-200">${app.position}</div>
+                        <div class="text-xs text-slate-400">${app.department}</div>
+                    </td>
+                    <td class="px-6 py-4 text-slate-400 text-xs">${app.experience_years} Yıl</td>
+                    <td class="px-6 py-4">
+                        <select data-id="${app.id}" class="status-select bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-200 focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer">
+                            <option value="Applied" ${app.status === 'Applied' ? 'selected' : ''}>Applied</option>
+                            <option value="Under_Review" ${app.status === 'Under_Review' ? 'selected' : ''}>Under Review</option>
+                            <option value="Accepted" ${app.status === 'Accepted' ? 'selected' : ''}>Accepted</option>
+                            <option value="Rejected" ${app.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+                        </select>
+                    </td>
+                    <td class="px-6 py-4" id="cv-desk-${app.id}">
+                        </td>
+                `;
+                desktopTableBody.appendChild(desktopRow);
+
+                // B) MOBİL KART OLUŞTURMA
+                const mobileCard = document.createElement("div");
+                mobileCard.className = "bg-slate-800 border border-slate-700 p-4 rounded-xl space-y-3 shadow-md";
+                mobileCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-bold text-white text-base">${applicant.first_name} ${applicant.last_name}</div>
+                            <div class="text-xs text-slate-400">${applicant.email}</div>
+                        </div>
+                        <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">${createdDate}</span>
+                    </div>
+                    <div class="text-xs bg-slate-900/50 p-2 rounded-lg border border-slate-800 space-y-1">
+                        <div><span class="text-slate-500">Pozisyon:</span> <span class="text-slate-200 font-medium">${app.position}</span></div>
+                        <div><span class="text-slate-500">Departman:</span> <span class="text-slate-300">${app.department}</span></div>
+                        <div><span class="text-slate-500">Deneyim:</span> <span class="text-slate-400">${app.experience_years} Yıl</span></div>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 pt-1">
+                        <select data-id="${app.id}" class="status-select bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200 focus:ring-1 focus:ring-indigo-500 outline-none w-1/2 cursor-pointer">
+                            <option value="Applied" ${app.status === 'Applied' ? 'selected' : ''}>Applied</option>
+                            <option value="Under_Review" ${app.status === 'Under_Review' ? 'selected' : ''}>Under Review</option>
+                            <option value="Accepted" ${app.status === 'Accepted' ? 'selected' : ''}>Accepted</option>
+                            <option value="Rejected" ${app.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+                        </select>
+                        <div id="cv-mob-${app.id}" class="w-1/2 text-right"></div>
+                    </div>
+                `;
+                mobileCardsContainer.appendChild(mobileCard);
+
+                // C) CV SEÇENEKLERİNİN RENDER EDİLMESİ
+                // Veritabanındaki cv_url alanı doluysa butonu basıyoruz
+                if (app.cv_url) {
+                    const btnHtml = `<button onclick="downloadCV(${app.id})" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300 underline transition-colors">CV İndir</button>`;
+                    document.getElementById(`cv-desk-${app.id}`).innerHTML = btnHtml;
+                    document.getElementById(`cv-mob-${app.id}`).innerHTML = btnHtml;
+                } else {
+                    const noCvHtml = `<span class="text-xs text-slate-500 italic">CV Yok</span>`;
+                    document.getElementById(`cv-desk-${app.id}`).innerHTML = noCvHtml;
+                    document.getElementById(`cv-mob-${app.id}`).innerHTML = noCvHtml;
+                }
+            });
+
+            // Dropdown değişikliklerini dinle (Event Delegation yerine anlık bağlama)
+            document.querySelectorAll(".status-select").forEach(select => {
+                select.addEventListener("change", (e) => {
+                    const appId = e.target.getAttribute("data-id");
+                    const newStatus = e.target.value;
+                    updateApplicationStatus(appId, newStatus);
+                });
+            });
+        }
+
+        // --- 🔄 PATCH: DURUM GÜNCELLEME MOTORU ---
+        async function updateApplicationStatus(id, newStatus) {
+            const token = localStorage.getItem("admin_token");
+            adminAlert.classList.add("hidden");
+
+            try {
+                const res = await fetch(`${BASE_URL}/applications/${id}/status`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.detail || "Statü güncellenemedi.");
+                }
+
+                // Hafızadaki ana array'i anlık güncelle ve listeyi yenile (State Management)
+                const appIndex = allApplications.findIndex(app => app.id == id);
+                if (appIndex !== -1) {
+                    allApplications[appIndex].status = newStatus;
+                }
+                
+                // Başarı durumunu hissettirmek için tabloyu yeniden çiz
+                renderTable();
+
+            } catch (error) {
+                showAdminError(`Güncelleme Hatası: ${error.message}`);
+                // Hata durumunda arayüzü eski haline çekmek için yeniden yükle
+                loadDashboardData();
+            }
+        }
+
+        // --- 📥 BLOB: CV İNDİRME MOTORU ---
+        async function downloadCV(id) {
+            const token = localStorage.getItem("admin_token");
+            adminAlert.classList.add("hidden");
+
+            try {
+                const res = await fetch(`${BASE_URL}/applications/${id}/cv`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                    // Claude Kuralı: Content-Type YAZILMAZ.
+                });
+
+                if (!res.ok) throw new Error("Dosya sunucudan çekilemedi veya yetkiniz yetersiz.");
+
+                // Binary veriyi blob nesnesine çeviriyoruz
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                
+                // Sanal bir <a> elementi yaratarak indirmeyi tetikliyoruz
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `candidate_cv_${id}.pdf`; // Varsayılan dosya adı
+                document.body.appendChild(a);
+                a.click();
+                
+                // Temizlik yapıyoruz
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+            } catch (error) {
+                showAdminError(`CV İndirme Hatası: ${error.message}`);
+            }
+        }
+
+        // --- 🎛️ EVENT LISTENERS (FİLTRELER VE ARAMA) ---
+        searchBar.addEventListener("input", renderTable);
+        filterPosition.addEventListener("change", renderTable);
+        filterStatus.addEventListener("change", renderTable);
+
+        // --- AUTH EVENT LISTENERS ---
+        saveTokenBtn.addEventListener("click", () => {
+            const tokenVal = adminTokenInput.value.trim();
+            if (tokenVal) {
+                localStorage.setItem("admin_token", tokenVal);
+                checkAdminAuth();
+            }
+        });
+
+        adminLogoutBtn.addEventListener("click", () => {
+            localStorage.removeItem("admin_token");
+            allApplications = []; 
+            checkAdminAuth();
+        });
+
+        // Uygulamayı başlat
+        document.addEventListener("DOMContentLoaded", checkAdminAuth);
+    </script>
+</body>
+</html>
