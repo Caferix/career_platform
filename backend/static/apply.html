@@ -3,247 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kariyer Platformu — Başvuru Formu</title>
+    <title>Aday Başvuru Formu</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(225, 27, 58, 0.12);
-        }
-        .field-required::after { content: " *"; color: #e11b3a; }
-        .step-badge {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 24px; height: 24px; border-radius: 50%;
-            background: #e11b3a; color: white;
-            font-size: 12px; font-weight: 700; flex-shrink: 0;
-        }
-    </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-16">
+<body class="bg-gray-50 min-h-screen pb-12">
 
-    <!-- Navbar -->
-    <nav class="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-50 shadow-sm">
+    <nav class="bg-white border-b border-gray-200 px-6 py-4 mb-8 sticky top-0 z-40 shadow-sm">
         <div class="max-w-3xl mx-auto flex justify-between items-center">
-            <span class="text-base font-bold text-slate-800">Kariyer Platformu</span>
-            <button id="logoutBtn" class="text-sm font-medium text-red-600 hover:text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
-                Çıkış Yap
+            <span class="text-lg font-bold text-gray-900 tracking-tight">Kariyer Platformu</span>
+            <button id="logoutBtn" class="text-sm font-medium text-[#e11b3a] hover:text-[#c51631] transition-colors">
+                Oturumu Kapat
             </button>
         </div>
     </nav>
 
-    <main class="max-w-3xl mx-auto px-4 pt-8">
+    <main class="max-w-3xl mx-auto px-4">
+        
+        <div id="statusAlert" class="hidden"></div>
 
-        <!-- Alert -->
-        <div id="statusAlert" class="hidden mb-6 p-4 rounded-xl text-sm font-medium border"></div>
-
-        <!-- Form Kartı -->
-        <div id="formContainer" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-
-            <div class="px-8 py-6 border-b border-slate-100">
-                <h2 class="text-xl font-bold text-slate-800">Yeni Başvuru</h2>
-                <p class="text-xs text-slate-500 mt-1">Tüm zorunlu alanları eksiksiz doldurunuz.</p>
+        <div id="formContainer" class="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm space-y-6">
+            <div class="border-b border-gray-100 pb-4">
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">İş Başvuru Formu</h1>
+                <p class="text-sm text-gray-500 mt-1">Lütfen aşağıdaki bilgileri eksiksiz doldurunuz.</p>
             </div>
 
-            <form id="mainApplyForm" class="px-8 py-6 space-y-8" novalidate>
-
-                <!-- BÖLÜM 1: Kişisel Bilgiler -->
-                <div class="space-y-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="step-badge">1</span>
-                        <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">Kişisel Bilgiler</h3>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="firstName" class="block text-xs font-semibold text-slate-600 mb-1.5 field-required">Ad</label>
-                            <input type="text" id="firstName" required placeholder="Ahmet"
-                                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 transition-all focus:border-red-400">
-                        </div>
-                        <div>
-                            <label for="lastName" class="block text-xs font-semibold text-slate-600 mb-1.5 field-required">Soyad</label>
-                            <input type="text" id="lastName" required placeholder="Yılmaz"
-                                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 transition-all focus:border-red-400">
-                        </div>
-                    </div>
-
+            <form id="mainApplyForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="email" class="block text-xs font-semibold text-slate-600 mb-1.5 field-required">E-posta</label>
-                        <input type="email" id="email" required placeholder="ahmet@universite.edu.tr"
-                            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 transition-all focus:border-red-400">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Adı <span class="text-red-500">*</span></label>
+                        <input type="text" id="firstName" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Soyadı <span class="text-red-500">*</span></label>
+                        <input type="text" id="lastName" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
                     </div>
                 </div>
 
-                <hr class="border-slate-100">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">E-Posta Adresi <span class="text-red-500">*</span></label>
+                    <input type="email" id="email" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
+                </div>
 
-                <!-- BÖLÜM 2: Başvuru Bilgileri -->
-                <div class="space-y-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="step-badge">2</span>
-                        <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">Başvuru Bilgileri</h3>
-                    </div>
-
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="position" class="block text-xs font-semibold text-slate-600 mb-1.5 field-required">Pozisyon</label>
-                        <select id="position" required
-                            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 transition-all focus:border-red-400">
-                            <option value="">Pozisyon seçiniz...</option>
-                            <optgroup label="── Tam Zamanlı ──">
-                                <option value="Android Developer">Android Geliştirici</option>
-                                <option value="Frontend Developer">Frontend Geliştirici</option>
-                                <option value="Backend Developer">Backend Geliştirici</option>
-                                <option value="System Engineer">Sistem Mühendisi</option>
-                                <option value="Cybersecurity Expert">Siber Güvenlik Uzmanı</option>
-                            </optgroup>
-                            <optgroup label="── Staj ──">
-                                <option value="Android Developer Intern">Android Geliştirici Stajyeri</option>
-                                <option value="Frontend Developer Intern">Frontend Geliştirici Stajyeri</option>
-                                <option value="Backend Developer Intern">Backend Geliştirici Stajyeri</option>
-                                <option value="System Engineer Intern">Sistem Mühendisi Stajyeri</option>
-                                <option value="Cybersecurity Intern">Siber Güvenlik Uzmanı Stajyeri</option>
-                            </optgroup>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Başvurulacak Pozisyon <span class="text-red-500">*</span></label>
+                        <select id="position" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                            <option value="Android Developer">Android Geliştirici</option>
+                            <option value="Embedded Systems Engineer">Gömülü Sistemler Mühendisi</option>
+                            <option value="Backend Developer">Backend Geliştirici</option>
+                            <option value="Android Intern">Android Stajyeri</option>
+                            <option value="Embedded Intern">Gömülü Sistemler Stajyeri</option>
                         </select>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="companyDepartment" class="block text-xs font-semibold text-slate-600 mb-1.5 field-required">Departman</label>
-                            <select id="companyDepartment" required
-                                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-800 transition-all focus:border-red-400">
-                                <option value="">Departman seçiniz...</option>
-                                <option value="Yazılım Geliştirme">Yazılım Geliştirme</option>
-                                <option value="Sistem ve Altyapı">Sistem ve Altyapı</option>
-                                <option value="Siber Güvenlik">Siber Güvenlik</option>
-                                <option value="İnsan Kaynakları">İnsan Kaynakları</option>
-                                <option value="Ürün Yönetimi">Ürün Yönetimi</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="experience" class="block text-xs font-semibold text-slate-600 mb-1.5">Deneyim (Yıl)</label>
-                            <input type="number" id="experience" min="0" max="50" value="0"
-                                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 transition-all focus:border-red-400">
-                        </div>
-                    </div>
-
                     <div>
-                        <label for="notes" class="block text-xs font-semibold text-slate-600 mb-1.5">Ön Yazı / Notlar <span class="text-slate-400 font-normal">(opsiyonel)</span></label>
-                        <textarea id="notes" rows="3" maxlength="500"
-                            placeholder="Kendinizi kısaca tanıtın, bu pozisyona başvurma nedeninizi belirtin..."
-                            class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 resize-none transition-all focus:border-red-400"></textarea>
-                        <p class="text-xs text-slate-400 mt-1 text-right"><span id="notesCount">0</span>/500</p>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Departman <span class="text-red-500">*</span></label>
+                        <select id="companyDepartment" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                            <option value="embedded">Gömülü Sistemler</option>
+                            <option value="backend">Backend</option>
+                            <option value="frontend">Frontend</option>
+                        </select>
                     </div>
                 </div>
 
-                <hr class="border-slate-100">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Toplam Deneyim (Yıl) <span class="text-red-500">*</span></label>
+                    <input type="number" id="experience" min="0" value="0" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
+                </div>
 
-                <!-- BÖLÜM 3: Eğitim Bilgileri (Staja göre dinamik) -->
-                <div id="educationSection" class="space-y-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="step-badge">3</span>
-                        <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                            Eğitim Bilgileri
-                            <span id="educationBadge" class="ml-2 text-xs font-normal text-slate-400 normal-case">(staj için zorunlu)</span>
-                        </h3>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+                    <h3 class="text-sm font-semibold text-gray-800">Eğitim Bilgileri</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label for="university" class="block text-xs font-semibold text-slate-600 mb-1.5" id="universityLabel">Üniversite</label>
-                            <input type="text" id="university" placeholder="Erciyes Üniversitesi"
-                                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 transition-all focus:border-red-400">
+                            <label id="universityLabel" class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Üniversite</label>
+                            <input type="text" id="university" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:ring-1 focus:ring-[#e11b3a] outline-none">
                         </div>
                         <div>
-                            <label for="uniDepartment" class="block text-xs font-semibold text-slate-600 mb-1.5" id="uniDeptLabel">Bölüm</label>
-                            <input type="text" id="uniDepartment" placeholder="Bilgisayar Mühendisliği"
-                                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 transition-all focus:border-red-400">
+                            <label id="uniDeptLabel" class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Bölüm</label>
+                            <input type="text" id="uniDepartment" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:ring-1 focus:ring-[#e11b3a] outline-none">
+                        </div>
+                        <div>
+                            <label id="gradYearLabel" class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Mezuniyet Yılı</label>
+                            <input type="number" id="gradYear" class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:ring-1 focus:ring-[#e11b3a] outline-none">
                         </div>
                     </div>
-
-                    <div>
-                        <label for="gradYear" class="block text-xs font-semibold text-slate-600 mb-1.5" id="gradYearLabel">Mezuniyet / Beklenen Yıl</label>
-                        <input type="number" id="gradYear" min="2000" max="2035" placeholder="2026"
-                            class="w-full md:w-48 px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 transition-all focus:border-red-400">
-                    </div>
                 </div>
 
-                <hr class="border-slate-100">
-
-                <!-- BÖLÜM 4: CV -->
-                <div class="space-y-3">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="step-badge">4</span>
-                        <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">Özgeçmiş (CV)</h3>
-                    </div>
-
-                    <div class="border-2 border-dashed border-slate-200 hover:border-red-300 rounded-2xl p-6 text-center transition-colors bg-slate-50/50 cursor-pointer"
-                        onclick="document.getElementById('cvFile').click()">
-                        <svg class="w-8 h-8 text-slate-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                        </svg>
-                        <p class="text-sm text-slate-600 font-medium">Dosya seçmek için tıklayın</p>
-                        <p class="text-xs text-slate-400 mt-1">PDF, DOC, DOCX — Maks. 5MB</p>
-                        <input type="file" id="cvFile" accept=".pdf,.doc,.docx" class="hidden">
-                        <p id="cvFileName" class="text-xs text-red-600 font-medium mt-2 hidden"></p>
-                    </div>
-                </div>
-
-                <hr class="border-slate-100">
-
-                <!-- BÖLÜM 5: KVKK -->
-                <div class="space-y-3">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="step-badge">5</span>
-                        <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">Onaylar</h3>
-                    </div>
-
-                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                        <label class="flex items-start gap-3 cursor-pointer">
-                            <input type="checkbox" id="kvkkGeneral" required
-                                class="mt-0.5 h-4 w-4 text-red-600 border-slate-300 rounded flex-shrink-0">
-                            <span class="text-xs text-slate-600 leading-relaxed">
-                                Paylaştığım kişisel verilerimin kariyer havuzunda saklanmasını ve işlenmesini
-                                <span class="text-red-600 font-semibold underline cursor-pointer">KVKK Aydınlatma Metni</span>
-                                kapsamında onaylıyorum. <span class="text-red-500">*</span>
-                            </span>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Özgeçmiş Yükle (PDF, Max 5MB)</label>
+                    <div class="flex items-center gap-3">
+                        <label class="bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium px-4 py-2.5 rounded-xl border border-gray-300 cursor-pointer transition-colors">
+                            Dosya Seç
+                            <input type="file" id="cvFile" accept=".pdf" class="hidden">
                         </label>
-
-                        <label class="flex items-start gap-3 cursor-pointer">
-                            <input type="checkbox" id="marketingConsent"
-                                class="mt-0.5 h-4 w-4 text-red-600 border-slate-300 rounded flex-shrink-0">
-                            <span class="text-xs text-slate-600 leading-relaxed">
-                                Mülakat davetleri ve kariyer fırsatları hakkında e-posta ve SMS ile bildirim almayı kabul ediyorum.
-                            </span>
-                        </label>
+                        <span id="cvFileName" class="hidden text-xs text-emerald-700 font-medium"></span>
                     </div>
                 </div>
 
-                <!-- Gönder Butonu -->
-                <button type="submit" id="submitApplyBtn"
-                    class="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3.5 rounded-xl transition-all duration-200 shadow-lg shadow-red-600/20 flex items-center justify-center gap-2 text-sm">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Eklemek İstedikleriniz (Notlar)</label>
+                    <textarea id="notes" maxlength="500" rows="3" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all resize-none"></textarea>
+                    <div class="text-right text-[10px] text-gray-400 mt-1"><span id="notesCount">0</span> / 500</div>
+                </div>
+
+                <div class="border-t border-gray-100 pt-4 space-y-3">
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" id="kvkkGeneral" required class="w-4 h-4 mt-0.5 accent-[#e11b3a]">
+                        <span class="text-xs text-gray-600 leading-relaxed">
+                            Başvuru süreçlerimin yürütülmesi amacıyla kişisel verilerimin işlenmesine ilişkin <a href="#" class="text-[#e11b3a] underline">Aydınlatma Metnini</a> okudum ve onaylıyorum. <span class="text-red-500">*</span>
+                        </span>
+                    </label>
+
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" id="marketingConsent" class="w-4 h-4 mt-0.5 accent-[#e11b3a]">
+                        <span class="text-xs text-gray-600 leading-relaxed">
+                            Gelecekte oluşabilecek uygun pozisyonlar için tarafımla iletişime geçilmesine ve bilgilendirme iletileri gönderilmesine izin veriyorum. (Opsiyonel)
+                        </span>
+                    </label>
+                </div>
+
+                <button type="submit" id="submitApplyBtn" class="w-full bg-[#e11b3a] hover:bg-[#c51631] text-white font-medium py-3 rounded-xl transition-all text-sm shadow-md flex items-center justify-center gap-2">
                     <span>Başvuruyu Tamamla</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
                 </button>
-
             </form>
         </div>
 
-        <!-- Başarı Ekranı -->
-        <div id="successContainer" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-10 text-center space-y-5">
-            <div class="mx-auto w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center border border-emerald-100">
-                <svg class="h-8 w-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
+        <div id="successContainer" class="hidden bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm space-y-4">
+            <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100 text-2xl font-bold">
+                ✓
             </div>
-            <h2 class="text-2xl font-bold text-slate-800">Başvurunuz Alındı!</h2>
-            <p class="text-sm text-slate-500 max-w-sm mx-auto leading-relaxed">
-                Bilgileriniz güvenle kaydedildi. İnsan Kaynakları ekibimiz değerlendirme sürecini başlatacak ve size en kısa sürede dönüş yapacaktır.
+            <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Başvurunuz Alındı!</h2>
+            <p class="text-sm text-gray-500 max-w-md mx-auto">
+                Kişisel bilgileriniz, başvuru detaylarınız ve KVKK onaylarınız sisteme başarıyla mühürlendi. İnceleme süreçlerini profil sayfanızdan takip edebilirsiniz.
             </p>
-            <span class="inline-block bg-slate-100 text-slate-500 text-xs font-medium px-4 py-2 rounded-full">
-                Mükerrer başvuruyu önlemek için form kilitlendi.
-            </span>
         </div>
 
     </main>
@@ -252,18 +143,15 @@
         const BASE_URL = "http://localhost:8000";
         const token = localStorage.getItem("auth_token");
 
-        // --- AUTH KONTROLÜ ---
         if (!token) {
             window.location.href = "/static/index.html";
         }
 
-        // Daha önce başvuru yapıldıysa formu gösterme
         if (localStorage.getItem("applied") === "true") {
             document.getElementById("formContainer").classList.add("hidden");
             document.getElementById("successContainer").classList.remove("hidden");
         }
 
-        // --- ELEMENTLER ---
         const statusAlert    = document.getElementById("statusAlert");
         const submitBtn      = document.getElementById("submitApplyBtn");
         const positionSelect = document.getElementById("position");
@@ -277,8 +165,6 @@
         const cvFileName       = document.getElementById("cvFileName");
         const notesTextarea    = document.getElementById("notes");
         const notesCount       = document.getElementById("notesCount");
-
-        // --- YARDIMCI FONKSİYONLAR ---
 
         function showAlert(message, type = "error") {
             statusAlert.className = "mb-6 p-4 rounded-xl text-sm font-medium border";
@@ -312,8 +198,6 @@
             }
         }
 
-        // --- POZİSYON DEĞİŞİNCE EĞİTİM ALANLARI ---
-
         function isInternPosition(value) {
             return value.toLowerCase().includes("intern");
         }
@@ -322,13 +206,10 @@
             const pos = positionSelect.value;
             const isIntern = isInternPosition(pos);
 
-            // Staj seçilince zorunlu yap
             universityInput.required = isIntern;
             uniDeptInput.required    = isIntern;
             gradYearInput.required   = isIntern;
 
-            // Label'lara * ekle/çıkar
-            const suffix = isIntern ? " *" : "";
             universityLabel.innerHTML = "Üniversite" + (isIntern ? ' <span class="text-red-500">*</span>' : '');
             uniDeptLabel.innerHTML    = "Bölüm"      + (isIntern ? ' <span class="text-red-500">*</span>' : '');
             gradYearLabel.innerHTML   = "Mezuniyet / Beklenen Yıl" + (isIntern ? ' <span class="text-red-500">*</span>' : '');
@@ -336,12 +217,9 @@
 
         positionSelect.addEventListener("change", updateEducationFields);
 
-        // --- CV DOSYA ADI GÖSTERİMİ ---
-
         cvFileInput.addEventListener("change", () => {
             const file = cvFileInput.files[0];
             if (file) {
-                // 5MB kontrolü — frontend'de hızlı eleme
                 if (file.size > 5 * 1024 * 1024) {
                     showAlert("Dosya boyutu 5MB sınırını aşıyor. Lütfen daha küçük bir dosya seçin.");
                     cvFileInput.value = "";
@@ -354,32 +232,24 @@
             }
         });
 
-        // --- NOTLAR KARAKTER SAYACI ---
-
         notesTextarea.addEventListener("input", () => {
             notesCount.textContent = notesTextarea.value.length;
         });
-
-        // --- LOGOUT ---
 
         document.getElementById("logoutBtn").addEventListener("click", () => {
             localStorage.clear();
             window.location.href = "/static/index.html";
         });
 
-        // --- 3'LÜ İSTEK ZİNCİRİ ---
-
         document.getElementById("mainApplyForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             hideAlert();
 
-            // KVKK zorunlu
             if (!document.getElementById("kvkkGeneral").checked) {
                 showAlert("Devam etmek için KVKK metnini onaylamanız gerekmektedir.");
                 return;
             }
 
-            // Temel alan kontrolü
             const firstName  = document.getElementById("firstName").value.trim();
             const lastName   = document.getElementById("lastName").value.trim();
             const email      = document.getElementById("email").value.trim();
@@ -391,7 +261,6 @@
                 return;
             }
 
-            // Staj pozisyonunda eğitim alanları kontrolü
             if (isInternPosition(position)) {
                 if (!universityInput.value.trim() || !uniDeptInput.value.trim() || !gradYearInput.value) {
                     showAlert("Staj başvurusu için üniversite, bölüm ve mezuniyet yılı zorunludur.");
@@ -400,10 +269,11 @@
             }
 
             setLoading(true);
+            let applicantId = null;
 
             try {
-                // ── ADIM 1: Aday kaydı ──────────────────────────────────
-                showAlert("Adım 1/3: Kişisel bilgiler kaydediliyor...", "info");
+                // ── ADIM 1: Aday Kaydı / Kontrolü ───────────────────────
+                showAlert("Adım 1/4: Kişisel bilgiler kaydediliyor...", "info");
 
                 const applicantRes = await fetch(`${BASE_URL}/applicants/`, {
                     method: "POST",
@@ -424,19 +294,32 @@
 
                 const applicantData = await applicantRes.json();
 
-                if (!applicantRes.ok && applicantRes.status !== 409) {
-                    throw new Error(`Adım 1 hatası: ${applicantData.detail || "Aday kaydı oluşturulamadı."}`);
-                }
-
-                // 409 → zaten kayıtlı, dur
+                // 🌟 MÜKERRER KAYIT YAKALAYICI (409)
                 if (applicantRes.status === 409) {
-                    throw new Error("Bu telefon numarasıyla daha önce kayıt oluşturulmuş. Lütfen İK ile iletişime geçin.");
+                    applicantId = applicantData.id || applicantData.detail?.id;
+                    
+                    if (!applicantId) {
+                        const meRes = await fetch(`${BASE_URL}/applicants/me`, {
+                            method: "GET",
+                            headers: { "Authorization": `Bearer ${token}` }
+                        });
+                        if (meRes.ok) {
+                            const meData = await meRes.json();
+                            applicantId = meData.id;
+                        }
+                    }
+                } else if (!applicantRes.ok) {
+                    throw new Error(`Adım 1 hatası: ${applicantData.detail || "Aday kaydı oluşturulamadı."}`);
+                } else {
+                    applicantId = applicantData.id;
                 }
 
-                const applicantId = applicantData.id;
+                if (!applicantId) {
+                    throw new Error("Aday profil doğrulaması başarısız oldu.");
+                }
 
-                // ── ADIM 2: Başvuru kaydı ────────────────────────────────
-                showAlert("Adım 2/3: Başvuru bilgileri kaydediliyor...", "info");
+                // ── ADIM 2: Başvuru Kaydı ──────────────────────────────
+                showAlert("Adım 2/4: Başvuru bilgileri kaydediliyor...", "info");
 
                 const applicationRes = await fetch(`${BASE_URL}/applications/`, {
                     method: "POST",
@@ -461,34 +344,69 @@
 
                 const applicationId = applicationData.id;
 
-                // ── ADIM 3: CV yükleme (opsiyonel) ──────────────────────
+                // ── ADIM 3: CV Yükleme (Opsiyonel) ──────────────────────
                 const cvFile = cvFileInput.files[0];
-
                 if (cvFile) {
-                    showAlert("Adım 3/3: CV yükleniyor...", "info");
+                    showAlert("Adım 3/4: CV yükleniyor...", "info");
 
                     const formData = new FormData();
                     formData.append("file", cvFile);
 
-                    // Content-Type YAZILMIYOR — tarayıcı boundary otomatik ayarlar
                     const cvRes = await fetch(`${BASE_URL}/applications/${applicationId}/upload-cv`, {
                         method: "POST",
-                        headers: {
-                            "Authorization": `Bearer ${token}`
-                        },
+                        headers: { "Authorization": `Bearer ${token}` },
                         body: formData
                     });
 
-                    const cvData = await cvRes.json();
-
                     if (!cvRes.ok) {
-                        // CV yükleme başarısız ama başvuru alındı — uyar ama engelleme
-                        showAlert("Başvurunuz alındı ancak CV yüklenemedi. Lütfen İK ile iletişime geçin.", "error");
-                        await new Promise(r => setTimeout(r, 2000));
+                        showAlert("Başvurunuz alındı ancak CV yüklenemedi. İK ile görüşünüz.", "error");
+                        await new Promise(r => setTimeout(r, 1500));
                     }
                 }
 
-                // ── BAŞARI ──────────────────────────────────────────────
+                // ── ADIM 4: KVKK & Rıza Kayıtlarının Mühürlenmesi ───────
+                showAlert("Adım 4/4: İzinleriniz ve rıza beyanlarınız mühürleniyor...", "info");
+                
+                const consentPromises = [];
+
+                // 1. Genel KVKK Onayı
+                consentPromises.push(
+                    fetch(`${BASE_URL}/consents/`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            applicant_id: applicantId,
+                            consent_type: "kvkk",
+                            consent_text_version: "v2026.1"
+                        })
+                    })
+                );
+
+                // 2. Pazarlama / İletişim İzni
+                const marketingConsentCheckbox = document.getElementById("marketingConsent");
+                if (marketingConsentCheckbox && marketingConsentCheckbox.checked) {
+                    consentPromises.push(
+                        fetch(`${BASE_URL}/consents/`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                applicant_id: applicantId,
+                                consent_type: "communication",
+                                consent_text_version: "v2026.1"
+                            })
+                        })
+                    );
+                }
+
+                await Promise.all(consentPromises);
+
+                // ── BAŞARI TETİKLEMESİ ──────────────────────────────────
                 localStorage.setItem("applied", "true");
                 document.getElementById("formContainer").classList.add("hidden");
                 document.getElementById("successContainer").classList.remove("hidden");
@@ -501,6 +419,5 @@
             }
         });
     </script>
-
 </body>
 </html>

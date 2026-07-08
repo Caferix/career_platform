@@ -97,6 +97,6 @@ async def verify_otp(request: Request, payload: VerifyOTPRequest, db: AsyncSessi
         )
         
     # 2. Doğrulama başarılı! Aday için token üretiyoruz.
-    access_token = await auth.create_token(user_id=1, role="applicant")
+    access_token = auth.create_token(user_id=1, role="applicant")
     
     return TokenResponse(access_token=access_token, token_type="bearer")
