@@ -70,3 +70,57 @@ def hash_data(data: str) -> str:
     Veritabanında hızlı arama yapmak (WHERE) için kullanılır.
     """
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
+
+# app/core/security.py dosyasının EN ALTINA eklenecek DOĞRU asenkron katman:
+
+from fastapi import Header, HTTPException, status, Depends
+
+async def get_current_user(authorization: str = Header(...)) -> dict:
+    """
+    Gelen isteklerin Header kısmındaki Bearer token'ı söker ve doğrular.
+    Süresi dolmuşsa veya geçersizse anında 401 fırlatır.
+    """
+    try:
+        token_type, token = authorization.split(" ")
+        if token_type.lower() != "bearer":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail="Geçersiz token tipi."
+            )
+        
+        # Token'ı gizli anahtar ile çözüyoruz
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        return payload  # İçinde {"sub": "user_id", "role": "hr", "department": "Android"} dönecek
+        
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Oturum süresi dolmuş veya geçersiz token."
+        )
+
+async def require_hr(current_user: dict = Depends(get_current_user)) -> dict:
+    """Sadece 'hr' rolüne sahip kullanıcıların geçmesine izin verir."""
+    if current_user.get("role") != "hr":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bu işlem için yetkiniz bulunmamaktadır."
+        )
+    return current_user
+
+async def require_manager(current_user: dict = Depends(get_current_user)) -> dict:
+    """Sadece 'manager' rolüne sahip kullanıcıların geçmesine izin verir."""
+    if current_user.get("role") != "manager":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bu işlem için yetkiniz bulunmamaktadır."
+        )
+    return current_user
+
+async def require_hr_or_manager(current_user: dict = Depends(get_current_user)) -> dict:
+    """Kullanıcı 'hr' veya 'manager' değilse geçişi engeller (403)."""
+    if current_user.get("role") not in ["hr", "manager"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bu alana erişim yetkiniz bulunmamaktadır."
+        )
+    return current_user

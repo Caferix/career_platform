@@ -26,6 +26,7 @@ from app.core.settings import settings
 # 2. Alembic'in tabloları görebilmesi için tüm model dosyalarımızı buraya çağırıyoruz
 from app.models.candidate import Candidate, Application
 from app.models.security_models import OTPRecord, Consent, AccessLog
+from app.models.user_model import User
 
 # 3. Alembic'e hedef metadata'nın bizim Base olduğunu söylüyoruz
 target_metadata = Base.metadata

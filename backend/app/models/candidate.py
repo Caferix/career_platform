@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
@@ -17,7 +18,7 @@ class Candidate(Base):
     # biz kod içinde bunlara getter/setter (property) üzerinden erişeceğiz.
     _email = Column("email", String(255), nullable=False)
     _phone = Column("phone", String(255), nullable=False, unique=True, index=True)
-    
+    hashed_phone = Column(String(64), nullable=True, index=True)
     university = Column(String(100), nullable=True)
     university_department = Column(String(100), nullable=True)
     graduation_year = Column(Integer, nullable=True)
@@ -56,7 +57,7 @@ class Candidate(Base):
     def phone(self, value: str):
         """Koda düz telefon girildiğinde şifreleyerek kaydeder."""
         self._phone = encrypt_data(value)
-
+        
 
 class Application(Base):
     __tablename__ = "applications"
