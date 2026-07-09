@@ -108,3 +108,8 @@ applicant henüz yok, token içinde applicant_id yok.
 - POST /consents/ → kvkk kaydı (zorunlu)
 - POST /consents/ → iletisim kaydı (opsiyonel, işaretlendiyse)
 **Faz 6'da tamamlanacak**
+
+### Aday Profili — Applications Yükleme
+Şu an GET /applicants/me boş applications listesi döndürüyor.
+selectinload ile ilişki yüklenmeli veya
+GET /applicants/me/applications ayrı endpoint yazılmalı.

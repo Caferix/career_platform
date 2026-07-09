@@ -1,5 +1,5 @@
 # app/routes/auth.py
-
+import hashlib
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,7 +26,7 @@ async def admin_login(
     HR ve Departman Yöneticileri için Güvenli Kurumsal Giriş Kapısı.
     Girişler tamamen login_name ve asenkron şifre doğrulaması ile veritabanından yapılır.
     """
-    # 🔒 Mock DB tamamen kaldırıldı, asenkron veritabanı doğrulama servisi çağrılıyor
+    #  Mock DB tamamen kaldırıldı, asenkron veritabanı doğrulama servisi çağrılıyor
     user = await user_service.authenticate_user(
         db=db, 
         login_name=payload.login_name, 
@@ -96,7 +96,14 @@ async def verify_otp(request: Request, payload: VerifyOTPRequest, db: AsyncSessi
             detail="Geçersiz veya süresi dolmuş doğrulama kodu."
         )
         
-    # 2. Doğrulama başarılı! Aday için token üretiyoruz.
-    access_token = auth.create_token(user_id=1, role="applicant")
+    # Doğrulama başarılı! Aday için hashed_phone'u sub olarak token'a göm
+    hashed_phone = hashlib.sha256(payload.phone.encode()).hexdigest()
+
+    access_token = auth.create_token(
+        user_id=0,           # aday henüz kayıtlı olmayabilir
+        role="applicant",
+        department=None,
+        sub=hashed_phone     # /applicants/me bunu kullanacak
+)
     
     return TokenResponse(access_token=access_token, token_type="bearer")

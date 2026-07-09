@@ -25,7 +25,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
             </div>
-            <h1 class="text-2xl font-bold text-slate-800">Aday Başvuru Sistemi</h1>
+            <h1 class="text-2xl font-bold text-slate-800">Dener Kariyer Aday Başvuru Sistemi</h1>
             <p class="text-sm text-slate-500 mt-1">Telefon numaranızla güvenli giriş yapın</p>
         </div>
 
@@ -385,10 +385,24 @@
                 localStorage.setItem("auth_token", token);
                 localStorage.setItem("phone", activePhone);
 
-                showAlert("Kimlik doğrulama başarılı! Yönlendiriliyorsunuz...", "success");
+                showAlert("Kimlik doğrulama başarılı! Profil kontrol ediliyor...", "success");
+
+                // AKILLI YÖNLENDİRME KATMANI
+                // Adayın daha önce oluşturulmuş bir /applicants/me profili var mı sorguluyoruz
+                const profileRes = await fetch(`${BASE_URL}/applicants/me`, {
+                    method: "GET",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
                 setTimeout(() => {
-                    window.location.href = "/static/apply.html";
-                }, 1200);
+                    if (profileRes.ok) {
+                        // Profil varsa (200 OK): Doğrudan profil paneline uçur
+                        window.location.href = "/static/profile.html";
+                    } else {
+                        // Profil yoksa (404 Not Found): Başvuru formuna yönlendir
+                        window.location.href = "/static/apply.html";
+                    }
+                }, 1000);
 
             } catch (error) {
                 showAlert(error.message);

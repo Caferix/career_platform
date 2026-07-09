@@ -38,4 +38,27 @@ class CandidateResponse(BaseModel):
     is_phone_verified: bool
     created_at: datetime
 
+class ApplicationShortResponse(BaseModel):
+    id: int
+    position: str
+    department: Optional[str]
+    status: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+class CandidateResponse(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    email: str
+    phone: str
+    university: Optional[str]
+    university_department: Optional[str]
+    graduation_year: Optional[int]
+    is_phone_verified: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    applications: list[ApplicationShortResponse] = []
+
     model_config = {"from_attributes": True}
