@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 from typing import Optional
 
@@ -53,20 +54,21 @@ async def create_candidate(db: AsyncSession, data: CandidateCreate) -> Candidate
     await db.refresh(candidate)
     return candidate
 
-async def get_candidate(db: AsyncSession, candidate_id: int) -> Candidate:
-    """ID ile aktif adayı getirir."""
-    query = select(Candidate).where(
-        Candidate.id == candidate_id,
-        Candidate.is_deleted == False
+async def get_candidate(db: AsyncSession, candidate_id: int):
+    """
+    Belirtilen ID'ye sahip adayı, ilişkili başvurularıyla birlikte (selectinload)
+    asenkron uyumlu olarak veritabanından çeker.
+    """
+    result = await db.execute(
+        select(Candidate)
+        .where(Candidate.id == candidate_id, Candidate.is_deleted == False)
+        .options(selectinload(Candidate.applications))  # 🌟 LAZY LOADING PATLAMASINI BİTİREN SATIR
     )
-    result = await db.execute(query)
-    candidate = result.scalars().first()
+    candidate = result.scalar_one_or_none()
     
     if not candidate:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="Aday bulunamadı."
-        )
+        raise HTTPException(status_code=404, detail="Aday bulunamadı.")
+        
     return candidate
 
 async def list_candidates(db: AsyncSession, skip: int = 0, limit: int = 10) -> list[Candidate]:

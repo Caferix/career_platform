@@ -45,7 +45,26 @@ async def get_current_candidate_profile(
 @router.post("/", response_model=CandidateResponse, status_code=status.HTTP_201_CREATED)
 async def create_new_candidate(data: CandidateCreate, db: AsyncSession = Depends(get_db)):
     """Yeni bir aday profili oluşturur."""
-    return await candidate_service.create_candidate(db=db, data=data)
+    # 1. Servis adayı oluşturuyor ve veritabanına mühürlüyor
+    candidate = await candidate_service.create_candidate(db=db, data=data)
+    
+    # MISSINGGREENLET FIX: Nesneyi doğrudan döndürmüyoruz. 
+    # Henüz başvurusu olmayan yeni adayın verilerini elle şemaya dökerek Pydantic'in lazy-loading tetiklemesini engelliyoruz.
+    return CandidateResponse(
+        id=candidate.id,
+        first_name=candidate.first_name,
+        last_name=candidate.last_name,
+        email=candidate.email,  # @property çözülüyor
+        phone=candidate.phone,  # @property çözülüyor
+        hashed_phone=candidate.hashed_phone,
+        university=candidate.university,
+        university_department=candidate.university_department,
+        graduation_year=candidate.graduation_year,
+        is_phone_verified=candidate.is_phone_verified,
+        created_at=candidate.created_at,
+        updated_at=candidate.updated_at,
+        applications=[]  # Yeni kayıtta başvuru listesi boş başlar, veritabanına gitmeye zorlamaz!
+    )
 
 # 🌟 KURAL 2: Dinamik rota alt satırda olmalı ve yol parametresi SADECE integer kabul etmeli!
 @router.get("/{candidate_id:int}", response_model=CandidateResponse)
