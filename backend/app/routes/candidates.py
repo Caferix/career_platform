@@ -6,6 +6,7 @@ from app.schemas.candidate import CandidateCreate, CandidateUpdate, CandidateRes
 from app.services import candidate as candidate_service
 from app.models.candidate import Candidate
 from app.core.security import get_current_user
+from sqlalchemy.orm import selectinload
 
 router = APIRouter(prefix="/applicants", tags=["Applicants"])
 
@@ -16,8 +17,12 @@ async def get_current_candidate_profile(
 ):
     hashed_phone_from_token = current_user.get("sub")
     
+    # 🌟 DÜZELTME 1: Sorguya 'selectinload(Candidate.applications)' ekleyerek 
+    # adayın tüm ilişkili başvurularını tek seferde veritabanından canlı çekiyoruz.
     result = await db.execute(
-        select(Candidate).where(
+        select(Candidate)
+        .options(selectinload(Candidate.applications))
+        .where(
             Candidate.hashed_phone == hashed_phone_from_token,
             Candidate.is_deleted == False
         )
@@ -27,6 +32,8 @@ async def get_current_candidate_profile(
     if not candidate:
         raise HTTPException(status_code=404, detail="Aday profili bulunamadı.")
 
+    # 🌟 DÜZELTME 2: Hardcode boş dizi yerine veritabanından gelen gerçek 
+    # ve güncel başvuruları listesini Pydantic response modeline mühürlüyoruz.
     return CandidateResponse(
         id=candidate.id,
         first_name=candidate.first_name,
@@ -38,8 +45,7 @@ async def get_current_candidate_profile(
         graduation_year=candidate.graduation_year,
         is_phone_verified=candidate.is_phone_verified,
         created_at=candidate.created_at,
-        updated_at=candidate.updated_at,
-        applications=[]
+        applications=candidate.applications # Canlı ilişkisel veri!
     )
 
 @router.post("/", response_model=CandidateResponse, status_code=status.HTTP_201_CREATED)

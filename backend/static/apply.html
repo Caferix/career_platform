@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aday Başvuru Formu</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/static/company-structure.js"></script>
 </head>
 <body class="bg-gray-50 min-h-screen pb-12">
 
@@ -101,7 +102,11 @@
                     <label class="flex items-start gap-3 cursor-pointer">
                         <input type="checkbox" id="kvkkGeneral" required class="w-4 h-4 mt-0.5 accent-[#e11b3a]">
                         <span class="text-xs text-gray-600 leading-relaxed">
-                            Başvuru süreçlerimin yürütülmesi amacıyla kişisel verilerimin işlenmesine ilişkin <a href="#" class="text-[#e11b3a] underline">Aydınlatma Metnini</a> okudum ve onaylıyorum. <span class="text-red-500">*</span>
+                            Başvuru süreçlerimin yürütülmesi amacıyla kişisel verilerimin işlenmesine ilişkin 
+                            <button type="button" onclick="showKvkkModal()" class="text-[#e11b3a] font-semibold underline underline-offset-2 hover:text-[#c51631]">
+                                Aydınlatma Metnini
+                            </button> 
+                            okudum ve onaylıyorum. <span class="text-red-500">*</span>
                         </span>
                     </label>
 
@@ -131,17 +136,33 @@
 
     </main>
 
+    <div id="kvkkModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
+        <div class="flex items-center justify-between p-6 border-b border-slate-100">
+            <h2 class="text-base font-bold text-slate-800">KVKK Aydınlatma Metni (v2026.1)</h2>
+            <button onclick="closeKvkkModal()" class="text-slate-400 hover:text-slate-600 transition-colors">✕</button>
+        </div>
+        <div class="p-6 overflow-y-auto text-sm text-slate-600 leading-relaxed space-y-4">
+            <p><strong>Veri Sorumlusu:</strong> Dener Makina San. ve Tic. A.Ş.</p>
+            <p>6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca, firmanın iş başvuruları kapsamında toplanan kişisel verileriniz veri sorumlusu bünyesinde işlenmektedir.</p>
+            <p><strong>İşleme Amaçları:</strong> İstihdam süreçlerinin yürütülmesi, yetkinlik değerlendirmeleri, iş sağlığı ve güvenliği (İSG) ön hazırlıkları ve mevzuattan kaynaklanan yükümlülüklerin ifası.</p>
+            <p><strong>Veri Aktarımı:</strong> Verileriniz yasal zorunluluklar haricinde üçüncü şahıslarla asla paylaşılmamakta, şirket içi İnsan Kaynakları ve ilgili Departman Yöneticileri haricinde erişime kapatılmaktadır.</p>
+        </div>
+        <div class="p-6 border-t border-slate-100">
+            <button onclick="closeKvkkModal()" class="w-full bg-[#e11b3a] hover:bg-[#c51631] text-white font-semibold py-3 rounded-xl text-sm transition-all">
+                Anladım
+            </button>
+        </div>
+    </div>
+</div>
+
+    
     <script>
         const BASE_URL = "http://localhost:8000";
         const token = localStorage.getItem("auth_token");
 
         if (!token) {
             window.location.href = "/static/index.html";
-        }
-
-        if (localStorage.getItem("applied") === "true") {
-            document.getElementById("formContainer").classList.add("hidden");
-            document.getElementById("successContainer").classList.remove("hidden");
         }
 
         const statusAlert    = document.getElementById("statusAlert");
@@ -175,6 +196,14 @@
             statusAlert.className = "hidden";
         }
 
+        function showKvkkModal() {
+            document.getElementById("kvkkModal").classList.remove("hidden");
+        }
+
+        function closeKvkkModal() {
+            document.getElementById("kvkkModal").classList.add("hidden");
+        }
+
         function setLoading(isLoading) {
             submitBtn.disabled = isLoading;
             if (isLoading) {
@@ -191,7 +220,7 @@
         }
 
         function isInternPosition(value) {
-            return value.toLowerCase().includes("intern");
+            return value.toLowerCase().includes("intern") || value.toLowerCase().includes("staj");
         }
 
         function updateEducationFields() {
@@ -205,6 +234,17 @@
             universityLabel.innerHTML = "Üniversite" + (isIntern ? ' <span class="text-red-500">*</span>' : '');
             uniDeptLabel.innerHTML    = "Bölüm"      + (isIntern ? ' <span class="text-red-500">*</span>' : '');
             gradYearLabel.innerHTML   = "Mezuniyet / Beklenen Yıl" + (isIntern ? ' <span class="text-red-500">*</span>' : '');
+        }
+
+        // 🌟 ORTAK DOSYADAN SEÇENEKLERİ ÇEKİP FORM KUTUSUNU DOLDURMA MOTORU
+        function initFormPositions() {
+            positionSelect.innerHTML = '<option value="">Pozisyon Seçiniz</option>';
+            getAllPositionsAlphabetical().forEach(pos => {
+                const opt = document.createElement("option");
+                opt.value = pos;
+                opt.textContent = pos;
+                positionSelect.appendChild(opt);
+            });
         }
 
         positionSelect.addEventListener("change", updateEducationFields);
@@ -246,7 +286,9 @@
             const lastName   = document.getElementById("lastName").value.trim();
             const email      = document.getElementById("email").value.trim();
             const position   = positionSelect.value;
-            const department = document.getElementById("companyDepartment").value;
+            
+            // 🌟 IMPLICIT MAPPING: Sildiğimiz element yerine ortak JS dosyasından departmanı otomatik çözüyoruz
+            const department = getDepartmentByPosition(position);
 
             if (!firstName || !lastName || !email || !position || !department) {
                 showAlert("Lütfen tüm zorunlu alanları doldurunuz.");
@@ -264,7 +306,6 @@
             let applicantId = null;
 
             try {
-                // ── ADIM 1: Aday Kaydı / Kontrolü ───────────────────────
                 showAlert("Adım 1/4: Kişisel bilgiler kaydediliyor...", "info");
 
                 const applicantRes = await fetch(`${BASE_URL}/applicants/`, {
@@ -286,10 +327,8 @@
 
                 const applicantData = await applicantRes.json();
 
-                // MÜKERRER KAYIT YAKALAYICI (409)
                 if (applicantRes.status === 409) {
                     applicantId = applicantData.id || applicantData.detail?.id;
-                    
                     if (!applicantId) {
                         const meRes = await fetch(`${BASE_URL}/applicants/me`, {
                             method: "GET",
@@ -310,7 +349,6 @@
                     throw new Error("Aday profil doğrulaması başarısız oldu.");
                 }
 
-                // ── ADIM 2: Başvuru Kaydı ──────────────────────────────
                 showAlert("Adım 2/4: Başvuru bilgileri kaydediliyor...", "info");
 
                 const applicationRes = await fetch(`${BASE_URL}/applications/`, {
@@ -335,12 +373,9 @@
                 }
 
                 const applicationId = applicationData.id;
-
-                // ── ADIM 3: CV Yükleme (Opsiyonel) ──────────────────────
                 const cvFile = cvFileInput.files[0];
                 if (cvFile) {
                     showAlert("Adım 3/4: CV yükleniyor...", "info");
-
                     const formData = new FormData();
                     formData.append("file", cvFile);
 
@@ -356,12 +391,9 @@
                     }
                 }
 
-                // ── ADIM 4: KVKK & Rıza Kayıtlarının Mühürlenmesi ───────
                 showAlert("Adım 4/4: İzinleriniz ve rıza beyanlarınız mühürleniyor...", "info");
-                
                 const consentPromises = [];
 
-                // 1. Genel KVKK Onayı
                 consentPromises.push(
                     fetch(`${BASE_URL}/consents/`, {
                         method: "POST",
@@ -377,7 +409,6 @@
                     })
                 );
 
-                // 2. Pazarlama / İletişim İzni
                 const marketingConsentCheckbox = document.getElementById("marketingConsent");
                 if (marketingConsentCheckbox && marketingConsentCheckbox.checked) {
                     consentPromises.push(
@@ -398,11 +429,11 @@
 
                 await Promise.all(consentPromises);
 
-                // ── BAŞARI TETİKLEMESİ ──────────────────────────────────
-                localStorage.setItem("applied", "true");
-                document.getElementById("formContainer").classList.add("hidden");
-                document.getElementById("successContainer").classList.remove("hidden");
-                window.scrollTo({ top: 0, behavior: "smooth" });
+                // ── UX AKILLI YÖNLENDİRME KATMANI ────────────────────────
+                showAlert("Başvurunuz fabrikamız veri tabanına başarıyla mühürlendi! Profilinize yönlendiriliyorsunuz...", "success");
+                setTimeout(() => {
+                    window.location.href = "/static/profile.html";
+                }, 1500);
 
             } catch (error) {
                 showAlert(error.message);
@@ -410,6 +441,13 @@
                 setLoading(false);
             }
         });
+
+        document.addEventListener("DOMContentLoaded", initFormPositions);
+        // Modala dışarıdan basıldığında koruma amaçlı kapatma tetikleyicisi
+        document.getElementById("kvkkModal").addEventListener("click", function(e) {
+            if (e.target === this) closeKvkkModal();
+        });
+
     </script>
 </body>
 </html>

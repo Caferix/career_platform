@@ -86,3 +86,45 @@ async def read_index():
         with open(index_path, "r", encoding="utf-8") as f:
             return f.read()
     return "<h3>Statik index.html dosyası bulunamadı. Lütfen backend/static/ altında oluşturun.</h3>"
+
+
+    # app/main.py dosyasının en altına ekle:
+
+@app.get("/public/positions")
+async def get_public_positions():
+    """
+    Ön yüzlerin (apply ve dashboard) pozisyon-departman ilişkisini
+    canlı olarak çekebilmesi için merkezi sözlüğü döner.
+    """
+    # Şirket/Platform organizasyon şemasının merkezi burasıdır.
+    # İleride veritabanına taşınacak olan yapı tam olarak budur.
+    structure = {
+        "Yazılım Geliştirme": [
+            "Backend Developer", 
+            "Frontend Developer", 
+            "Android Developer", 
+            "iOS Developer",
+            "DevOps Engineer",
+            "Android Intern"
+        ],
+        "Gömülü Sistemler": [
+            "Embedded Systems Engineer",
+            "Embedded Intern"
+        ],
+        "Siber Güvenlik": [
+            "Cybersecurity Expert", 
+            "Penetration Tester"
+        ],
+        "İnsan Kaynakları": [
+            "HR Intern", 
+            "Talent Acquisition Specialist"
+        ]
+    }
+    
+    # Ön yüzün kolayca "Pozisyon -> Departman" araması yapabilmesi için yapıyı düzleştiriyoruz
+    flat_map = {}
+    for dept, positions in structure.items():
+        for pos in positions:
+            flat_map[pos] = dept
+            
+    return flat_map

@@ -169,7 +169,7 @@
             </div>
             <div class="p-6 overflow-y-auto text-sm text-slate-600 leading-relaxed space-y-4">
                 <p>
-                    <strong class="text-slate-800">Veri Sorumlusu:</strong> Şirket Adı A.Ş.
+                    <strong class="text-slate-800">Veri Sorumlusu:</strong> Dener Makina San. ve Tic. A.Ş.
                 </p>
                 <p>
                     6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, aday başvuru sürecinde
@@ -384,6 +384,7 @@
 
                 localStorage.setItem("auth_token", token);
                 localStorage.setItem("phone", activePhone);
+                localStorage.removeItem("applied");
 
                 showAlert("Kimlik doğrulama başarılı! Profil kontrol ediliyor...", "success");
 

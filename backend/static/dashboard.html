@@ -109,17 +109,9 @@
         </main>
     </div>
 
+    <script src="/static/company-structure.js"></script>
     <script>
         const BASE_URL = window.location.origin;
-        const DEPARTMENT_LABELS = {
-            embedded: "Gömülü Sistemler",
-            backend: "Backend",
-            frontend: "Frontend",
-            security: "Siber Güvenlik",
-            infrastructure: "Sistem ve Altyapı",
-            product: "Ürün Yönetimi",
-            people_ops: "İnsan Kaynakları"
-        };
 
         const authGate = document.getElementById("authGate");
         const panelContent = document.getElementById("panelContent");
@@ -143,26 +135,35 @@
             adminAlert.classList.remove("hidden");
         }
 
+        // 🌟 VERİ TABANINDAN DOĞRUDAN STRİNG GELDİĞİ İÇİN ESKİ MAP İPTAL
         function departmentLabel(value) {
-            if (!value) return "-";
-            return DEPARTMENT_LABELS[value] || value;
+            return value || "-";
         }
 
-        // dashboard.html içindeki checkAdminAuth fonksiyonunu bununla değiştir:
-    function checkAdminAuth() {
-        const token = localStorage.getItem("admin_token");
-        if (!token || token === "undefined" || token === "null") {
-            // Eğer token yoksa içeriği gizle, giriş kapısını aç ve ASLA veri çekme fonksiyonunu çağırma!
-            panelContent.classList.add("hidden");
-            authGate.classList.remove("hidden");
-        } else {
-            authGate.classList.add("hidden");
-            panelContent.classList.remove("hidden");
-            loadDashboardData(); // Sadece geçerli token varken API'ye istek atar
+        // 🌟 ORTAK DOSYADAN FİLTRE KUTUSUNU FABRİKA UNVANLARIYLA DOLDURMA
+        function syncDashboardFilters() {
+            if (!filterPosition) return;
+            filterPosition.innerHTML = '<option value="">Tüm Pozisyonlar</option>';
+            getAllPositionsAlphabetical().forEach(pos => {
+                const opt = document.createElement("option");
+                opt.value = pos;
+                opt.textContent = pos;
+                filterPosition.appendChild(opt);
+            });
         }
-    }
 
-        // --- GERÇEK BACKEND LOGİN BAĞLANTISI ---
+        function checkAdminAuth() {
+            const token = localStorage.getItem("admin_token");
+            if (!token || token === "undefined" || token === "null") {
+                panelContent.classList.add("hidden");
+                authGate.classList.remove("hidden");
+            } else {
+                authGate.classList.add("hidden");
+                panelContent.classList.remove("hidden");
+                loadDashboardData(); 
+            }
+        }
+
         loginForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             loginError.classList.add("hidden");
@@ -171,7 +172,6 @@
             const password = document.getElementById("loginPassword").value;
 
             try {
-                // Rota tam Claude'un istediği gibi /auth/login olarak güncellendi
                 const res = await fetch(`${BASE_URL}/auth/login`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -245,7 +245,7 @@
                 const positionStr = app.position.toLowerCase();
 
                 const matchesSearch = fullName.includes(searchTerm) || positionStr.includes(searchTerm);
-                const matchesPosition = !posFilter || app.position.includes(posFilter);
+                const matchesPosition = !posFilter || app.position === posFilter; // Birebir tam eşleşme aratıyoruz
                 const matchesStatus = !statusFilter || app.status === statusFilter;
 
                 return matchesSearch && matchesPosition && matchesStatus;
@@ -403,7 +403,10 @@
             checkAdminAuth();
         });
 
-        document.addEventListener("DOMContentLoaded", checkAdminAuth);
+        document.addEventListener("DOMContentLoaded", () => {
+            checkAdminAuth();
+            syncDashboardFilters();
+        });
     </script>
 </body>
 </html>
