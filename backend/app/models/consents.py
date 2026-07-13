@@ -17,7 +17,10 @@ class Consent(Base):
     consent_type = Column(String(20), nullable=False)  # 'kvkk' veya 'communication'
     consent_text_version = Column(String(50), nullable=False, default="v2026.1")
     ip_address = Column(String(45), nullable=False)    # IPv4 veya IPv6 destekli uzunluk
+    # Onayı yapan tarayıcı ve cihaz bilgilerini loglamak için
+    user_agent = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    
 
 class AccessLog(Base):
     """
