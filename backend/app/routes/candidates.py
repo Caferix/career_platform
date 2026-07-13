@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
-from app.schemas.candidate import CandidateCreate, CandidateUpdate, CandidateResponse, ApplicationShortResponse
+from app.schemas.candidate import CandidateCreate, CandidateUpdate, CandidateResponse
 from app.services import candidate as candidate_service
 from app.models.candidate import Candidate
 from app.core.security import get_current_user
@@ -17,11 +17,14 @@ async def get_current_candidate_profile(
 ):
     hashed_phone_from_token = current_user.get("sub")
     
-    # 🌟 DÜZELTME 1: Sorguya 'selectinload(Candidate.applications)' ekleyerek 
-    # adayın tüm ilişkili başvurularını tek seferde veritabanından canlı çekiyoruz.
+    # Yeni eklenen alt tabloları (eğitim ve dil) lazy-loading hatasına karşı önden yüklüyoruz
     result = await db.execute(
         select(Candidate)
-        .options(selectinload(Candidate.applications))
+        .options(
+            selectinload(Candidate.applications),
+            selectinload(Candidate.educations),
+            selectinload(Candidate.languages)
+        )
         .where(
             Candidate.hashed_phone == hashed_phone_from_token,
             Candidate.is_deleted == False
@@ -32,47 +35,54 @@ async def get_current_candidate_profile(
     if not candidate:
         raise HTTPException(status_code=404, detail="Aday profili bulunamadı.")
 
-    # 🌟 DÜZELTME 2: Hardcode boş dizi yerine veritabanından gelen gerçek 
-    # ve güncel başvuruları listesini Pydantic response modeline mühürlüyoruz.
-    return CandidateResponse(
-        id=candidate.id,
-        first_name=candidate.first_name,
-        last_name=candidate.last_name,
-        email=candidate.email,
-        phone=candidate.phone,
-        university=candidate.university,
-        university_department=candidate.university_department,
-        graduation_year=candidate.graduation_year,
-        is_phone_verified=candidate.is_phone_verified,
-        created_at=candidate.created_at,
-        applications=candidate.applications # Canlı ilişkisel veri!
-    )
+    # Tüm ilişkiler önden yüklendiği için doğrudan SQLAlchemy modelini dönebiliriz.
+    # Pydantic (from_attributes=True) bunu hatasız parse edecektir.
+    return candidate
 
 @router.post("/", response_model=CandidateResponse, status_code=status.HTTP_201_CREATED)
-async def create_new_candidate(data: CandidateCreate, db: AsyncSession = Depends(get_db)):
-    """Yeni bir aday profili oluşturur."""
-    # 1. Servis adayı oluşturuyor ve veritabanına mühürlüyor
-    candidate = await candidate_service.create_candidate(db=db, data=data)
+async def create_new_candidate(
+    request: Request,
+    data: CandidateCreate, 
+    is_communication_consented: bool = False,
+    db: AsyncSession = Depends(get_db)
+):
+    """Yeni bir aday profili oluşturur ve IP adresi ile rızaları mühürler."""
+    ip_address = request.client.host
     
-    # MISSINGGREENLET FIX: Nesneyi doğrudan döndürmüyoruz. 
-    # Henüz başvurusu olmayan yeni adayın verilerini elle şemaya dökerek Pydantic'in lazy-loading tetiklemesini engelliyoruz.
+    # 1. Servis adayı ve rızaları oluşturup veritabanına mühürlüyor
+    candidate = await candidate_service.create_candidate(
+        db=db, 
+        data=data, 
+        ip_address=ip_address,
+        is_communication_consented=is_communication_consented
+    )
+    
+    # MISSINGGREENLET FIX: Henüz başvurusu olmayan yeni adayın verilerini Pydantic'e döküyoruz
     return CandidateResponse(
         id=candidate.id,
         first_name=candidate.first_name,
         last_name=candidate.last_name,
-        email=candidate.email,  # @property çözülüyor
-        phone=candidate.phone,  # @property çözülüyor
+        email=candidate.email,  
+        phone=candidate.phone,  
         hashed_phone=candidate.hashed_phone,
-        university=candidate.university,
-        university_department=candidate.university_department,
-        graduation_year=candidate.graduation_year,
+        birth_date=candidate.birth_date,
+        nationality=candidate.nationality,
+        marital_status=candidate.marital_status,
+        driving_license=candidate.driving_license,
+        gender=candidate.gender,
+        city=candidate.city,
+        district=candidate.district,
+        address_detail=candidate.address_detail,
+        military_status=candidate.military_status,
+        skills=candidate.skills,
         is_phone_verified=candidate.is_phone_verified,
         created_at=candidate.created_at,
         updated_at=candidate.updated_at,
-        applications=[]  # Yeni kayıtta başvuru listesi boş başlar, veritabanına gitmeye zorlamaz!
+        applications=[], # Yeni kayıtta başvuru boştur
+        educations=data.educations, # Payload'dan aynen geçiriyoruz
+        languages=data.languages  # Payload'dan aynen geçiriyoruz
     )
 
-# 🌟 KURAL 2: Dinamik rota alt satırda olmalı ve yol parametresi SADECE integer kabul etmeli!
 @router.get("/{candidate_id:int}", response_model=CandidateResponse)
 async def get_candidate_by_id(candidate_id: int, db: AsyncSession = Depends(get_db)):
     """ID değeri verilen aktif adayın detaylarını getirir."""

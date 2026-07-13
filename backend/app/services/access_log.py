@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.security_models import AccessLog
+from app.models.consents import AccessLog
 
 async def log_access(
     db: AsyncSession, 
