@@ -46,7 +46,7 @@ async def seed():
             {
                 "login_name": "manager_uretim",
                 "password": "ProductionPass123",
-                "department": "Fabrika Üretim ve Montaj Hattı" # Mavi yaka sorumlusu
+                "department": "Fabrika Üretim ve Montaj Hattı" 
             },
             {
                 "login_name": "manager_lojistik",

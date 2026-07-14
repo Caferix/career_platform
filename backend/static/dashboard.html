@@ -6,33 +6,29 @@
     <title>İK Yönetim Paneli - Başvurular</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-white min-h-screen pb-12">
+<body class="bg-slate-50 min-h-screen pb-12">
 
+    <!-- LOGIN GATE -->
     <div id="authGate" class="hidden fixed inset-0 bg-white/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="bg-white border border-gray-200 p-8 rounded-2xl w-full max-w-md shadow-2xl space-y-6 relative overflow-hidden">
-            
             <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#e11b3a] to-[#c51631]"></div>
-
             <div class="text-center">
                 <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Yönetim Paneli</h2>
                 <p class="text-xs text-gray-500 mt-1">Lütfen kurumsal kullanıcı bilgilerinizle giriş yapın.</p>
             </div>
-
             <div id="loginError" class="hidden text-xs bg-red-50 border border-[#e11b3a]/40 text-red-700 p-3 rounded-xl transition-all"></div>
-
             <form id="loginForm" class="space-y-4">
                 <div>
                     <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Kullanıcı Adı</label>
-                    <input type="text" id="loginName" placeholder="Kullanıcı Adı" required 
+                    <input type="text" id="loginName" placeholder="Kullanıcı Adı" required
                            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:border-[#e11b3a] focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all placeholder-slate-400">
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Şifre</label>
-                    <input type="password" id="loginPassword" placeholder="••••••••" required 
+                    <input type="password" id="loginPassword" placeholder="••••••••" required
                            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:border-[#e11b3a] focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all placeholder-slate-400">
                 </div>
-                
-                <button type="submit" 
+                <button type="submit"
                         class="w-full bg-[#e11b3a] hover:bg-[#c51631] text-white font-medium py-3 rounded-xl transition-all text-sm shadow-lg shadow-[#e11b3a]/10 hover:shadow-[#c51631]/20 active:scale-[0.98]">
                     Giriş Yap
                 </button>
@@ -40,8 +36,9 @@
         </div>
     </div>
 
+    <!-- MAIN DASHBOARD -->
     <div id="panelContent" class="hidden">
-        
+
         <nav class="bg-white border-b border-gray-200 px-6 py-4 mb-8 sticky top-0 z-40 shadow-sm">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-3">
@@ -55,9 +52,10 @@
         </nav>
 
         <main class="max-w-7xl mx-auto px-4 space-y-6">
-            
+
             <div id="adminAlert" class="hidden p-4 rounded-xl text-sm font-medium border bg-red-50 border-red-200 text-red-700 transition-all duration-300"></div>
 
+            <!-- FİLTRELER -->
             <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-4 shadow-sm">
                 <div>
                     <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Arama (Ad, Soyad veya Pozisyon)</label>
@@ -67,9 +65,6 @@
                     <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Pozisyon Filtresi</label>
                     <select id="filterPosition" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all cursor-pointer">
                         <option value="">Tüm Pozisyonlar</option>
-                        <option value="Android">Backend Yazılım Geliştirici</option>
-                        <option value="Embedded">Frontend Yazılım Geliştirici</option>
-                        <option value="Backend">Sistem Mühendisi</option>
                     </select>
                 </div>
                 <div>
@@ -84,6 +79,7 @@
                 </div>
             </div>
 
+            <!-- DESKTOP: TABLO / MOBILE: KART -->
             <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -93,20 +89,83 @@
                                 <th class="px-6 py-4">Pozisyon / Departman</th>
                                 <th class="px-6 py-4">Deneyim</th>
                                 <th class="px-6 py-4">Durum</th>
-                                <th class="px-6 py-4">Özgeçmiş</th>
+                                <th class="px-6 py-4">Tarih</th>
                             </tr>
                         </thead>
                         <tbody id="desktopTableBody" class="divide-y divide-gray-200 text-sm text-gray-700"></tbody>
                     </table>
                 </div>
 
-                <div id="mobileCardsContainer" class="block md:hidden p-4 space-y-4"></div>
+                <div id="mobileCardsContainer" class="block md:hidden p-4 space-y-3"></div>
 
                 <div id="emptyState" class="hidden p-12 text-center text-gray-500 text-sm font-medium">
                     Kriterlere uygun başvuru kaydı bulunamadı.
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- DETAY MODALI -->
+    <div id="detailModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between p-6 border-b border-slate-100">
+                <div>
+                    <h2 id="modalName" class="text-lg font-bold text-slate-800"></h2>
+                    <p id="modalPosition" class="text-xs text-gray-500 mt-0.5"></p>
+                </div>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">✕</button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-6 text-sm">
+
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-4">
+                    <span class="text-xs font-semibold text-gray-600 uppercase">Başvuru Durumu</span>
+                    <select id="modalStatusSelect" class="border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-1 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                        <option value="Applied">Applied (Yeni Başvuru)</option>
+                        <option value="Under_Review">Under Review (İncelemede)</option>
+                        <option value="Accepted">Accepted (Kabul Edildi)</option>
+                        <option value="Rejected">Rejected (Reddedildi)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">İletişim & Kişisel Bilgiler</h3>
+                    <div id="modalPersonalInfo" class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1.5 text-gray-700"></div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Teknik Yetkinlikler</h3>
+                    <p id="modalSkills" class="text-gray-700"></p>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Eğitim Geçmişi</h3>
+                    <div id="modalEducations" class="space-y-2"></div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Yabancı Diller</h3>
+                    <div id="modalLanguages" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Deneyim Detayı</h3>
+                    <p id="modalExperience" class="text-gray-700"></p>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Önyazı</h3>
+                    <p id="modalCoverLetter" class="text-gray-700 italic"></p>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Referans Bilgisi</h3>
+                    <div id="modalReference" class="bg-gray-50 border border-gray-200 rounded-xl p-3 text-gray-700"></div>
+                </div>
+
+                <div id="modalCvSection"></div>
+
+            </div>
+        </div>
     </div>
 
     <script src="/static/company-structure.js"></script>
@@ -127,20 +186,26 @@
         const filterPosition = document.getElementById("filterPosition");
         const filterStatus = document.getElementById("filterStatus");
 
-        let allApplications = [];  
-        let applicantCache = {};   
+        let allApplications = [];
+        let applicantCache = {};
+        let currentModalAppId = null;
+
+        const statusConfig = {
+            "Applied":      { label: "Applied",      cls: "bg-blue-50 text-blue-700 border-blue-200" },
+            "Under_Review": { label: "Under Review",  cls: "bg-amber-50 text-amber-700 border-amber-200" },
+            "Accepted":     { label: "Accepted",      cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+            "Rejected":     { label: "Rejected",      cls: "bg-red-50 text-red-700 border-red-200" }
+        };
 
         function showAdminError(text) {
             adminAlert.textContent = text;
             adminAlert.classList.remove("hidden");
         }
 
-        // 🌟 VERİ TABANINDAN DOĞRUDAN STRİNG GELDİĞİ İÇİN ESKİ MAP İPTAL
         function departmentLabel(value) {
             return value || "-";
         }
 
-        // 🌟 ORTAK DOSYADAN FİLTRE KUTUSUNU FABRİKA UNVANLARIYLA DOLDURMA
         function syncDashboardFilters() {
             if (!filterPosition) return;
             filterPosition.innerHTML = '<option value="">Tüm Pozisyonlar</option>';
@@ -160,14 +225,14 @@
             } else {
                 authGate.classList.add("hidden");
                 panelContent.classList.remove("hidden");
-                loadDashboardData(); 
+                loadDashboardData();
             }
         }
 
         loginForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             loginError.classList.add("hidden");
-            
+
             const login_name = document.getElementById("loginName").value.trim();
             const password = document.getElementById("loginPassword").value;
 
@@ -185,9 +250,9 @@
 
                 const data = await res.json();
                 localStorage.setItem("admin_token", data.access_token);
-                
+
                 loginForm.reset();
-                checkAdminAuth(); 
+                checkAdminAuth();
 
             } catch (error) {
                 loginError.textContent = error.message;
@@ -211,7 +276,7 @@
                 const uniqueApplicantIds = [...new Set(allApplications.map(app => app.applicant_id))];
 
                 const applicantPromises = uniqueApplicantIds.map(async (id) => {
-                    if (applicantCache[id]) return; 
+                    if (applicantCache[id]) return;
 
                     try {
                         const applicantRes = await fetch(`${BASE_URL}/applicants/${id}`, {
@@ -236,8 +301,8 @@
 
         function renderTable() {
             const searchTerm = searchBar.value.toLowerCase().trim();
-            const posFilter = filterPosition.value; 
-            const statusFilter = filterStatus.value; 
+            const posFilter = filterPosition.value;
+            const statusFilter = filterStatus.value;
 
             const filtered = allApplications.filter(app => {
                 const applicant = applicantCache[app.applicant_id] || { first_name: "Bilinmeyen", last_name: "Aday" };
@@ -245,7 +310,7 @@
                 const positionStr = app.position.toLowerCase();
 
                 const matchesSearch = fullName.includes(searchTerm) || positionStr.includes(searchTerm);
-                const matchesPosition = !posFilter || app.position === posFilter; // Birebir tam eşleşme aratıyoruz
+                const matchesPosition = !posFilter || app.position === posFilter;
                 const matchesStatus = !statusFilter || app.status === statusFilter;
 
                 return matchesSearch && matchesPosition && matchesStatus;
@@ -263,9 +328,12 @@
             filtered.forEach(app => {
                 const applicant = applicantCache[app.applicant_id] || { first_name: "Bilinmeyen", last_name: "Aday", email: "-" };
                 const createdDate = app.created_at ? new Date(app.created_at).toLocaleDateString("tr-TR") : "-";
+                const sc = statusConfig[app.status] || { label: app.status, cls: "bg-gray-100 text-gray-600 border-gray-200" };
 
+                // --- DESKTOP SATIRI ---
                 const desktopRow = document.createElement("tr");
-                desktopRow.className = "hover:bg-red-50/50 transition-colors border-b border-gray-200/50";
+                desktopRow.className = "hover:bg-red-50/50 transition-colors border-b border-gray-200/50 cursor-pointer";
+                desktopRow.onclick = () => openDetailModal(app.id);
                 desktopRow.innerHTML = `
                     <td class="px-6 py-4">
                         <div class="font-semibold text-gray-900">${applicant.first_name} ${applicant.last_name}</div>
@@ -277,63 +345,114 @@
                     </td>
                     <td class="px-6 py-4 text-gray-500 text-xs">${app.experience_years} Yıl</td>
                     <td class="px-6 py-4">
-                        <select data-id="${app.id}" class="status-select bg-white border border-gray-200 rounded-lg px-2 py-1 text-xs text-gray-800 focus:ring-1 focus:ring-[#e11b3a] outline-none cursor-pointer">
-                            <option value="Applied" ${app.status === 'Applied' ? 'selected' : ''}>Applied</option>
-                            <option value="Under_Review" ${app.status === 'Under_Review' ? 'selected' : ''}>Under Review</option>
-                            <option value="Accepted" ${app.status === 'Accepted' ? 'selected' : ''}>Accepted</option>
-                            <option value="Rejected" ${app.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
-                        </select>
+                        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full border whitespace-nowrap ${sc.cls}">${sc.label}</span>
                     </td>
-                    <td class="px-6 py-4" id="cv-desk-${app.id}"></td>
+                    <td class="px-6 py-4 text-xs text-gray-500">${createdDate}</td>
                 `;
                 desktopTableBody.appendChild(desktopRow);
 
+                // --- MOBİL KART ---
                 const mobileCard = document.createElement("div");
-                mobileCard.className = "bg-white border border-gray-200 p-4 rounded-xl space-y-3 shadow-sm";
+                mobileCard.className = "bg-white border border-gray-200 p-4 rounded-xl space-y-3 shadow-sm active:bg-red-50/40 transition-colors cursor-pointer";
+                mobileCard.onclick = () => openDetailModal(app.id);
                 mobileCard.innerHTML = `
-                    <div class="flex justify-between items-start">
+                    <div class="flex justify-between items-start gap-2">
                         <div>
                             <div class="font-bold text-gray-900 text-base">${applicant.first_name} ${applicant.last_name}</div>
                             <div class="text-xs text-gray-500">${applicant.email}</div>
                         </div>
-                        <span class="text-[10px] bg-red-100 text-gray-700 px-2 py-0.5 rounded-full">${createdDate}</span>
+                        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full border whitespace-nowrap ${sc.cls}">${sc.label}</span>
                     </div>
                     <div class="text-xs bg-gray-50 p-2 rounded-lg border border-gray-200 space-y-1">
                         <div><span class="text-gray-500">Pozisyon:</span> <span class="text-gray-800 font-medium">${app.position}</span></div>
                         <div><span class="text-gray-500">Departman:</span> <span class="text-gray-700">${departmentLabel(app.department)}</span></div>
                         <div><span class="text-gray-500">Deneyim:</span> <span class="text-gray-500">${app.experience_years} Yıl</span></div>
                     </div>
-                    <div class="flex items-center justify-between gap-2 pt-1">
-                        <select data-id="${app.id}" class="status-select bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-800 focus:ring-1 focus:ring-[#e11b3a] outline-none w-1/2 cursor-pointer">
-                            <option value="Applied" ${app.status === 'Applied' ? 'selected' : ''}>Applied</option>
-                            <option value="Under_Review" ${app.status === 'Under_Review' ? 'selected' : ''}>Under Review</option>
-                            <option value="Accepted" ${app.status === 'Accepted' ? 'selected' : ''}>Accepted</option>
-                            <option value="Rejected" ${app.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
-                        </select>
-                        <div id="cv-mob-${app.id}" class="w-1/2 text-right"></div>
-                    </div>
+                    <div class="text-[10px] text-gray-400 text-right">${createdDate}</div>
                 `;
                 mobileCardsContainer.appendChild(mobileCard);
-
-                if (app.cv_url) {
-                    const btnHtml = `<button onclick="downloadCV(${app.id})" class="text-xs font-semibold text-[#e11b3a] hover:text-[#c51631] underline transition-colors">CV İndir</button>`;
-                    document.getElementById(`cv-desk-${app.id}`).innerHTML = btnHtml;
-                    document.getElementById(`cv-mob-${app.id}`).innerHTML = btnHtml;
-                } else {
-                    const noCvHtml = `<span class="text-xs text-gray-500 italic">CV Yok</span>`;
-                    document.getElementById(`cv-desk-${app.id}`).innerHTML = noCvHtml;
-                    document.getElementById(`cv-mob-${app.id}`).innerHTML = noCvHtml;
-                }
-            });
-
-            document.querySelectorAll(".status-select").forEach(select => {
-                select.addEventListener("change", (e) => {
-                    const appId = e.target.getAttribute("data-id");
-                    const newStatus = e.target.value;
-                    updateApplicationStatus(appId, newStatus);
-                });
             });
         }
+
+        function openDetailModal(appId) {
+            const app = allApplications.find(a => a.id === appId);
+            if (!app) return;
+            const applicant = applicantCache[app.applicant_id] || {};
+
+            currentModalAppId = appId;
+
+            document.getElementById("modalName").textContent = `${applicant.first_name || 'Bilinmeyen'} ${applicant.last_name || ''}`;
+            document.getElementById("modalPosition").textContent = `${app.position} • ${departmentLabel(app.department)}`;
+
+            document.getElementById("modalStatusSelect").value = app.status;
+
+            document.getElementById("modalPersonalInfo").innerHTML = `
+                <div><span class="text-gray-400">E-Posta:</span> ${applicant.email || '-'}</div>
+                <div><span class="text-gray-400">Telefon:</span> ${applicant.phone || '-'}</div>
+                <div><span class="text-gray-400">Doğum Tarihi:</span> ${applicant.birth_date || '-'}</div>
+                <div><span class="text-gray-400">Cinsiyet:</span> ${applicant.gender || '-'}</div>
+                <div><span class="text-gray-400">Medeni Durum:</span> ${applicant.marital_status || '-'}</div>
+                <div><span class="text-gray-400">Askerlik:</span> ${applicant.military_status || '-'}</div>
+                <div><span class="text-gray-400">Konum:</span> ${applicant.city || '-'} ${applicant.district ? '/ ' + applicant.district : ''}</div>
+                <div><span class="text-gray-400">Adres:</span> ${applicant.address_detail || '-'}</div>
+            `;
+
+            document.getElementById("modalSkills").textContent = applicant.skills || "Belirtilmedi";
+
+            const eduBox = document.getElementById("modalEducations");
+            if (applicant.educations && applicant.educations.length > 0) {
+                eduBox.innerHTML = applicant.educations.map(edu => `
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                        <span class="font-medium text-gray-800">${edu.school_name}</span>
+                        <span class="text-gray-500"> — ${edu.education_level}${edu.department ? ' • ' + edu.department : ''}${edu.graduation_year ? ' • ' + edu.graduation_year : ''}</span>
+                    </div>
+                `).join("");
+            } else {
+                eduBox.innerHTML = '<p class="text-gray-400 italic">Eğitim bilgisi eklenmemiş.</p>';
+            }
+
+            const langBox = document.getElementById("modalLanguages");
+            if (applicant.languages && applicant.languages.length > 0) {
+                langBox.innerHTML = applicant.languages.map(lang => `
+                    <span class="bg-[#e11b3a]/10 text-[#e11b3a] text-xs font-semibold px-2.5 py-1 rounded-md">${lang.language_name} (${lang.level})</span>
+                `).join("");
+            } else {
+                langBox.innerHTML = '<p class="text-gray-400 italic">Dil bilgisi eklenmemiş.</p>';
+            }
+
+            document.getElementById("modalExperience").textContent = app.experience_detail
+                ? `${app.experience_detail} (Toplam ${app.experience_years} Yıl)`
+                : `Belirtilmedi (Toplam ${app.experience_years || 0} Yıl)`;
+
+            document.getElementById("modalCoverLetter").textContent = app.cover_letter || "Önyazı eklenmemiş.";
+
+            const refBox = document.getElementById("modalReference");
+            if (app.reference_name) {
+                refBox.innerHTML = `
+                    <div><span class="text-gray-400">Ad Soyad:</span> ${app.reference_name}</div>
+                    <div><span class="text-gray-400">Pozisyon / Kurum:</span> ${app.reference_position || '-'}</div>
+                    <div><span class="text-gray-400">İletişim:</span> ${app.reference_contact || '-'}</div>
+                `;
+            } else {
+                refBox.innerHTML = '<p class="text-gray-400 italic">Referans bilgisi eklenmemiş.</p>';
+            }
+
+            document.getElementById("modalCvSection").innerHTML = app.cv_url
+                ? `<button onclick="downloadCV(${app.id})" class="w-full bg-red-50 text-[#e11b3a] font-semibold text-sm py-2.5 rounded-xl hover:bg-red-100 transition-colors">CV İndir</button>`
+                : `<div class="text-center text-xs text-gray-400 bg-gray-50 border border-gray-200 rounded-xl py-2.5">CV Yüklenmemiş</div>`;
+
+            document.getElementById("detailModal").classList.remove("hidden");
+        }
+
+        function closeDetailModal() {
+            document.getElementById("detailModal").classList.add("hidden");
+            currentModalAppId = null;
+        }
+        document.getElementById("detailModal").addEventListener("click", function(e) { if (e.target === this) closeDetailModal(); });
+
+        document.getElementById("modalStatusSelect").addEventListener("change", (e) => {
+            if (currentModalAppId) updateApplicationStatus(currentModalAppId, e.target.value);
+        });
 
         async function updateApplicationStatus(id, newStatus) {
             const token = localStorage.getItem("admin_token");
@@ -399,7 +518,7 @@
 
         adminLogoutBtn.addEventListener("click", () => {
             localStorage.removeItem("admin_token");
-            allApplications = []; 
+            allApplications = [];
             checkAdminAuth();
         });
 
