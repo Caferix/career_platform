@@ -19,4 +19,5 @@ async def create_consent_record(
     Adayın verdiği rıza onayını (KVKK veya İletişim) IP adresiyle birlikte sisteme mühürler.
     """
     ip_address = request.client.host
-    return await consent_service.save_consent(db=db, payload=payload, ip_address=ip_address)
+    user_agent = request.headers.get("user-agent")
+    return await consent_service.save_consent(db=db, payload=payload, ip_address=ip_address, user_agent=user_agent)

@@ -12,7 +12,8 @@ from app.core.security import hash_data
 async def create_candidate(
     db: AsyncSession, 
     data: CandidateCreate, 
-    ip_address: str, 
+    ip_address: str,
+    user_agent: str = None,
     is_communication_consented: bool = False
 ) -> Candidate:
     """
@@ -89,6 +90,7 @@ async def create_candidate(
             consent_type="kvkk",
             consent_text_version="v2026.1",
             ip_address=ip_address,
+            user_agent = user_agent,
             is_active=True,
             created_at=datetime.utcnow()
         )
@@ -100,6 +102,7 @@ async def create_candidate(
                 consent_type="communication",
                 consent_text_version="v2026.1",
                 ip_address=ip_address,
+                user_agent = user_agent,
                 is_active=True,
                 created_at=datetime.utcnow()
             )

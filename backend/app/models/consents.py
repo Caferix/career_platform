@@ -11,6 +11,7 @@ class Consent(Base):
     consent_type = Column(String(50), nullable=False)
     consent_text_version = Column(String(50), nullable=False, default="v2026.1")
     ip_address = Column(String(45), nullable=True)
+    user_agent = Column(String(255), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 

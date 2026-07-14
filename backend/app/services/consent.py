@@ -5,7 +5,7 @@ from app.schemas.consent import ConsentCreate
 from datetime import datetime
 from sqlalchemy.future import select
 
-async def save_consent(db: AsyncSession, payload: ConsentCreate, ip_address: str):
+async def save_consent(db: AsyncSession, payload: ConsentCreate, ip_address: str, user_agent: str):
     """
     Adayın verdiği rızayı veritabanına mühürler. 
     Eğer aday zaten aynı rıza tipine (KVKK veya iletişim) aktif bir onay vermişse,
@@ -24,6 +24,7 @@ async def save_consent(db: AsyncSession, payload: ConsentCreate, ip_address: str
         # 🌟 GÜNCELLEME: Mükerrer kaydı engelle, mevcut kaydı tazele
         existing_consent.created_at = datetime.utcnow()
         existing_consent.ip_address = ip_address
+        existing_consent.user_agent = user_agent
         existing_consent.consent_text_version = payload.consent_text_version
         
         await db.commit()
@@ -36,6 +37,7 @@ async def save_consent(db: AsyncSession, payload: ConsentCreate, ip_address: str
         consent_type=payload.consent_type,
         consent_text_version=payload.consent_text_version,
         ip_address=ip_address,
+        user_agent=user_agent,
         is_active=True,
         created_at=datetime.utcnow()
     )

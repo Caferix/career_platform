@@ -51,12 +51,14 @@ async def create_new_candidate(
 ):
     """Yeni bir aday profili oluşturur ve IP adresi ile rızaları mühürler."""
     ip_address = request.client.host
+    user_agent = request.headers.get("user-agent")
     
     # 1. Servis adayı ve rızaları oluşturup veritabanına mühürlüyor
     candidate = await candidate_service.create_candidate(
         db=db, 
         data=data, 
         ip_address=ip_address,
+        user_agent=user_agent,
         is_communication_consented=is_communication_consented
     )
     
