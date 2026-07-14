@@ -2,7 +2,10 @@ from fastapi import APIRouter, Depends, status, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
-from app.schemas.candidate import CandidateCreate, CandidateUpdate, CandidateResponse
+from app.schemas.candidate import (
+    CandidateCreate, CandidateUpdate, CandidateResponse,
+    EducationSchema, LanguageSchema, EducationResponse, LanguageResponse
+)
 from app.services import candidate as candidate_service
 from app.models.candidate import Candidate
 from app.core.security import get_current_user
@@ -102,4 +105,34 @@ async def update_candidate_by_id(candidate_id: int, data: CandidateUpdate, db: A
 async def delete_candidate_by_id(candidate_id: int, db: AsyncSession = Depends(get_db)):
     """Adayı sistemde pasife çeker (Soft Delete). İçerik dönmez."""
     await candidate_service.delete_candidate(db=db, candidate_id=candidate_id)
+    return None
+
+
+# --- EĞİTİM: EKLEME / SİLME ---
+
+@router.post("/{candidate_id:int}/educations", response_model=EducationResponse, status_code=status.HTTP_201_CREATED)
+async def add_candidate_education(candidate_id: int, data: EducationSchema, db: AsyncSession = Depends(get_db)):
+    """profile.html'deki 'Eğitim Ekle' formunun gönderdiği isteği karşılar."""
+    return await candidate_service.add_education(db=db, candidate_id=candidate_id, data=data)
+
+
+@router.delete("/educations/{edu_id:int}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_candidate_education(edu_id: int, db: AsyncSession = Depends(get_db)):
+    """profile.html'deki eğitim satırındaki '✕' butonunun gönderdiği isteği karşılar."""
+    await candidate_service.delete_education(db=db, edu_id=edu_id)
+    return None
+
+
+# --- DİL: EKLEME / SİLME ---
+
+@router.post("/{candidate_id:int}/languages", response_model=LanguageResponse, status_code=status.HTTP_201_CREATED)
+async def add_candidate_language(candidate_id: int, data: LanguageSchema, db: AsyncSession = Depends(get_db)):
+    """profile.html'deki 'Dil Ekle' formunun gönderdiği isteği karşılar."""
+    return await candidate_service.add_language(db=db, candidate_id=candidate_id, data=data)
+
+
+@router.delete("/languages/{lang_id:int}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_candidate_language(lang_id: int, db: AsyncSession = Depends(get_db)):
+    """profile.html'deki dil satırındaki '✕' butonunun gönderdiği isteği karşılar."""
+    await candidate_service.delete_language(db=db, lang_id=lang_id)
     return None

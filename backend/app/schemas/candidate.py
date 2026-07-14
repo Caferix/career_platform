@@ -19,6 +19,22 @@ class LanguageSchema(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# --- Tekil Eğitim/Dil Ekleme-Silme İçin Response Şemaları ---
+# (POST /applicants/{id}/educations ve /languages endpoint'lerinin dönüş tipi)
+
+class EducationResponse(EducationSchema):
+    id: int
+    applicant_id: int
+
+    model_config = {"from_attributes": True}
+
+class LanguageResponse(LanguageSchema):
+    id: int
+    applicant_id: int
+
+    model_config = {"from_attributes": True}
+
+
 # --- GELEN VERİ (Request) ---
 
 class CandidateCreate(BaseModel):
@@ -27,23 +43,23 @@ class CandidateCreate(BaseModel):
     last_name: str = Field(..., min_length=2, max_length=50)
     email: EmailStr
     phone: str = Field(..., min_length=10, max_length=20)
-    
+
     # Yeni profil alanları
     birth_date: Optional[date] = Field(None, description="Takvimden seçilen doğum tarihi")
     nationality: str = Field("T.C.", max_length=50)
     marital_status: Optional[Literal["Evli", "Bekar"]] = None
     driving_license: Optional[str] = Field(None, max_length=50, description="Çoklu seçim: 'B, C' gibi")
     gender: Optional[Literal["Kadın", "Erkek"]] = None
-    
+
     # Adres bilgileri
     city: Optional[str] = Field(None, max_length=50)
     district: Optional[str] = Field(None, max_length=100)
     address_detail: Optional[str] = Field(None, description="Şifrelenecek açık adres")
-    
+
     # Dinamik alanlar
     military_status: Optional[Literal["Yapıldı", "Muaf", "Tecilli"]] = None
     skills: Optional[str] = Field(None, description="Virgülle ayrılmış yetenekler")
-    
+
     # Birden fazla eklenebilecek alt listeler
     educations: list[EducationSchema] = Field(default=[], description="Eğitim geçmişi listesi")
     languages: list[LanguageSchema] = Field(default=[], description="Yabancı dil geçmişi listesi")
@@ -60,7 +76,7 @@ class CandidateUpdate(BaseModel):
     address_detail: Optional[str] = Field(default=None)
     military_status: Optional[Literal["Yapıldı", "Muaf", "Tecilli"]] = None
     skills: Optional[str] = Field(default=None)
-    
+
     # Profil güncellerken eğitim ve diller de komple yenilenebilir
     educations: Optional[list[EducationSchema]] = None
     languages: Optional[list[LanguageSchema]] = None
@@ -98,7 +114,7 @@ class CandidateResponse(BaseModel):
     is_phone_verified: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
-    
+
     # İlişkisel alt listelerin dışarıya açılması
     educations: list[EducationSchema] = []
     languages: list[LanguageSchema] = []

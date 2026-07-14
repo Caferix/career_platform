@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 
 from app.models.candidate import Candidate, CandidateEducation, CandidateLanguage
 from app.models.consents import Consent
-from app.schemas.candidate import CandidateCreate, CandidateUpdate
+from app.schemas.candidate import CandidateCreate, CandidateUpdate, EducationSchema, LanguageSchema
 from app.core.security import hash_data
 
 async def create_candidate(
@@ -169,4 +169,79 @@ async def delete_candidate(db: AsyncSession, candidate_id: int) -> None:
     candidate = await get_candidate(db, candidate_id)
     candidate.is_deleted = True
     candidate.deleted_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    await db.commit()
+
+
+# --- EĞİTİM: EKLEME / SİLME ---
+
+async def add_education(db: AsyncSession, candidate_id: int, data: EducationSchema) -> CandidateEducation:
+    """Var olan bir adaya tek bir eğitim kaydı ekler."""
+    # Adayın gerçekten var (ve silinmemiş) olduğunu doğrula
+    result = await db.execute(
+        select(Candidate).where(Candidate.id == candidate_id, Candidate.is_deleted == False)
+    )
+    candidate = result.scalar_one_or_none()
+    if not candidate:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Aday bulunamadı.")
+
+    new_edu = CandidateEducation(
+        applicant_id=candidate_id,
+        education_level=data.education_level,
+        school_name=data.school_name,
+        department=data.department,
+        graduation_year=data.graduation_year
+    )
+    db.add(new_edu)
+    await db.commit()
+    await db.refresh(new_edu)
+    return new_edu
+
+
+async def delete_education(db: AsyncSession, edu_id: int) -> None:
+    """Belirtilen eğitim kaydını kalıcı olarak siler (hard delete)."""
+    result = await db.execute(
+        select(CandidateEducation).where(CandidateEducation.id == edu_id)
+    )
+    edu_record = result.scalar_one_or_none()
+
+    if not edu_record:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Eğitim kaydı bulunamadı.")
+
+    await db.delete(edu_record)
+    await db.commit()
+
+
+# --- DİL: EKLEME / SİLME ---
+
+async def add_language(db: AsyncSession, candidate_id: int, data: LanguageSchema) -> CandidateLanguage:
+    """Var olan bir adaya tek bir yabancı dil kaydı ekler."""
+    result = await db.execute(
+        select(Candidate).where(Candidate.id == candidate_id, Candidate.is_deleted == False)
+    )
+    candidate = result.scalar_one_or_none()
+    if not candidate:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Aday bulunamadı.")
+
+    new_lang = CandidateLanguage(
+        applicant_id=candidate_id,
+        language_name=data.language_name,
+        level=data.level
+    )
+    db.add(new_lang)
+    await db.commit()
+    await db.refresh(new_lang)
+    return new_lang
+
+
+async def delete_language(db: AsyncSession, lang_id: int) -> None:
+    """Belirtilen dil kaydını kalıcı olarak siler (hard delete)."""
+    result = await db.execute(
+        select(CandidateLanguage).where(CandidateLanguage.id == lang_id)
+    )
+    lang_record = result.scalar_one_or_none()
+
+    if not lang_record:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dil kaydı bulunamadı.")
+
+    await db.delete(lang_record)
     await db.commit()
