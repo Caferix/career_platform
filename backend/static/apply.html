@@ -64,21 +64,28 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <!-- 🌟 BURASI 3'LÜ GRID YAPILDI VE UYRUK EKLENDİ -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">E-Posta <span class="text-red-500">*</span></label>
                             <input type="email" id="email" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Doğum Tarihi <span class="text-gray-400 normal-case">(takvimden seçin)</span></label>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Doğum Tarihi <span class="text-gray-400 normal-case">(seçiniz)</span></label>
                             <input type="date" id="birthDate" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Uyruk</label>
+                            <select id="nationality" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                                <option value="Türkiye">Türkiye</option>
+                            </select>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Cinsiyet</label>
-                            <select id="gender" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
+                            <select id="gender" onchange="handleGenderChange()" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
                                 <option value="">Seçiniz</option>
                                 <option value="Kadın">Kadın</option>
                                 <option value="Erkek">Erkek</option>
@@ -92,8 +99,8 @@
                                 <option value="Evli">Evli</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Askerlik (Erkek Adaylar İçin)</label>
+                        <div id="militaryStatusContainer" style="display: none;">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Askerlik Durumu</label>
                             <select id="militaryStatus" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
                                 <option value="">Seçiniz</option>
                                 <option value="Yapıldı">Yapıldı</option>
@@ -189,6 +196,18 @@
                     <div class="mb-4">
                         <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Teknik Yetkinlikler (Skills)</label>
                         <input type="text" id="skills" placeholder="Java, Python, Jetpack Compose vb. (Virgülle ayırın)" class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a]">
+                    </div>
+
+                    <!-- 🌟 YENİ: GENEL LİNKLER EKLENDİ -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Sosyal Medya / Portfolyo 1</label>
+                            <input type="url" id="socialLink1" placeholder="https://..." class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Sosyal Medya / Portfolyo 2</label>
+                            <input type="url" id="socialLink2" placeholder="https://..." class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] outline-none">
+                        </div>
                     </div>
 
                     <div class="mb-4">
@@ -289,6 +308,39 @@
             localStorage.clear();
             window.location.href = "/static/index.html";
         });
+
+        // 🌟 ASKERLİK GÖSTER/GİZLE KONTROLÜ
+        function handleGenderChange() {
+            const gender = document.getElementById("gender").value;
+            const militaryContainer = document.getElementById("militaryStatusContainer");
+            const militarySelect = document.getElementById("militaryStatus");
+
+            if (gender === "Erkek") {
+                militaryContainer.style.display = "block";
+            } else {
+                militaryContainer.style.display = "none";
+                militarySelect.value = ""; 
+            }
+        }
+
+        // --- ÜLKELERİ GETİR (countries.json) ---
+        async function fetchCountries() {
+            try {
+                const response = await fetch('/static/countries.json');
+                if (!response.ok) throw new Error("Ülkeler JSON yüklenemedi.");
+                const countries = await response.json();
+                
+                const natSelect = document.getElementById("nationality");
+                
+                countries.forEach(country => {
+                    if (country !== "Türkiye") {
+                        natSelect.add(new Option(country, country));
+                    }
+                });
+            } catch (error) {
+                console.error("Ülke verisi hatası:", error);
+            }
+        }
 
         // --- İL / İLÇE (locations.json) ---
         let locationData = {};
@@ -430,7 +482,9 @@
                     console.error("Profil kontrolü başarısız:", err);
                 }
 
+            // 🌟 Verileri getir
             fetchLocations();
+            fetchCountries();
             addEducationRow();
             addLanguageRow();
             addExperienceRow();
@@ -498,7 +552,8 @@
                     email: document.getElementById("email").value,
                     phone: localStorage.getItem("phone") || "",
                     birth_date: document.getElementById("birthDate").value || null,
-                    nationality: "T.C.",
+                    // 🌟 Yeni Alanlar Payload'da
+                    nationality: document.getElementById("nationality").value || "Türkiye",
                     gender: document.getElementById("gender").value || null,
                     marital_status: document.getElementById("maritalStatus").value || null,
                     driving_license: null,
@@ -507,6 +562,10 @@
                     district: document.getElementById("districtSelect").value || null,
                     address_detail: document.getElementById("addressDetail").value || null,
                     skills: document.getElementById("skills").value || null,
+                    social_links: {
+                        link_1: document.getElementById("socialLink1").value.trim() || null,
+                        link_2: document.getElementById("socialLink2").value.trim() || null
+                    },
                     educations: educations,
                     languages: languages
                 };
