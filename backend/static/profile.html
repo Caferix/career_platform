@@ -72,7 +72,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Cinsiyet</label>
-                            <select id="gender" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
+                            <select id="gender" disabled onchange="handleGenderChangeProfile()" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
                                 <option value="">Seçiniz</option><option value="Kadın">Kadın</option><option value="Erkek">Erkek</option>
                             </select>
                         </div>
@@ -84,6 +84,7 @@
                         </div>
                     </div>
 
+                    <!-- 🌟 UYRUK BURAYA EKLENDİ -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">İl</label>
@@ -94,11 +95,31 @@
                             <input type="text" id="district" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Askerlik</label>
-                            <select id="militaryStatus" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
-                                <option value="">Seçiniz</option><option value="Yapıldı">Yapıldı</option><option value="Muaf">Muaf</option><option value="Tecilli">Tecilli</option>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Uyruk</label>
+                            <select id="nationality" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
+                                <option value="Türkiye">Türkiye</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- 🌟 SOSYAL LİNKLER BURAYA EKLENDİ -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Sosyal Medya / Portfolyo 1</label>
+                            <input type="url" id="socialLink1" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all" placeholder="https://...">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Sosyal Medya / Portfolyo 2</label>
+                            <input type="url" id="socialLink2" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <!-- 🌟 ASKERLİK DURUMU DIV'E ALINDI -->
+                    <div id="militaryStatusContainer" style="display: none;">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Askerlik Durumu</label>
+                        <select id="militaryStatus" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
+                            <option value="">Seçiniz</option><option value="Yapıldı">Yapıldı</option><option value="Muaf">Muaf</option><option value="Tecilli">Tecilli</option>
+                        </select>
                     </div>
 
                     <div>
@@ -209,13 +230,47 @@
             "rejected":     { label: "Reddedildi",    cls: "bg-red-50 text-red-700 border-red-200" }
         };
 
-        const formFields = ["firstName", "lastName", "birthDate", "gender", "maritalStatus", "city", "district", "militaryStatus", "addressDetail", "skills"];
+        // 🌟 YENİ ALANLAR EKLENDİ
+        const formFields = ["firstName", "lastName", "birthDate", "gender", "maritalStatus", "city", "district", "militaryStatus", "addressDetail", "skills", "nationality", "socialLink1", "socialLink2"];
 
         function showAlert(msg, type="error") {
             const box = document.getElementById("alertBox");
             box.className = `p-4 rounded-xl text-sm font-medium border block ${type==='error'?'bg-red-50 text-red-700 border-red-200':'bg-emerald-50 text-emerald-700 border-emerald-200'}`;
             box.textContent = msg;
             box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // 🌟 ASKERLİK KONTROLÜ
+        function handleGenderChangeProfile() {
+            const gender = document.getElementById("gender").value;
+            const militaryContainer = document.getElementById("militaryStatusContainer");
+            const militarySelect = document.getElementById("militaryStatus");
+
+            if (gender === "Erkek") {
+                militaryContainer.style.display = "block";
+            } else {
+                militaryContainer.style.display = "none";
+                militarySelect.value = ""; 
+            }
+        }
+
+        // 🌟 ÜLKELERİ ÇEK
+        async function fetchCountries() {
+            try {
+                const response = await fetch('/static/countries.json');
+                if (!response.ok) throw new Error("Ülkeler JSON yüklenemedi.");
+                const countries = await response.json();
+                
+                const natSelect = document.getElementById("nationality");
+                
+                countries.forEach(country => {
+                    if (country !== "Türkiye") {
+                        natSelect.add(new Option(country, country));
+                    }
+                });
+            } catch (error) {
+                console.error("Ülke verisi hatası:", error);
+            }
         }
 
         function toggleEdit() {
@@ -246,6 +301,11 @@
             document.getElementById("addressDetail").value = originalData.address_detail || "";
             document.getElementById("skills").value = originalData.skills || "";
 
+            // 🌟 YENİ ALANLARI SIFIRLA
+            document.getElementById("nationality").value = originalData.nationality || "Türkiye";
+            document.getElementById("socialLink1").value = (originalData.social_links && originalData.social_links.link_1) || "";
+            document.getElementById("socialLink2").value = (originalData.social_links && originalData.social_links.link_2) || "";
+
             formFields.forEach(id => {
                 const el = document.getElementById(id);
                 el.disabled = true;
@@ -255,6 +315,9 @@
             document.getElementById("saveSection").classList.add("hidden");
             document.getElementById("editToggleBtn").classList.remove("hidden");
             document.getElementById("alertBox").classList.add("hidden");
+
+            // 🌟 EKRAN SIFIRLANDIĞINDA ASKERLİĞİ KONTROL ET
+            handleGenderChangeProfile();
         }
 
         async function saveProfile() {
@@ -272,7 +335,14 @@
                     district: document.getElementById("district").value.trim() || null,
                     military_status: document.getElementById("militaryStatus").value || null,
                     address_detail: document.getElementById("addressDetail").value.trim() || null,
-                    skills: document.getElementById("skills").value.trim() || null
+                    skills: document.getElementById("skills").value.trim() || null,
+                    
+                    // 🌟 YENİ ALANLARI GÖNDER
+                    nationality: document.getElementById("nationality").value || "Türkiye",
+                    social_links: {
+                        link_1: document.getElementById("socialLink1").value.trim() || null,
+                        link_2: document.getElementById("socialLink2").value.trim() || null
+                    }
                 };
 
                 const res = await fetch(`${BASE_URL}/applicants/${candidateId}`, {
@@ -488,7 +558,11 @@
             }
         }
 
-        window.addEventListener("DOMContentLoaded", fetchProfile);
+        // ÖNCE ÜLKELERİ SONRA PROFİLİ ÇEK
+        window.addEventListener("DOMContentLoaded", async () => {
+            await fetchCountries();
+            await fetchProfile();
+        });
     </script>
 </body>
 </html>
