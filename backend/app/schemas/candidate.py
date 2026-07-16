@@ -46,10 +46,11 @@ class CandidateCreate(BaseModel):
 
     # Yeni profil alanları
     birth_date: Optional[date] = Field(None, description="Takvimden seçilen doğum tarihi")
-    nationality: str = Field("T.C.", max_length=50)
+    nationality: Optional[str] = Field(None, max_length=50, description="Uyruk bilgisi (Örn: T.C., Yabancı)")
     marital_status: Optional[Literal["Evli", "Bekar"]] = None
     driving_license: Optional[str] = Field(None, max_length=50, description="Çoklu seçim: 'B, C' gibi")
     gender: Optional[Literal["Kadın", "Erkek"]] = None
+    social_links: Optional[dict[str, str]] = Field(default=None, description="Sosyal medya ve portfolyo linkleri")
 
     # Adres bilgileri
     city: Optional[str] = Field(None, max_length=50)
@@ -76,6 +77,7 @@ class CandidateUpdate(BaseModel):
     address_detail: Optional[str] = Field(default=None)
     military_status: Optional[Literal["Yapıldı", "Muaf", "Tecilli"]] = None
     skills: Optional[str] = Field(default=None)
+    social_links: Optional[dict[str, str]] = Field(default=None)
 
     # Profil güncellerken eğitim ve diller de komple yenilenebilir
     educations: Optional[list[EducationSchema]] = None
@@ -111,6 +113,7 @@ class CandidateResponse(BaseModel):
     address_detail: Optional[str] = None
     military_status: Optional[str] = None
     skills: Optional[str] = None
+    social_links: Optional[dict[str, str]] = None
     is_phone_verified: bool
     created_at: datetime
     updated_at: Optional[datetime] = None

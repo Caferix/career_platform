@@ -2,6 +2,7 @@ import hashlib
 from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Date, Text
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import JSONB
 from app.db.database import Base
 from app.core.security import encrypt_data, decrypt_data
 from typing import Optional, Literal
@@ -35,7 +36,7 @@ class Candidate(Base):
     
     #  Yetenekler / Nitelikler
     skills = Column(Text, nullable=True) # Virgülle ayrılmış serbest metin
-
+    social_links = Column(JSONB, nullable=True)
     is_phone_verified = Column(Boolean, nullable=False, default=False)
     
     # Kural 8: Soft Delete
