@@ -92,7 +92,7 @@ async def create_candidate(
             ip_address=ip_address,
             user_agent = user_agent,
             is_active=True,
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc).replace(tzinfo=None)
         )
         db.add(kvkk_consent)
         
@@ -104,7 +104,7 @@ async def create_candidate(
                 ip_address=ip_address,
                 user_agent = user_agent,
                 is_active=True,
-                created_at=datetime.utcnow()
+                created_at=datetime.now(timezone.utc).replace(tzinfo=None)
             )
             db.add(comm_consent)
 
@@ -248,3 +248,156 @@ async def delete_language(db: AsyncSession, lang_id: int) -> None:
 
     await db.delete(lang_record)
     await db.commit()
+
+
+async def get_or_create_shadow_candidate(
+    db: AsyncSession, 
+    phone: str, 
+    ip_address: str, 
+    user_agent: str
+) -> int:
+    """
+    Telefon numarasına ait aday varsa doğrudan ID'sini döner.
+    Yoksa sadece telefonla 'Gölge Aday' oluşturur ve 'phone_verification' rızasını mühürler.
+    """
+    # 1. Hash fonksiyonunu tek merkezden çağırıyoruz
+    phone_search_hash = hash_data(phone)
+    
+    # 2. Aktif adayı sorguluyoruz
+    query = select(Candidate).where(
+        Candidate.hashed_phone == phone_search_hash,
+        Candidate.is_deleted == False
+    )
+    result = await db.execute(query)
+    candidate = result.scalars().first()
+    
+    if candidate:
+        # Aday zaten varsa (ve silinmemişse) mevcut ID'sini dönüyoruz
+        return candidate.id
+
+    try:
+        # 3. Yoksa sadece telefonla "Gölge Aday" kaydı açıyoruz
+        shadow_candidate = Candidate(
+            phone=phone,
+            hashed_phone=phone_search_hash,
+            is_phone_verified=True
+        )
+        db.add(shadow_candidate)
+        await db.flush()  # ID üretmek için flush yapıyoruz
+        
+        # 4. phone_verification rızasını mühürlüyoruz
+        phone_consent = Consent(
+            applicant_id=shadow_candidate.id,
+            consent_type="phone_verification",
+            consent_text_version="v2026.1",
+            ip_address=ip_address,
+            user_agent=user_agent,
+            is_active=True,
+            created_at=datetime.now(timezone.utc).replace(tzinfo=None)  # naive datetime korundu
+        )
+        db.add(phone_consent)
+        await db.commit()
+        
+        return shadow_candidate.id
+
+    except Exception:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Gölge aday kaydı esnasında sistem hatası oluştu."
+        )
+    
+
+async def complete_shadow_candidate(
+    db: AsyncSession,
+    candidate_id: int,
+    data: CandidateCreate,
+    ip_address: str,
+    user_agent: str = None,
+    is_communication_consented: bool = False
+) -> Candidate:
+    """
+    Önceden oluşturulmuş gölge adayın boş kişisel alanlarını tamamlar (giydirir),
+    dinamik alt tablolarını (eğitim/dil) ekler ve kalan yasal rızaları mühürler.
+    """
+    # 1. Mevcut aktif gölge adayı ID üzerinden çekiyoruz
+    candidate = await get_candidate(db, candidate_id)
+
+    try:
+        # 2. Temel profil bilgilerini gölge adaya giydiriyoruz
+        candidate.first_name = data.first_name
+        candidate.last_name = data.last_name
+        candidate.email = data.email  # Setter property otomatik şifreleyecek
+        candidate.birth_date = data.birth_date
+        candidate.nationality = data.nationality
+        candidate.marital_status = data.marital_status
+        candidate.driving_license = data.driving_license
+        candidate.gender = data.gender
+        candidate.city = data.city
+        candidate.district = data.district
+        candidate.address_detail = data.address_detail  # Setter property otomatik şifreleyecek
+        candidate.military_status = data.military_status
+        candidate.skills = data.skills
+        
+        # 3. Çoklu Eğitim Geçmişini bağlıyoruz (Alt Tablo)
+        if data.educations:
+            for edu in data.educations:
+                new_edu = CandidateEducation(
+                    applicant_id=candidate.id,
+                    education_level=edu.education_level,
+                    school_name=edu.school_name,
+                    department=edu.department,
+                    graduation_year=edu.graduation_year
+                )
+                db.add(new_edu)
+
+        # 4. Çoklu Dil Bilgisini bağlıyoruz (Alt Tablo)
+        if data.languages:
+            for lang in data.languages:
+                new_lang = CandidateLanguage(
+                    applicant_id=candidate.id,
+                    language_name=lang.language_name,
+                    level=lang.level
+                )
+                db.add(new_lang)
+
+        # 5. Yasal Rızalar: KVKK Aydınlatma Metni Onayı
+        kvkk_consent = Consent(
+            applicant_id=candidate.id,
+            consent_type="kvkk",
+            consent_text_version="v2026.1",
+            ip_address=ip_address,
+            user_agent=user_agent,
+            is_active=True,
+            created_at=datetime.now(timezone.utc).replace(tzinfo=None) # naive datetime
+        )
+        db.add(kvkk_consent)
+
+        # 6. Yasal Rızalar: Opsiyonel Pazarlama/İletişim Onayı
+        if is_communication_consented:
+            comm_consent = Consent(
+                applicant_id=candidate.id,
+                consent_type="communication",
+                consent_text_version="v2026.1",
+                ip_address=ip_address,
+                user_agent=user_agent,
+                is_active=True,
+                created_at=datetime.now(timezone.utc).replace(tzinfo=None) # naive datetime
+            )
+            db.add(comm_consent)
+
+        # Güncelleme zamanını mühürlüyoruz
+        candidate.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+
+        # 7. DB Mühürleme (Atomic işlem)
+        await db.commit()
+        await db.refresh(candidate)
+        return candidate
+
+    except Exception as e:
+        await db.rollback()
+        # Kural 8: Güvenli hata mesajı
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Gölge aday profilini tamamlama esnasında bir hata oluştu: {str(e)}"
+        )

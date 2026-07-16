@@ -410,7 +410,26 @@
             document.getElementById("experienceContainer").appendChild(div);
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("DOMContentLoaded", async () => {
+
+            try {
+                    const checkRes = await fetch(`${BASE_URL}/applicants/me`, {
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+        
+                    if (checkRes.ok) {
+                        const currentCandidate = await checkRes.json();
+            
+                        // Eğer aday gölge değilse (ad ve soyad zaten doluysa) formu dolduramaz, profile uçur!
+                        if (currentCandidate.first_name && currentCandidate.last_name) {
+                            window.location.href = "/static/profile.html";
+                            return; // Kodun kalanını çalıştırma
+                        }
+                    }
+                } catch (err) {
+                    console.error("Profil kontrolü başarısız:", err);
+                }
+
             fetchLocations();
             addEducationRow();
             addLanguageRow();

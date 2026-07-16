@@ -5,10 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db  
 from app.schemas.auth import SendOTPRequest, VerifyOTPRequest, TokenResponse
-from app.schemas.user import LoginRequest  # Yeni eklediğimiz şema
+from app.schemas.user import LoginRequest  
 from app.services import sms, otp
-from app.services import user as user_service  # Yeni asenkron servis katmanımız
-from app.core.security import limiter, auth
+from app.services import user as user_service  # Asenkron servis katmanı
+from app.core.security import limiter, auth, hash_data
+from app.services import candidate as candidate_service
 
 # Router tanımını yapıyoruz. main.py'de prefix="/auth" olarak bağlanacağı için 
 # altındaki rotaların path'lerini buna göre güncelliyoruz.
@@ -49,7 +50,7 @@ async def admin_login(
     return TokenResponse(access_token=access_token, token_type="bearer")
 
 
-# --- 2. ADAY OTP GÖNDERME ENDPOINT'İ (DEĞİŞMEDİ - KORUNDU) ---
+# --- 2. ADAY OTP GÖNDERME ENDPOINT'İ ---
 @router.post("/send-otp", status_code=status.HTTP_200_OK)
 @limiter.limit("3/minute")
 async def send_otp(request: Request, payload: SendOTPRequest, db: AsyncSession = Depends(get_db)):
@@ -80,14 +81,14 @@ async def send_otp(request: Request, payload: SendOTPRequest, db: AsyncSession =
     return {"message": "Doğrulama kodu başarıyla gönderildi."}
 
 
-# --- 3. ADAY OTP DOĞRULAMA ENDPOINT'İ (DEĞİŞMEDİ - KORUNDU) ---
+# --- 3. ADAY OTP DOĞRULAMA ENDPOINT'İ ---
 @router.post("/verify-otp", response_model=TokenResponse)
 @limiter.limit("5/minute")
 async def verify_otp(request: Request, payload: VerifyOTPRequest, db: AsyncSession = Depends(get_db)):
     """
-    Gelen OTP kodunu doğrular. Başarılı ise rol tabanlı JWT Access Token üretir.
+    Gelen OTP kodunu doğrular. Başarılı ise 'Gölge Aday' oluşturup
+    'phone_verification' rızasını mühürler ve JWT Access Token üretir.
     """
-    # 1. OTP servisinden doğrulama zincirini işlet
     is_valid = await otp.verify_otp(db, phone=payload.phone, code=payload.code)
     
     if not is_valid:
@@ -96,14 +97,25 @@ async def verify_otp(request: Request, payload: VerifyOTPRequest, db: AsyncSessi
             detail="Geçersiz veya süresi dolmuş doğrulama kodu."
         )
         
-    # Doğrulama başarılı! Aday için hashed_phone'u sub olarak token'a göm
-    hashed_phone = hashlib.sha256(payload.phone.encode()).hexdigest()
+    ip_address = request.client.host
+    user_agent = request.headers.get("user-agent")
+
+    # Gölge aday servisini çağırıyoruz
+    candidate_id = await candidate_service.get_or_create_shadow_candidate(
+        db=db,
+        phone=payload.phone,
+        ip_address=ip_address,
+        user_agent=user_agent
+    )
+    
+    # sub alanı ve veritabanı araması için aynı hash fonksiyonunu kullanıyoruz
+    hashed_phone = hash_data(payload.phone)
 
     access_token = auth.create_token(
-        user_id=0,           # aday henüz kayıtlı olmayabilir
+        user_id=candidate_id,  # Gerçek veritabanı ID'si token'a gömüldü!
         role="applicant",
         department=None,
-        sub=hashed_phone     # /applicants/me bunu kullanacak
-)
+        sub=hashed_phone
+    )
     
     return TokenResponse(access_token=access_token, token_type="bearer")

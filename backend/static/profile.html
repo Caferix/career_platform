@@ -396,6 +396,12 @@
                 if (!res.ok) throw new Error("Profil yüklenemedi.");
 
                 const data = await res.json();
+
+                if (!data.first_name || !data.last_name) {
+                    window.location.href = "/static/apply.html";
+                    return;
+                }
+                
                 originalData = data;
                 candidateId = data.id;
 

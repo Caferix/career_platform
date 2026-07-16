@@ -97,12 +97,12 @@ class ApplicationShortResponse(BaseModel):
 class CandidateResponse(BaseModel):
     """API dış dünyaya adayı dönerken kullanılacak tam kurumsal model."""
     id: int
-    first_name: str
-    last_name: str
-    email: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[str] = None
     phone: str
     birth_date: Optional[date] = None
-    nationality: str
+    nationality: Optional[str] = None
     marital_status: Optional[str] = None
     driving_license: Optional[str] = None
     gender: Optional[str] = None

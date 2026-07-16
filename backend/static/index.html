@@ -395,12 +395,21 @@
                     headers: { "Authorization": `Bearer ${token}` }
                 });
 
-                setTimeout(() => {
+                setTimeout(async () => {
                     if (profileRes.ok) {
-                        // Profil varsa (200 OK): Doğrudan profil paneline uçur
-                        window.location.href = "/static/profile.html";
+                        const candidate = await profileRes.json();
+        
+                        
+                        // Eğer veritabanında kaydı varsa (200) ama ad soyad alanları boşsa (Gölge adaysa):
+                        if (!candidate.first_name || !candidate.last_name) {
+                            showAlert("Profilinizin eksik kısımlarını tamamlamak üzere yönlendiriliyorsunuz...", "success");
+                            window.location.href = "/static/apply.html";
+                        } else {
+                            // Aday kaydını tamamen bitirmiş gerçek bir kullanıcıysa:
+                            window.location.href = "/static/profile.html";
+                        }
                     } else {
-                        // Profil yoksa (404 Not Found): Başvuru formuna yönlendir
+                        // Eğer hiçbir şekilde token/profil eşleşmediyse başvuru formuna yönlendir
                         window.location.href = "/static/apply.html";
                     }
                 }, 1000);

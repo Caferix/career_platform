@@ -1,5 +1,5 @@
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Date, Text
 from sqlalchemy.orm import relationship
 from app.db.database import Base
@@ -10,17 +10,17 @@ class Candidate(Base):
     __tablename__ = "applicants"
 
     id = Column(Integer, primary_key=True, index=True)
-    first_name = Column(String(50), nullable=False)
-    last_name = Column(String(50), nullable=False)
+    first_name = Column(String(50), nullable=True)
+    last_name = Column(String(50), nullable=True)
     
     # Kural 15: Hassas kişisel veriler (PII) şifreli saklanır.
-    _email = Column("email", String(255), nullable=False)
+    _email = Column("email", String(255), nullable=True)
     _phone = Column("phone", String(255), nullable=False, unique=True, index=True)
-    hashed_phone = Column(String(64), nullable=True, index=True)
+    hashed_phone = Column(String(64), nullable=False, index=True)
     
     #  Yeni Kişisel ve Profil Alanları (Düz Metin & Doğru Tipler)
     birth_date = Column(Date, nullable=True) # Takvim seçimi için saf Date
-    nationality = Column(String(50), nullable=False, default="T.C.")
+    nationality = Column(String(50), nullable=True)
     marital_status = Column(String(10), nullable=True) # Evli / Bekar (Pydantic kontrollü)
     driving_license = Column(String(50), nullable=True) # Çoklu seçim: "B, C" gibi virgülle ayrılmış
     gender = Column(String(10), nullable=True) # Kadın / Erkek
@@ -42,8 +42,8 @@ class Candidate(Base):
     is_deleted = Column(Boolean, nullable=False, default=False)
     deleted_at = Column(DateTime, nullable=True)
     
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=datetime.now(timezone.utc).replace(tzinfo=None))
+    updated_at = Column(DateTime, nullable=False, default=datetime.now(timezone.utc).replace(tzinfo=None), onupdate=datetime.utcnow)
 
     # İlişkiler (Kural 13: ON DELETE CASCADE yok, kod seviyesinde silinecek)
     applications = relationship("Application", back_populates="candidate")

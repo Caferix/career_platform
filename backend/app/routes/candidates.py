@@ -43,19 +43,24 @@ async def get_current_candidate_profile(
     return candidate
 
 @router.post("/", response_model=CandidateResponse, status_code=status.HTTP_201_CREATED)
-async def create_new_candidate(
+async def complete_new_candidate(
     request: Request,
     data: CandidateCreate, 
     is_communication_consented: bool = False,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)  # Token bağımlılığı eklendi
 ):
-    """Yeni bir aday profili oluşturur ve IP adresi ile rızaları mühürler."""
+    """Gölge adayın profil bilgilerini tamamlar (giydirir) ve kalan rızaları mühürler."""
     ip_address = request.client.host
     user_agent = request.headers.get("user-agent")
     
-    # 1. Servis adayı ve rızaları oluşturup veritabanına mühürlüyor
-    candidate = await candidate_service.create_candidate(
+    # Token'dan adayın gerçek ID'sini alıyoruz
+    candidate_id = current_user.get("user_id") # verify-otp'de token'a "user_id" olarak gömdük
+    
+    # 1. Servisimiz gölge adayı güncelleyip eğitim/dil/rızaları bağlayacak
+    candidate = await candidate_service.complete_shadow_candidate(
         db=db, 
+        candidate_id=candidate_id,
         data=data, 
         ip_address=ip_address,
         user_agent=user_agent,
