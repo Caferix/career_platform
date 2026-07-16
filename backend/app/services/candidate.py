@@ -56,6 +56,7 @@ async def create_candidate(
             address_detail=data.address_detail, 
             military_status=data.military_status,
             skills=data.skills,
+            social_link=data.social_links,
             is_phone_verified=True
         )
         
@@ -333,11 +334,13 @@ async def complete_shadow_candidate(
         candidate.marital_status = data.marital_status
         candidate.driving_license = data.driving_license
         candidate.gender = data.gender
+        candidate.social_links = data.social_links
         candidate.city = data.city
         candidate.district = data.district
         candidate.address_detail = data.address_detail  # Setter property otomatik şifreleyecek
         candidate.military_status = data.military_status
         candidate.skills = data.skills
+       
         
         # 3. Çoklu Eğitim Geçmişini bağlıyoruz (Alt Tablo)
         if data.educations:
