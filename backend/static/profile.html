@@ -14,7 +14,7 @@
 
     <nav class="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-40 shadow-sm">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <span class="text-base font-bold text-gray-900 tracking-tight">Kariyer Platformu</span>
+            <span class="text-base font-bold text-gray-900 tracking-tight">Dener Kariyer</span>
             <button id="logoutBtn" class="text-sm font-medium text-[#e11b3a] hover:text-[#c51631] transition-colors">Çıkış Yap</button>
         </div>
     </nav>
@@ -41,7 +41,7 @@
                 </div>
                 <div id="lockBadge" class="hidden flex items-center gap-2 bg-amber-50 text-amber-700 border border-amber-200 px-4 py-2 rounded-xl text-xs font-medium">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                    Başvurunuz incelemede olduğu için profiliniz kilitlenmiştir.
+                    Başvurunuz incelemede olduğu için düzenleme yapamazsınız.
                 </div>
             </div>
 
@@ -54,7 +54,8 @@
 
                 <form id="profileForm" class="p-6 space-y-5">
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- 1. Satır: Ad, Soyad, Doğum Tarihi (3'lü Grid) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Ad</label>
                             <input type="text" id="firstName" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
@@ -63,13 +64,14 @@
                             <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Soyad</label>
                             <input type="text" id="lastName" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
                         </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Doğum Tarihi</label>
                             <input type="date" id="birthDate" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
                         </div>
+                    </div>
+
+                    <!-- 2. Satır: Cinsiyet, Medeni Durum, Askerlik (3'lü Grid - Askerlik kısaldı) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Cinsiyet</label>
                             <select id="gender" disabled onchange="handleGenderChangeProfile()" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
@@ -82,9 +84,16 @@
                                 <option value="">Seçiniz</option><option value="Bekar">Bekar</option><option value="Evli">Evli</option>
                             </select>
                         </div>
+                        <!-- Erkek seçilirse görünür, grid'in tam 3'te 1'ini kaplar -->
+                        <div id="militaryStatusContainer" style="display: none;">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Askerlik Durumu</label>
+                            <select id="militaryStatus" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
+                                <option value="">Seçiniz</option><option value="Yapıldı">Yapıldı</option><option value="Muaf">Muaf</option><option value="Tecilli">Tecilli</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- 🌟 UYRUK BURAYA EKLENDİ -->
+                    <!-- 3. Satır: İl, İlçe, Uyruk (3'lü Grid) -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">İl</label>
@@ -102,7 +111,19 @@
                         </div>
                     </div>
 
-                    <!-- 🌟 SOSYAL LİNKLER BURAYA EKLENDİ -->
+                    <!-- 4. Satır: Sürücü Belgeleri (Esnek, Tam Genişlik Alan) -->
+                    <div class="my-6 pt-4 border-t border-gray-100">
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase">Sürücü Belgeleri (Ehliyet)</label>
+                            <button type="button" id="addLicenseBtn" onclick="addLicenseRowProfile()" disabled class="hidden text-xs font-semibold text-[#e11b3a] hover:underline">+ Yeni Ehliyet Ekle</button>
+                        </div>
+                        <!-- flex-wrap sayesinde ehliyet eklendikçe yan yana dizilir, sığmazsa alt satıra temizce geçer -->
+                        <div id="licenseContainer" class="flex flex-wrap gap-2">
+                            <!-- Dinamik ehliyet satırları JS ile buraya basılacak -->
+                        </div>
+                    </div>
+
+                    <!-- 5. Satır: Sosyal Linkler (2'li Grid) -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Sosyal Medya / Portfolyo 1</label>
@@ -114,24 +135,18 @@
                         </div>
                     </div>
 
-                    <!-- 🌟 ASKERLİK DURUMU DIV'E ALINDI -->
-                    <div id="militaryStatusContainer" style="display: none;">
-                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Askerlik Durumu</label>
-                        <select id="militaryStatus" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
-                            <option value="">Seçiniz</option><option value="Yapıldı">Yapıldı</option><option value="Muaf">Muaf</option><option value="Tecilli">Tecilli</option>
-                        </select>
-                    </div>
-
+                    <!-- Geri Kalan Alanlar -->
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Açık Adres</label>
                         <textarea id="addressDetail" rows="2" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all resize-none"></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Teknik Yetkinlikler (Skills)</label>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Teknik Yetkinlikler</label>
                         <input type="text" id="skills" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
                     </div>
 
+                    <!-- Kaydetme Alanı -->
                     <div id="saveSection" class="hidden pt-4 flex gap-3 border-t border-gray-100">
                         <button type="button" onclick="cancelEdit()" class="px-6 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">İptal</button>
                         <button type="button" onclick="saveProfile()" id="saveBtn" class="flex-1 bg-[#e11b3a] hover:bg-[#c51631] text-white font-medium rounded-xl text-sm transition-all">Değişiklikleri Kaydet</button>
@@ -230,7 +245,7 @@
             "rejected":     { label: "Reddedildi",    cls: "bg-red-50 text-red-700 border-red-200" }
         };
 
-        // 🌟 YENİ ALANLAR EKLENDİ
+        //  YENİ ALANLAR EKLENDİ
         const formFields = ["firstName", "lastName", "birthDate", "gender", "maritalStatus", "city", "district", "militaryStatus", "addressDetail", "skills", "nationality", "socialLink1", "socialLink2"];
 
         function showAlert(msg, type="error") {
@@ -240,7 +255,7 @@
             box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        // 🌟 ASKERLİK KONTROLÜ
+        //  ASKERLİK KONTROLÜ
         function handleGenderChangeProfile() {
             const gender = document.getElementById("gender").value;
             const militaryContainer = document.getElementById("militaryStatusContainer");
@@ -254,7 +269,7 @@
             }
         }
 
-        // 🌟 ÜLKELERİ ÇEK
+        //  ÜLKELERİ ÇEK
         async function fetchCountries() {
             try {
                 const response = await fetch('/static/countries.json');
@@ -285,6 +300,22 @@
                 el.classList.remove("bg-gray-50", "opacity-60");
                 el.classList.add("bg-white");
             });
+
+            // Ehliyet butonunu aktifleştir ve kutuları kilitten çıkar
+            const addBtn = document.getElementById("addLicenseBtn");
+            addBtn.disabled = false;
+            addBtn.classList.remove("hidden");
+
+            const container = document.getElementById("licenseContainer");
+            const currentLicenses = Array.from(container.querySelectorAll(".license-select")).map(s => s.value);
+            container.innerHTML = "";
+    
+            if (currentLicenses.length === 0) {
+                addLicenseRowProfile("B", false); // Boşsa 1 tane B sınıfı aç
+            } else {
+                currentLicenses.forEach(lic => addLicenseRowProfile(lic, false));
+            }
+
             document.getElementById("saveSection").classList.remove("hidden");
             document.getElementById("editToggleBtn").classList.add("hidden");
         }
@@ -300,11 +331,10 @@
             document.getElementById("militaryStatus").value = originalData.military_status || "";
             document.getElementById("addressDetail").value = originalData.address_detail || "";
             document.getElementById("skills").value = originalData.skills || "";
-
-            // 🌟 YENİ ALANLARI SIFIRLA
             document.getElementById("nationality").value = originalData.nationality || "Türkiye";
             document.getElementById("socialLink1").value = (originalData.social_links && originalData.social_links.link_1) || "";
             document.getElementById("socialLink2").value = (originalData.social_links && originalData.social_links.link_2) || "";
+
 
             formFields.forEach(id => {
                 const el = document.getElementById(id);
@@ -312,11 +342,23 @@
                 el.classList.add("bg-gray-50", "opacity-60");
                 el.classList.remove("bg-white");
             });
+                // Ehliyet alanlarını kilitle ve geri yükle
+            const addBtn = document.getElementById("addLicenseBtn");
+            addBtn.disabled = true;
+            addBtn.classList.add("hidden");
+
+            const container = document.getElementById("licenseContainer");
+            container.innerHTML = "";
+            if (originalData.driving_license) {
+                const licenses = originalData.driving_license.split(",").map(s => s.trim()).filter(Boolean);
+                licenses.forEach(lic => addLicenseRowProfile(lic, true));
+            } else {
+                container.innerHTML = '<p class="text-xs text-gray-400 italic py-2">Ehliyet bilgisi eklenmemiş.</p>';
+            }
+
             document.getElementById("saveSection").classList.add("hidden");
             document.getElementById("editToggleBtn").classList.remove("hidden");
             document.getElementById("alertBox").classList.add("hidden");
-
-            // 🌟 EKRAN SIFIRLANDIĞINDA ASKERLİĞİ KONTROL ET
             handleGenderChangeProfile();
         }
 
@@ -325,6 +367,12 @@
             document.getElementById("saveBtn").textContent = "Kaydediliyor...";
 
             try {
+                // Ehliyet verilerini topla ve virgülle birleştir
+                const selectedLicenses = Array.from(document.querySelectorAll(".license-select"))
+                    .map(select => select.value)
+                    .filter(Boolean);
+                const uniqueLicenses = [...new Set(selectedLicenses)].join(", ");
+
                 const payload = {
                     first_name: document.getElementById("firstName").value.trim(),
                     last_name: document.getElementById("lastName").value.trim(),
@@ -336,13 +384,12 @@
                     military_status: document.getElementById("militaryStatus").value || null,
                     address_detail: document.getElementById("addressDetail").value.trim() || null,
                     skills: document.getElementById("skills").value.trim() || null,
-                    
-                    // 🌟 YENİ ALANLARI GÖNDER
                     nationality: document.getElementById("nationality").value || "Türkiye",
                     social_links: {
                         link_1: document.getElementById("socialLink1").value.trim() || null,
                         link_2: document.getElementById("socialLink2").value.trim() || null
-                    }
+                    },
+                    driving_license: uniqueLicenses || null // 🌟 Backend'e virgüllü formatta gönderilir
                 };
 
                 const res = await fetch(`${BASE_URL}/applicants/${candidateId}`, {
@@ -364,6 +411,32 @@
                 document.getElementById("saveBtn").textContent = "Değişiklikleri Kaydet";
             }
         }
+
+        const LICENSE_OPTIONS = ["M", "A1", "A2", "A", "B1", "B", "BE", "C1", "C1E", "C", "CE", "D1", "D1E", "D", "DE", "F", "G"];
+
+            function addLicenseRowProfile(val = "", isDisabled = true) {
+                const container = document.getElementById("licenseContainer");
+                const rowCount = container.children.length;
+
+                // Tüm sınıflar eklendiyse daha fazla ekletme
+                if (rowCount >= LICENSE_OPTIONS.length && !isDisabled) return;
+
+                const div = document.createElement("div");
+                // Kutucuklar yan yana dizilecek şekilde tasarlandı
+                div.className = "flex gap-1 items-center bg-gray-50 p-1.5 rounded-xl border border-gray-200 w-auto";
+    
+                let optionsHtml = LICENSE_OPTIONS.map(opt => 
+                    `<option value="${opt}" ${opt === val ? "selected" : ""}>${opt} Sınıfı</option>`
+                ).join("");
+
+                div.innerHTML = `
+                    <select class="license-select text-xs border rounded-lg px-3 py-1.5 bg-white focus:ring-[#e11b3a] outline-none disabled:opacity-60 disabled:bg-gray-50 cursor-pointer" ${isDisabled ? "disabled" : ""}>
+                        ${optionsHtml}
+                    </select>
+                    ${!isDisabled ? `<button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2 py-1.5 hover:bg-red-50 rounded-lg text-xs transition-colors">✕</button>` : ''}
+                `;
+                container.appendChild(div);
+            }
 
         // --- EĞİTİM: EKLEME / SİLME ---
         function toggleAddEduForm() {

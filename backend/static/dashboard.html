@@ -314,6 +314,7 @@
                 applicant.city,
                 applicant.district,
                 applicant.nationality,
+                applicant.driving_license,
                 applicant.skills,
                 applicant.address_detail
             ];
@@ -620,7 +621,7 @@
 
             document.getElementById("modalStatusSelect").value = app.status;
 
-            // 🌟 YENİ: Uyruk bilgisi eklendi
+            
             document.getElementById("modalPersonalInfo").innerHTML = `
                 <div><span class="text-gray-400">E-Posta:</span> ${applicant.email || '-'}</div>
                 <div><span class="text-gray-400">Telefon:</span> ${applicant.phone || '-'}</div>
@@ -630,10 +631,11 @@
                 <div><span class="text-gray-400">Askerlik:</span> ${applicant.military_status || '-'}</div>
                 <div><span class="text-gray-400">Konum:</span> ${applicant.city || '-'} ${applicant.district ? '/ ' + applicant.district : ''}</div>
                 <div><span class="text-gray-400">Uyruk:</span> ${applicant.nationality || 'Belirtilmedi'}</div>
+                <div><span class="text-gray-400">Sürücü Belgesi:</span> ${applicant.driving_license || 'Yok / Belirtilmedi'}</div>
                 <div class="md:col-span-2"><span class="text-gray-400">Adres:</span> ${applicant.address_detail || '-'}</div>
             `;
 
-            // 🌟 YENİ: Sosyal Linkler alanı dinamik dolduruluyor
+            // Sosyal Linkler alanı dinamik dolduruluyor
             const socialBox = document.getElementById("modalSocialLinks");
             socialBox.innerHTML = "";
             if (applicant.social_links && (applicant.social_links.link_1 || applicant.social_links.link_2)) {
