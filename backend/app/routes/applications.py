@@ -149,3 +149,4 @@ async def change_application_status(
     )
 
     return updated_record
+
