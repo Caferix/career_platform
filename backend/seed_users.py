@@ -1,5 +1,3 @@
-# backend/seed_users.py
-
 import asyncio
 import os
 import sys
@@ -13,69 +11,30 @@ from app.core.settings import settings
 
 async def seed():
     async with SessionLocal() as db:
-        # 1. Mevcut .env yapılandırmasını güvenli liman (fallback) olarak koruyoruz
-        hr_name     = settings.SEED_HR_LOGIN
-        hr_password = settings.SEED_HR_PASSWORD
+        # .env / settings içerisinden admin bilgilerini güvenli bir şekilde alıyoruz
+        admin_name = getattr(settings, "ADMIN_LOGIN", None)
+        admin_password = getattr(settings, "ADMIN_PASSWORD", None)
 
-        if not hr_password:
-            hr_password = getattr(settings, "SEED_HR_PASSWORD", None)
-
-        if not hr_password:
-            print("❌ HATA: .env dosyasında SEED_HR_PASSWORD okunamadı!")
+        if not admin_name or not admin_password:
+            print("❌ HATA: .env dosyasında ADMIN_LOGIN veya ADMIN_PASSWORD okunamadı!")
             return
 
-        # 2. HR Kullanıcısı Kontrol ve Tohumlama (Mevcut kodunuz aynen kalıyor)
-        existing_hr = await user_service.get_user_by_login_name(db, hr_name)
-        if not existing_hr:
+        # Kural 4: db.query() yasak, asenkron get_user_by_login_name servisimiz select() ile kontrol ediyor
+        existing_admin = await user_service.get_user_by_login_name(db, admin_name)
+        if not existing_admin:
+            # Kural 2: Rotalar ince, iş servislerde. Kayıt işlemini asenkron servise paslıyoruz.
             await user_service.create_user(
                 db=db,
-                payload=UserCreate(login_name=hr_name, password=hr_password, role="hr")
-            )
-            print(f"✅ Başarılı: HR kullanıcısı sisteme mühürlendi -> {hr_name}")
-        else:
-            print("ℹ️ HR kullanıcısı veritabanında zaten mevcut, atlanıyor.")
-
-        # 3. 🌟 YENİ: Fabrika Departman Müdürleri Tohumlama Havuzu
-        # company-structure.js dosyasındaki birebir departman isimleriyle eşliyoruz!
-        managers_pool = [
-            {
-                "login_name": "manager_yazilim",
-                "password": "ManagerPass123",
-                "department": "Yazılım ve AR-GE Mühendisliği"
-            },
-            {
-                "login_name": "manager_uretim",
-                "password": "ProductionPass123",
-                "department": "Fabrika Üretim ve Montaj Hattı" 
-            },
-            {
-                "login_name": "manager_lojistik",
-                "password": "LogisticsPass123",
-                "department": "Satın Alma ve Lojistik"
-            },
-            {
-                "login_name": "manager_bakim",
-                "password": "MaintenancePass123",
-                "department": "Bakım onarım ve Tesis Yönetimi"
-            }
-        ]
-
-        # Döngüyle tüm havuzu veritabanına mühürlüyoruz
-        for mgr in managers_pool:
-            existing_mgr = await user_service.get_user_by_login_name(db, mgr["login_name"])
-            if not existing_mgr:
-                await user_service.create_user(
-                    db=db,
-                    payload=UserCreate(
-                        login_name=mgr["login_name"], 
-                        password=mgr["password"], 
-                        role="manager", 
-                        department=mgr["department"]
-                    )
+                payload=UserCreate(
+                    login_name=admin_name, 
+                    password=admin_password, 
+                    role="admin",
+                    department=None
                 )
-                print(f"✅ Başarılı: Departman Müdürü mühürlendi -> {mgr['login_name']} [{mgr['department']}]")
-            else:
-                print(f"ℹ️ {mgr['login_name']} veritabanında zaten mevcut, atlanıyor.")
+            )
+            print(f"✅ Başarılı: Sistem ilk kurulumu yapıldı. ADMIN kullanıcısı mühürlendi -> {admin_name}")
+        else:
+            print("ℹ️ ADMIN kullanıcısı veritabanında zaten mevcut, tohumlama atlanıyor.")
 
 if __name__ == "__main__":
     asyncio.run(seed())
