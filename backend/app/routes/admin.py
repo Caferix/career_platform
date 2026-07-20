@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 from app.db.database import get_db
 from app.core.security import require_admin  # Rol kontrol dependency'si
 from app.models.user_model import User  # User modeli (Source 9'daki yapı)
-from app.models.organization import Department, Position  # Organizasyon modelleri (Source 6)
+from app.models.company import Department, Position  # Organizasyon modelleri (Source 6)
 from app.schemas.admin import DepartmentCreate, DepartmentResponse, PositionCreate, PositionResponse
 from app.schemas.user import UserCreate  # Şema klasörünüzdeki mevcut yapı varsayımıyla
 
@@ -57,3 +57,50 @@ async def create_position(payload: PositionCreate, db: AsyncSession = Depends(ge
     await db.commit()
     await db.refresh(new_pos)
     return new_pos
+
+@router.post("/users", status_code=status.HTTP_201_CREATED)
+async def create_system_user(payload: UserCreate, db: AsyncSession = Depends(get_db)):
+    """
+    Admin tarafından sisteme yeni İK (hr) veya Departman Müdürü (manager) ekler.
+    Kullanıcı adı benzersiz olmalıdır. Şifre arka planda hashlenerek saklanır.
+    """
+    # 1. Kullanıcı adı benzersizlik kontrolü (Kural 4: select)
+    stmt = select(User).where(User.login_name == payload.login_name)
+    result = await db.execute(stmt)
+    if result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Bu kullanıcı adı zaten alınmış."
+        )
+    
+    # 2. İş kuralları doğrulaması (Manager için departman şartı)
+    if payload.role == "manager" and not payload.department:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Departman Müdürü rolü için departman seçimi zorunludur."
+        )
+        
+    if payload.role == "hr":
+        payload.department = None  # HR için departman bağımsızdır
+
+    # 3. Şifreyi hashleme ve veritabanına mühürleme
+    # Not: Servis katmanınız (user_service.create_user) zaten bu hashlemeyi yapıyorsa 
+    # doğrudan servisi de çağırabilirsiniz. Rota seviyesinde manuel ekleyeceksek:
+    hashed_pwd = hash_data(payload.password) # Projedeki sync hash motorunuz
+    
+    new_user = User(
+        login_name=payload.login_name,
+        hashed_password=hashed_pwd,
+        role=payload.role,
+        department=payload.department,
+        is_active=True
+    )
+    
+    db.add(new_user)
+    await db.commit()
+    await db.refresh(new_user)
+    
+    return {
+        "message": f"Kullanıcı başarıyla oluşturuldu: {new_user.login_name}",
+        "role": new_user.role
+    }
