@@ -2,7 +2,7 @@ import logging
 from fastapi import HTTPException, status, UploadFile
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.candidate import Application  # Daha önce candidate.py içine eklediğimiz model
+from app.models.candidate import Application
 from app.schemas.application import ApplicationCreate, ApplicationStatusUpdate
 from app.services import storage
 
@@ -28,12 +28,17 @@ async def create_application(db: AsyncSession, payload: ApplicationCreate) -> Ap
             detail="Bu pozisyon için halihazırda aktif bir başvurunuz bulunmaktadır."
         )
         
+    # Yeni model alanlarına göre güncellenmiş kayıt
     new_app = Application(
         applicant_id=payload.applicant_id,
         position=payload.position,
         department=payload.department,
         experience_years=payload.experience_years,
-        notes=payload.notes,
+        experience_detail=payload.experience_detail,
+        cover_letter=payload.cover_letter,
+        reference_name=payload.reference_name,
+        reference_position=payload.reference_position,
+        reference_contact=payload.reference_contact, # Property setter ile otomatik şifrelenir
         status="Applied"
     )
     db.add(new_app)
@@ -50,17 +55,16 @@ async def upload_cv_to_application(db: AsyncSession, app_id: int, file: UploadFi
     if not app_record:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Başvuru kaydı bulunamadı.")
         
-    # Emniyet: Eğer adayın sistemde zaten bir CV'si yüklüyse, yenisini yazmadan önce eskisini diskten siliyoruz
     if app_record.cv_url:
         storage.delete_file(app_record.cv_url)
         
     try:
-        # Bağımsız depolama servisimizi (storage.py) çağırıp dosyayı diske yazıyoruz
         saved_filename = await storage.save_file(file)
     except ValueError as ve:
+        # storage servisinden gelen hata mesajını jenerik hale getirmek istersen burayı da maskeleyebilirsin
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
         
-    app_record.cv_url = saved_filename  # Benzersiz UUID dosya adını DB'ye işliyoruz
+    app_record.cv_url = saved_filename
     await db.commit()
     await db.refresh(app_record)
     return app_record
@@ -73,7 +77,7 @@ async def list_applications(db: AsyncSession, department: str = None) -> list[Ap
         query = query.where(Application.department == department)
         
     result = await db.execute(query)
-    return result.scalars().all()
+    return list(result.scalars().all())
 
 async def update_application_status(db: AsyncSession, app_id: int, payload: ApplicationStatusUpdate) -> Application:
     """Başvurunun statüsünü (İK süreç adımlarını) günceller."""

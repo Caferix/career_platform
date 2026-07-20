@@ -25,7 +25,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
             </div>
-            <h1 class="text-2xl font-bold text-slate-800">Aday Başvuru Sistemi</h1>
+            <h1 class="text-2xl font-bold text-slate-800">Dener Kariyer Aday Başvuru Sistemi</h1>
             <p class="text-sm text-slate-500 mt-1">Telefon numaranızla güvenli giriş yapın</p>
         </div>
 
@@ -169,7 +169,7 @@
             </div>
             <div class="p-6 overflow-y-auto text-sm text-slate-600 leading-relaxed space-y-4">
                 <p>
-                    <strong class="text-slate-800">Veri Sorumlusu:</strong> Şirket Adı A.Ş.
+                    <strong class="text-slate-800">Veri Sorumlusu:</strong> Dener Makina San. ve Tic. A.Ş.
                 </p>
                 <p>
                     6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, aday başvuru sürecinde
@@ -384,11 +384,35 @@
 
                 localStorage.setItem("auth_token", token);
                 localStorage.setItem("phone", activePhone);
+                localStorage.removeItem("applied");
 
-                showAlert("Kimlik doğrulama başarılı! Yönlendiriliyorsunuz...", "success");
-                setTimeout(() => {
-                    window.location.href = "/static/apply.html";
-                }, 1200);
+                showAlert("Kimlik doğrulama başarılı! Profil kontrol ediliyor...", "success");
+
+                // AKILLI YÖNLENDİRME KATMANI
+                // Adayın daha önce oluşturulmuş bir /applicants/me profili var mı sorguluyoruz
+                const profileRes = await fetch(`${BASE_URL}/applicants/me`, {
+                    method: "GET",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                setTimeout(async () => {
+                    if (profileRes.ok) {
+                        const candidate = await profileRes.json();
+        
+                        
+                        // Eğer veritabanında kaydı varsa (200) ama ad soyad alanları boşsa (Gölge adaysa):
+                        if (!candidate.first_name || !candidate.last_name) {
+                            showAlert("Profilinizin eksik kısımlarını tamamlamak üzere yönlendiriliyorsunuz...", "success");
+                            window.location.href = "/static/apply.html";
+                        } else {
+                            // Aday kaydını tamamen bitirmiş gerçek bir kullanıcıysa:
+                            window.location.href = "/static/profile.html";
+                        }
+                    } else {
+                        // Eğer hiçbir şekilde token/profil eşleşmediyse başvuru formuna yönlendir
+                        window.location.href = "/static/apply.html";
+                    }
+                }, 1000);
 
             } catch (error) {
                 showAlert(error.message);

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aday Profili</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; }
+        input[type="date"]:focus::-webkit-calendar-picker-indicator { opacity: 1; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen pb-16">
+
+    <nav class="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <span class="text-base font-bold text-gray-900 tracking-tight">Dener Kariyer</span>
+            <button id="logoutBtn" class="text-sm font-medium text-[#e11b3a] hover:text-[#c51631] transition-colors">Çıkış Yap</button>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 pt-8 space-y-6">
+
+        <div id="loadingState" class="text-center py-16">
+            <svg class="animate-spin w-8 h-8 text-[#e11b3a] mx-auto" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            <p class="text-sm text-gray-500 mt-3">Profiliniz yükleniyor...</p>
+        </div>
+
+        <div id="alertBox" class="hidden p-4 rounded-xl text-sm font-medium border mb-4"></div>
+
+        <div id="profileContainer" class="hidden space-y-6">
+
+            <!-- KARŞILAMA VE KİLİT BİLDİRİMİ -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900" id="welcomeText">Merhaba</h1>
+                    <p class="text-sm text-gray-500 mt-1" id="applicantContact"></p>
+                </div>
+                <div id="lockBadge" class="hidden flex items-center gap-2 bg-amber-50 text-amber-700 border border-amber-200 px-4 py-2 rounded-xl text-xs font-medium">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    Başvurunuz incelemede olduğu için düzenleme yapamazsınız.
+                </div>
+            </div>
+
+            <!-- TEK KART: KİŞİSEL BİLGİLER -->
+            <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden relative">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Profil Bilgileriniz</h2>
+                    <button id="editToggleBtn" onclick="toggleEdit()" class="text-xs font-semibold text-[#e11b3a] hover:text-[#c51631] px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">Düzenle</button>
+                </div>
+
+                <form id="profileForm" class="p-6 space-y-5">
+
+                    <!-- 1. Satır: Ad, Soyad, Doğum Tarihi (3'lü Grid) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Ad</label>
+                            <input type="text" id="firstName" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Soyad</label>
+                            <input type="text" id="lastName" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Doğum Tarihi</label>
+                            <input type="date" id="birthDate" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <!-- 2. Satır: Cinsiyet, Medeni Durum, Askerlik (3'lü Grid - Askerlik kısaldı) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Cinsiyet</label>
+                            <select id="gender" disabled onchange="handleGenderChangeProfile()" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
+                                <option value="">Seçiniz</option><option value="Kadın">Kadın</option><option value="Erkek">Erkek</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Medeni Durum</label>
+                            <select id="maritalStatus" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
+                                <option value="">Seçiniz</option><option value="Bekar">Bekar</option><option value="Evli">Evli</option>
+                            </select>
+                        </div>
+                        <!-- Erkek seçilirse görünür, grid'in tam 3'te 1'ini kaplar -->
+                        <div id="militaryStatusContainer" style="display: none;">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Askerlik Durumu</label>
+                            <select id="militaryStatus" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
+                                <option value="">Seçiniz</option><option value="Yapıldı">Yapıldı</option><option value="Muaf">Muaf</option><option value="Tecilli">Tecilli</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 3. Satır: İl, İlçe, Uyruk (3'lü Grid) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">İl</label>
+                            <input type="text" id="city" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">İlçe</label>
+                            <input type="text" id="district" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Uyruk</label>
+                            <select id="nationality" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
+                                <option value="Türkiye">Türkiye</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 4. Satır: Sürücü Belgeleri (Esnek, Tam Genişlik Alan) -->
+                    <div class="my-6 pt-4 border-t border-gray-100">
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase">Sürücü Belgeleri (Ehliyet)</label>
+                            <button type="button" id="addLicenseBtn" onclick="addLicenseRowProfile()" disabled class="hidden text-xs font-semibold text-[#e11b3a] hover:underline">+ Yeni Ehliyet Ekle</button>
+                        </div>
+                        <!-- flex-wrap sayesinde ehliyet eklendikçe yan yana dizilir, sığmazsa alt satıra temizce geçer -->
+                        <div id="licenseContainer" class="flex flex-wrap gap-2">
+                            <!-- Dinamik ehliyet satırları JS ile buraya basılacak -->
+                        </div>
+                    </div>
+
+                    <!-- 5. Satır: Sosyal Linkler (2'li Grid) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Sosyal Medya / Portfolyo 1</label>
+                            <input type="url" id="socialLink1" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all" placeholder="https://...">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Sosyal Medya / Portfolyo 2</label>
+                            <input type="url" id="socialLink2" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <!-- Geri Kalan Alanlar -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Açık Adres</label>
+                        <textarea id="addressDetail" rows="2" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all resize-none"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Teknik Yetkinlikler</label>
+                        <input type="text" id="skills" disabled class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-gray-50 disabled:opacity-60 focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all">
+                    </div>
+
+                    <!-- Kaydetme Alanı -->
+                    <div id="saveSection" class="hidden pt-4 flex gap-3 border-t border-gray-100">
+                        <button type="button" onclick="cancelEdit()" class="px-6 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">İptal</button>
+                        <button type="button" onclick="saveProfile()" id="saveBtn" class="flex-1 bg-[#e11b3a] hover:bg-[#c51631] text-white font-medium rounded-xl text-sm transition-all">Değişiklikleri Kaydet</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ALT TABLOLAR (Eğitim & Dil - Artık ekleme/silme destekli) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Eğitimler -->
+                <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                        <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Eğitim Geçmişi</h2>
+                        <button id="addEduBtn" onclick="toggleAddEduForm()" class="hidden text-xs font-semibold text-[#e11b3a] hover:underline">+ Ekle</button>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <div id="educationsList" class="space-y-3"></div>
+
+                        <!-- Yeni Eğitim Ekleme Formu -->
+                        <div id="addEduForm" class="hidden bg-gray-50 p-3.5 rounded-xl border border-gray-200 space-y-2">
+                            <select id="newEduLevel" class="w-full text-xs border rounded-lg px-2 py-1.5">
+                                <option value="Lisans">Lisans</option>
+                                <option value="Ön Lisans">Ön Lisans</option>
+                                <option value="Lise">Lise</option>
+                            </select>
+                            <input type="text" id="newEduSchool" placeholder="Okul" class="w-full text-xs border rounded-lg px-2 py-1.5">
+                            <input type="text" id="newEduDept" placeholder="Bölüm" class="w-full text-xs border rounded-lg px-2 py-1.5">
+                            <input type="number" id="newEduYear" placeholder="Mezuniyet Yılı" class="w-full text-xs border rounded-lg px-2 py-1.5">
+                            <div class="flex gap-2 pt-1">
+                                <button type="button" onclick="toggleAddEduForm()" class="flex-1 text-xs border border-gray-200 rounded-lg py-1.5 text-gray-600 hover:bg-gray-100">İptal</button>
+                                <button type="button" onclick="addEducation()" class="flex-1 text-xs bg-[#e11b3a] text-white rounded-lg py-1.5 hover:bg-[#c51631]">Kaydet</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diller -->
+                <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                        <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Yabancı Diller</h2>
+                        <button id="addLangBtn" onclick="toggleAddLangForm()" class="hidden text-xs font-semibold text-[#e11b3a] hover:underline">+ Ekle</button>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <div id="languagesList" class="space-y-3"></div>
+
+                        <!-- Yeni Dil Ekleme Formu -->
+                        <div id="addLangForm" class="hidden bg-gray-50 p-3.5 rounded-xl border border-gray-200 space-y-2">
+                            <input type="text" id="newLangName" placeholder="Dil (Örn: İngilizce)" class="w-full text-xs border rounded-lg px-2 py-1.5">
+                            <select id="newLangLevel" class="w-full text-xs border rounded-lg px-2 py-1.5">
+                                <option value="A1">A1</option><option value="A2">A2</option><option value="B1">B1</option>
+                                <option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option>
+                            </select>
+                            <div class="flex gap-2 pt-1">
+                                <button type="button" onclick="toggleAddLangForm()" class="flex-1 text-xs border border-gray-200 rounded-lg py-1.5 text-gray-600 hover:bg-gray-100">İptal</button>
+                                <button type="button" onclick="addLanguage()" class="flex-1 text-xs bg-[#e11b3a] text-white rounded-lg py-1.5 hover:bg-[#c51631]">Kaydet</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BAŞVURULAR -->
+            <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                    <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Başvuru Durumunuz</h2>
+                </div>
+                <div class="px-6 py-5">
+                    <div id="noApplicationState" class="hidden text-center py-8 text-sm text-gray-400 border-2 border-dashed border-gray-100 rounded-xl">
+                        Henüz yapılmış bir başvuru kaydınız bulunmamaktadır.
+                    </div>
+                    <div id="applicationsList" class="space-y-3"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const BASE_URL = "http://localhost:8000";
+        const token = localStorage.getItem("auth_token");
+        let originalData = {};
+        let candidateId = null;
+        let isProfileLocked = false;
+
+        if (!token) window.location.href = "/static/index.html";
+
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            localStorage.clear();
+            window.location.href = "/static/index.html";
+        });
+
+        const statusConfig = {
+            "applied":      { label: "Yeni Başvuru",  cls: "bg-blue-50 text-blue-700 border-blue-200" },
+            "under_review": { label: "İncelemede",    cls: "bg-amber-50 text-amber-700 border-amber-200" },
+            "accepted":     { label: "Kabul Edildi",  cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+            "rejected":     { label: "Reddedildi",    cls: "bg-red-50 text-red-700 border-red-200" }
+        };
+
+        //  YENİ ALANLAR EKLENDİ
+        const formFields = ["firstName", "lastName", "birthDate", "gender", "maritalStatus", "city", "district", "militaryStatus", "addressDetail", "skills", "nationality", "socialLink1", "socialLink2"];
+
+        function showAlert(msg, type="error") {
+            const box = document.getElementById("alertBox");
+            box.className = `p-4 rounded-xl text-sm font-medium border block ${type==='error'?'bg-red-50 text-red-700 border-red-200':'bg-emerald-50 text-emerald-700 border-emerald-200'}`;
+            box.textContent = msg;
+            box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        //  ASKERLİK KONTROLÜ
+        function handleGenderChangeProfile() {
+            const gender = document.getElementById("gender").value;
+            const militaryContainer = document.getElementById("militaryStatusContainer");
+            const militarySelect = document.getElementById("militaryStatus");
+
+            if (gender === "Erkek") {
+                militaryContainer.style.display = "block";
+            } else {
+                militaryContainer.style.display = "none";
+                militarySelect.value = ""; 
+            }
+        }
+
+        //  ÜLKELERİ ÇEK
+        async function fetchCountries() {
+            try {
+                const response = await fetch('/static/countries.json');
+                if (!response.ok) throw new Error("Ülkeler JSON yüklenemedi.");
+                const countries = await response.json();
+                
+                const natSelect = document.getElementById("nationality");
+                
+                countries.forEach(country => {
+                    if (country !== "Türkiye") {
+                        natSelect.add(new Option(country, country));
+                    }
+                });
+            } catch (error) {
+                console.error("Ülke verisi hatası:", error);
+            }
+        }
+
+        function toggleEdit() {
+            if (isProfileLocked) {
+                showAlert("Başvurunuz inceleme aşamasında olduğu için profiliniz güncellenemez.");
+                return;
+            }
+
+            formFields.forEach(id => {
+                const el = document.getElementById(id);
+                el.disabled = false;
+                el.classList.remove("bg-gray-50", "opacity-60");
+                el.classList.add("bg-white");
+            });
+
+            // Ehliyet butonunu aktifleştir ve kutuları kilitten çıkar
+            const addBtn = document.getElementById("addLicenseBtn");
+            addBtn.disabled = false;
+            addBtn.classList.remove("hidden");
+
+            const container = document.getElementById("licenseContainer");
+            const currentLicenses = Array.from(container.querySelectorAll(".license-select")).map(s => s.value);
+            container.innerHTML = "";
+    
+            if (currentLicenses.length === 0) {
+                addLicenseRowProfile("B", false); // Boşsa 1 tane B sınıfı aç
+            } else {
+                currentLicenses.forEach(lic => addLicenseRowProfile(lic, false));
+            }
+
+            document.getElementById("saveSection").classList.remove("hidden");
+            document.getElementById("editToggleBtn").classList.add("hidden");
+        }
+
+        function cancelEdit() {
+            document.getElementById("firstName").value = originalData.first_name || "";
+            document.getElementById("lastName").value = originalData.last_name || "";
+            document.getElementById("birthDate").value = originalData.birth_date || "";
+            document.getElementById("gender").value = originalData.gender || "";
+            document.getElementById("maritalStatus").value = originalData.marital_status || "";
+            document.getElementById("city").value = originalData.city || "";
+            document.getElementById("district").value = originalData.district || "";
+            document.getElementById("militaryStatus").value = originalData.military_status || "";
+            document.getElementById("addressDetail").value = originalData.address_detail || "";
+            document.getElementById("skills").value = originalData.skills || "";
+            document.getElementById("nationality").value = originalData.nationality || "Türkiye";
+            document.getElementById("socialLink1").value = (originalData.social_links && originalData.social_links.link_1) || "";
+            document.getElementById("socialLink2").value = (originalData.social_links && originalData.social_links.link_2) || "";
+
+
+            formFields.forEach(id => {
+                const el = document.getElementById(id);
+                el.disabled = true;
+                el.classList.add("bg-gray-50", "opacity-60");
+                el.classList.remove("bg-white");
+            });
+                // Ehliyet alanlarını kilitle ve geri yükle
+            const addBtn = document.getElementById("addLicenseBtn");
+            addBtn.disabled = true;
+            addBtn.classList.add("hidden");
+
+            const container = document.getElementById("licenseContainer");
+            container.innerHTML = "";
+            if (originalData.driving_license) {
+                const licenses = originalData.driving_license.split(",").map(s => s.trim()).filter(Boolean);
+                licenses.forEach(lic => addLicenseRowProfile(lic, true));
+            } else {
+                container.innerHTML = '<p class="text-xs text-gray-400 italic py-2">Ehliyet bilgisi eklenmemiş.</p>';
+            }
+
+            document.getElementById("saveSection").classList.add("hidden");
+            document.getElementById("editToggleBtn").classList.remove("hidden");
+            document.getElementById("alertBox").classList.add("hidden");
+            handleGenderChangeProfile();
+        }
+
+        async function saveProfile() {
+            document.getElementById("saveBtn").disabled = true;
+            document.getElementById("saveBtn").textContent = "Kaydediliyor...";
+
+            try {
+                // Ehliyet verilerini topla ve virgülle birleştir
+                const selectedLicenses = Array.from(document.querySelectorAll(".license-select"))
+                    .map(select => select.value)
+                    .filter(Boolean);
+                const uniqueLicenses = [...new Set(selectedLicenses)].join(", ");
+
+                const payload = {
+                    first_name: document.getElementById("firstName").value.trim(),
+                    last_name: document.getElementById("lastName").value.trim(),
+                    birth_date: document.getElementById("birthDate").value || null,
+                    gender: document.getElementById("gender").value || null,
+                    marital_status: document.getElementById("maritalStatus").value || null,
+                    city: document.getElementById("city").value.trim() || null,
+                    district: document.getElementById("district").value.trim() || null,
+                    military_status: document.getElementById("militaryStatus").value || null,
+                    address_detail: document.getElementById("addressDetail").value.trim() || null,
+                    skills: document.getElementById("skills").value.trim() || null,
+                    nationality: document.getElementById("nationality").value || "Türkiye",
+                    social_links: {
+                        link_1: document.getElementById("socialLink1").value.trim() || null,
+                        link_2: document.getElementById("socialLink2").value.trim() || null
+                    },
+                    driving_license: uniqueLicenses || null // 🌟 Backend'e virgüllü formatta gönderilir
+                };
+
+                const res = await fetch(`${BASE_URL}/applicants/${candidateId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) throw new Error("Profil güncellenemedi. Lütfen tekrar deneyin.");
+
+                const updated = await res.json();
+                originalData = { ...originalData, ...updated };
+                showAlert("Profiliniz başarıyla güncellendi.", "success");
+                cancelEdit();
+            } catch (err) {
+                showAlert(err.message);
+            } finally {
+                document.getElementById("saveBtn").disabled = false;
+                document.getElementById("saveBtn").textContent = "Değişiklikleri Kaydet";
+            }
+        }
+
+        const LICENSE_OPTIONS = ["M", "A1", "A2", "A", "B1", "B", "BE", "C1", "C1E", "C", "CE", "D1", "D1E", "D", "DE", "F", "G"];
+
+            function addLicenseRowProfile(val = "", isDisabled = true) {
+                const container = document.getElementById("licenseContainer");
+                const rowCount = container.children.length;
+
+                // Tüm sınıflar eklendiyse daha fazla ekletme
+                if (rowCount >= LICENSE_OPTIONS.length && !isDisabled) return;
+
+                const div = document.createElement("div");
+                // Kutucuklar yan yana dizilecek şekilde tasarlandı
+                div.className = "flex gap-1 items-center bg-gray-50 p-1.5 rounded-xl border border-gray-200 w-auto";
+    
+                let optionsHtml = LICENSE_OPTIONS.map(opt => 
+                    `<option value="${opt}" ${opt === val ? "selected" : ""}>${opt} Sınıfı</option>`
+                ).join("");
+
+                div.innerHTML = `
+                    <select class="license-select text-xs border rounded-lg px-3 py-1.5 bg-white focus:ring-[#e11b3a] outline-none disabled:opacity-60 disabled:bg-gray-50 cursor-pointer" ${isDisabled ? "disabled" : ""}>
+                        ${optionsHtml}
+                    </select>
+                    ${!isDisabled ? `<button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold px-2 py-1.5 hover:bg-red-50 rounded-lg text-xs transition-colors">✕</button>` : ''}
+                `;
+                container.appendChild(div);
+            }
+
+        // --- EĞİTİM: EKLEME / SİLME ---
+        function toggleAddEduForm() {
+            document.getElementById("addEduForm").classList.toggle("hidden");
+        }
+
+        async function addEducation() {
+            const level = document.getElementById("newEduLevel").value;
+            const school = document.getElementById("newEduSchool").value.trim();
+            const dept = document.getElementById("newEduDept").value.trim();
+            const year = document.getElementById("newEduYear").value;
+
+            if (!school) { showAlert("Okul adı zorunludur."); return; }
+
+            try {
+                const res = await fetch(`${BASE_URL}/applicants/${candidateId}/educations`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                    body: JSON.stringify({
+                        education_level: level,
+                        school_name: school,
+                        department: dept || null,
+                        graduation_year: year ? parseInt(year) : null
+                    })
+                });
+                if (!res.ok) throw new Error("Eğitim eklenemedi.");
+
+                document.getElementById("newEduSchool").value = "";
+                document.getElementById("newEduDept").value = "";
+                document.getElementById("newEduYear").value = "";
+                toggleAddEduForm();
+                showAlert("Eğitim bilgisi eklendi.", "success");
+                await fetchProfile();
+            } catch (err) {
+                showAlert(err.message);
+            }
+        }
+
+        async function deleteEducation(eduId) {
+            if (!confirm("Bu eğitim kaydını silmek istediğinize emin misiniz?")) return;
+            try {
+                const res = await fetch(`${BASE_URL}/applicants/educations/${eduId}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error("Eğitim silinemedi.");
+                showAlert("Eğitim bilgisi silindi.", "success");
+                await fetchProfile();
+            } catch (err) {
+                showAlert(err.message);
+            }
+        }
+
+        // --- DİL: EKLEME / SİLME ---
+        function toggleAddLangForm() {
+            document.getElementById("addLangForm").classList.toggle("hidden");
+        }
+
+        async function addLanguage() {
+            const name = document.getElementById("newLangName").value.trim();
+            const level = document.getElementById("newLangLevel").value;
+
+            if (!name) { showAlert("Dil adı zorunludur."); return; }
+
+            try {
+                const res = await fetch(`${BASE_URL}/applicants/${candidateId}/languages`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                    body: JSON.stringify({ language_name: name, level: level })
+                });
+                if (!res.ok) throw new Error("Dil eklenemedi.");
+
+                document.getElementById("newLangName").value = "";
+                toggleAddLangForm();
+                showAlert("Dil bilgisi eklendi.", "success");
+                await fetchProfile();
+            } catch (err) {
+                showAlert(err.message);
+            }
+        }
+
+        async function deleteLanguage(langId) {
+            if (!confirm("Bu dil kaydını silmek istediğinize emin misiniz?")) return;
+            try {
+                const res = await fetch(`${BASE_URL}/applicants/languages/${langId}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error("Dil silinemedi.");
+                showAlert("Dil bilgisi silindi.", "success");
+                await fetchProfile();
+            } catch (err) {
+                showAlert(err.message);
+            }
+        }
+
+        async function fetchProfile() {
+            try {
+                const res = await fetch(`${BASE_URL}/applicants/me`, { headers: { "Authorization": `Bearer ${token}` } });
+                if (!res.ok) throw new Error("Profil yüklenemedi.");
+
+                const data = await res.json();
+
+                if (!data.first_name || !data.last_name) {
+                    window.location.href = "/static/apply.html";
+                    return;
+                }
+                
+                originalData = data;
+                candidateId = data.id;
+
+                if (data.applications && data.applications.length > 0) {
+                    isProfileLocked = data.applications.some(app => {
+                        const s = app.status ? app.status.toLowerCase() : "";
+                        return s === "under_review" || s === "accepted" || s === "rejected";
+                    });
+                }
+
+                if (isProfileLocked) {
+                    document.getElementById("lockBadge").classList.remove("hidden");
+                    document.getElementById("editToggleBtn").classList.add("hidden");
+                    document.getElementById("addEduBtn").classList.add("hidden");
+                    document.getElementById("addLangBtn").classList.add("hidden");
+                } else {
+                    document.getElementById("addEduBtn").classList.remove("hidden");
+                    document.getElementById("addLangBtn").classList.remove("hidden");
+                }
+
+                document.getElementById("welcomeText").textContent = `Merhaba, ${data.first_name} ${data.last_name}`;
+                document.getElementById("applicantContact").textContent = `${data.email} • ${data.phone}`;
+
+                // Formu lokal veri ile doldur
+                cancelEdit();
+
+                const eduList = document.getElementById("educationsList");
+                if (data.educations && data.educations.length > 0) {
+                    eduList.innerHTML = data.educations.map(edu => `
+                        <div class="flex justify-between items-start bg-gray-50 p-3.5 rounded-xl border border-gray-200">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-semibold text-gray-800">${edu.school_name}</span>
+                                <span class="text-xs text-gray-500 mt-1">${edu.education_level} • ${edu.department || 'Bölüm Yok'} • ${edu.graduation_year || '-'}</span>
+                            </div>
+                            ${!isProfileLocked ? `<button onclick="deleteEducation(${edu.id})" class="text-red-500 hover:bg-red-100 rounded-lg px-2 py-1 font-bold text-xs">✕</button>` : ''}
+                        </div>
+                    `).join("");
+                } else {
+                    eduList.innerHTML = '<p class="text-xs text-gray-400 italic">Eğitim geçmişi eklenmemiş.</p>';
+                }
+
+                const langList = document.getElementById("languagesList");
+                if (data.languages && data.languages.length > 0) {
+                    langList.innerHTML = data.languages.map(lang => `
+                        <div class="flex justify-between items-center bg-gray-50 p-3.5 rounded-xl border border-gray-200">
+                            <span class="text-sm font-medium text-gray-800">${lang.language_name}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-bold bg-[#e11b3a]/10 text-[#e11b3a] px-2.5 py-1 rounded-md">${lang.level}</span>
+                                ${!isProfileLocked ? `<button onclick="deleteLanguage(${lang.id})" class="text-red-500 hover:bg-red-100 rounded-lg px-2 py-1 font-bold text-xs">✕</button>` : ''}
+                            </div>
+                        </div>
+                    `).join("");
+                } else {
+                    langList.innerHTML = '<p class="text-xs text-gray-400 italic">Yabancı dil bilgisi eklenmemiş.</p>';
+                }
+
+                const appList = document.getElementById("applicationsList");
+                if (!data.applications || data.applications.length === 0) {
+                    document.getElementById("noApplicationState").classList.remove("hidden");
+                } else {
+                    appList.innerHTML = data.applications.map(app => {
+                        const sc = statusConfig[app.status ? app.status.toLowerCase() : "applied"] || { label: app.status, cls: "bg-gray-100 text-gray-600 border-gray-200" };
+                        const localDate = new Date(app.created_at).toLocaleString("tr-TR", { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                        return `
+                            <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-white border border-gray-200 rounded-xl hover:border-gray-300 transition-colors gap-4 shadow-sm">
+                                <div>
+                                    <h3 class="font-bold text-gray-900 text-base">${app.position}</h3>
+                                    <p class="text-xs text-gray-500 mt-1">${localDate} • ${app.department || 'Genel Başvuru'}</p>
+                                </div>
+                                <span class="text-[11px] font-bold px-3 py-1.5 rounded-full border ${sc.cls} whitespace-nowrap text-center">
+                                    ${sc.label}
+                                </span>
+                            </div>
+                        `;
+                    }).join("");
+                }
+
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("profileContainer").classList.remove("hidden");
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // ÖNCE ÜLKELERİ SONRA PROFİLİ ÇEK
+        window.addEventListener("DOMContentLoaded", async () => {
+            await fetchCountries();
+            await fetchProfile();
+        });
+    </script>
+</body>
+</html>

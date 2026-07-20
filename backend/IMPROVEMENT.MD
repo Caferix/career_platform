@@ -101,3 +101,15 @@ applicant henüz yok, token içinde applicant_id yok.
 2. Token payload'ına applicant_id ekle
 3. Akış: OTP doğrula → applicant oluştur → token üret
 **Etki:** routes/auth.py, services/auth.py güncellenir
+
+### Consent Kayıt Mekanizması
+**Şu an:** Frontend'de checkbox var, backend'e kaydedilmiyor
+**İyileştirme:** Başvuru tamamlanınca:
+- POST /consents/ → kvkk kaydı (zorunlu)
+- POST /consents/ → iletisim kaydı (opsiyonel, işaretlendiyse)
+**Faz 6'da tamamlanacak**
+
+### Aday Profili — Applications Yükleme
+Şu an GET /applicants/me boş applications listesi döndürüyor.
+selectinload ile ilişki yüklenmeli veya
+GET /applicants/me/applications ayrı endpoint yazılmalı.

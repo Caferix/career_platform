@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Yönetim Paneli - Başvurular</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen pb-12">
+
+    <!-- LOGIN GATE -->
+    <div id="authGate" class="hidden fixed inset-0 bg-white/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white border border-gray-200 p-8 rounded-2xl w-full max-w-md shadow-2xl space-y-6 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#e11b3a] to-[#c51631]"></div>
+            <div class="text-center">
+                <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Yönetim Paneli</h2>
+                <p class="text-xs text-gray-500 mt-1">Lütfen kurumsal kullanıcı bilgilerinizle giriş yapın.</p>
+            </div>
+            <div id="loginError" class="hidden text-xs bg-red-50 border border-[#e11b3a]/40 text-red-700 p-3 rounded-xl transition-all"></div>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Kullanıcı Adı</label>
+                    <input type="text" id="loginName" placeholder="Kullanıcı Adı" required
+                           class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:border-[#e11b3a] focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all placeholder-slate-400">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Şifre</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required
+                           class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:border-[#e11b3a] focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all placeholder-slate-400">
+                </div>
+                <button type="submit"
+                        class="w-full bg-[#e11b3a] hover:bg-[#c51631] text-white font-medium py-3 rounded-xl transition-all text-sm shadow-lg shadow-[#e11b3a]/10 hover:shadow-[#c51631]/20 active:scale-[0.98]">
+                    Giriş Yap
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="panelContent" class="hidden">
+
+        <nav class="bg-white border-b border-gray-200 px-6 py-4 mb-8 sticky top-0 z-40 shadow-sm">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <span class="w-2.5 h-2.5 bg-[#e11b3a] rounded-full animate-pulse"></span>
+                    <span class="text-lg font-bold text-gray-900 tracking-tight">Dener Kariyer Aday Havuzu</span>
+                </div>
+                <button id="adminLogoutBtn" class="text-sm font-medium text-[#e11b3a] hover:text-[#c51631] transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50">
+                    Sistemden Çıkış
+                </button>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto px-4 space-y-6">
+
+            <div id="adminAlert" class="hidden p-4 rounded-xl text-sm font-medium border bg-red-50 border-red-200 text-red-700 transition-all duration-300"></div>
+
+            <!-- FİLTRELER -->
+            <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 shadow-sm">
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Anahtar Kelime Arama</label>
+                    <input type="text" id="searchBar" placeholder="Ad, e-posta, şehir, yetenek, dil, okul..." class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Pozisyon</label>
+                    <select id="filterPosition" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all cursor-pointer">
+                        <option value="">Tüm Pozisyonlar</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Departman</label>
+                    <select id="filterDepartment" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all cursor-pointer">
+                        <option value="">Tüm Departmanlar</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Başvuru Durumu</label>
+                    <select id="filterStatus" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all cursor-pointer">
+                        <option value="">Tüm Durumlar</option>
+                        <option value="Applied">Yeni Başvuru</option>
+                        <option value="Under_Review">İncelemede</option>
+                        <option value="Accepted">Kabul Edildi</option>
+                        <option value="Rejected">Reddedildi</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- GELİŞMİŞ FİLTRELER -->
+            <div class="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                <button type="button" id="advancedFiltersToggle" class="w-full flex items-center justify-between px-4 md:px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors">
+                    <span class="flex items-center gap-2">
+                        Gelişmiş Filtreler
+                        <span id="advancedFiltersBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e11b3a]/10 text-[#e11b3a]"></span>
+                    </span>
+                    <span id="advancedFiltersChevron" class="text-gray-400 transition-transform">▾</span>
+                </button>
+                <div id="advancedFiltersPanel" class="hidden px-4 md:px-6 pb-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-gray-200 pt-4">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Deneyim (Min Yıl)</label>
+                        <input type="number" id="filterExperienceMin" min="0" placeholder="0" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Deneyim (Max Yıl)</label>
+                        <input type="number" id="filterExperienceMax" min="0" placeholder="Sınırsız" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Başvuru Tarihi (Başlangıç)</label>
+                        <input type="date" id="filterDateFrom" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Başvuru Tarihi (Bitiş)</label>
+                        <input type="date" id="filterDateTo" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Uyruk</label>
+                        <select id="filterNationality" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all cursor-pointer">
+                            <option value="">Tüm Uyruklar</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end lg:col-start-4">
+                        <button type="button" id="clearAdvancedFiltersBtn" class="w-full bg-white border border-gray-200 text-gray-600 hover:text-[#e11b3a] hover:border-[#e11b3a]/40 font-medium text-sm py-2 rounded-xl transition-all">
+                            Gelişmiş Filtreleri Temizle
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-4">Aday Bilgisi</th>
+                                <th class="px-6 py-4">Pozisyon / Departman</th>
+                                <th class="px-6 py-4">Deneyim</th>
+                                <th class="px-6 py-4">Durum</th>
+                                <th class="px-6 py-4">Tarih</th>
+                            </tr>
+                        </thead>
+                        <tbody id="desktopTableBody" class="divide-y divide-gray-200 text-sm text-gray-700"></tbody>
+                    </table>
+                </div>
+
+                <div id="mobileCardsContainer" class="block md:hidden p-4 space-y-3"></div>
+
+                <div id="emptyState" class="hidden p-12 text-center text-gray-500 text-sm font-medium">
+                    Kriterlere uygun başvuru kaydı bulunamadı.
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- DETAY MODALI -->
+    <div id="detailModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between p-6 border-b border-slate-100">
+                <div>
+                    <h2 id="modalName" class="text-lg font-bold text-slate-800"></h2>
+                    <p id="modalPosition" class="text-xs text-gray-500 mt-0.5"></p>
+                </div>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">✕</button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-6 text-sm">
+
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-4">
+                    <span class="text-xs font-semibold text-gray-600 uppercase">Başvuru Durumu</span>
+                    <select id="modalStatusSelect" class="border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-1 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                        <option value="Applied">Yeni Başvuru</option>
+                        <option value="Under_Review">İncelemede</option>
+                        <option value="Accepted">Kabul Edildi</option>
+                        <option value="Rejected">Reddedildi</option>
+                    </select>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">İletişim & Kişisel Bilgiler</h3>
+                    <div id="modalPersonalInfo" class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1.5 text-gray-700"></div>
+                </div>
+
+                <!-- Sosyal Medya ve Portfolyo Alanı Eklendi -->
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Sosyal Medya & Portfolyo</h3>
+                    <div id="modalSocialLinks" class="flex flex-col gap-2 text-gray-700"></div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Yetkinlikler</h3>
+                    <p id="modalSkills" class="text-gray-700"></p>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Eğitim</h3>
+                    <div id="modalEducations" class="space-y-2"></div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Yabancı Diller</h3>
+                    <div id="modalLanguages" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Deneyimler</h3>
+                    <p id="modalExperience" class="text-gray-700"></p>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Önyazı</h3>
+                    <p id="modalCoverLetter" class="text-gray-700 italic"></p>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Referans Bilgisi</h3>
+                    <div id="modalReference" class="bg-gray-50 border border-gray-200 rounded-xl p-3 text-gray-700"></div>
+                </div>
+
+                <div id="modalCvSection"></div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/company-structure.js"></script>
+    <script>
+        const BASE_URL = window.location.origin;
+
+        const authGate = document.getElementById("authGate");
+        const panelContent = document.getElementById("panelContent");
+        const loginForm = document.getElementById("loginForm");
+        const loginError = document.getElementById("loginError");
+        const adminLogoutBtn = document.getElementById("adminLogoutBtn");
+
+        const desktopTableBody = document.getElementById("desktopTableBody");
+        const mobileCardsContainer = document.getElementById("mobileCardsContainer");
+        const emptyState = document.getElementById("emptyState");
+        const adminAlert = document.getElementById("adminAlert");
+        const searchBar = document.getElementById("searchBar");
+        const filterPosition = document.getElementById("filterPosition");
+        const filterDepartment = document.getElementById("filterDepartment");
+        const filterStatus = document.getElementById("filterStatus");
+        const filterExperienceMin = document.getElementById("filterExperienceMin");
+        const filterExperienceMax = document.getElementById("filterExperienceMax");
+        const filterDateFrom = document.getElementById("filterDateFrom");
+        const filterDateTo = document.getElementById("filterDateTo");
+        const filterNationality = document.getElementById("filterNationality");
+        const advancedFiltersToggle = document.getElementById("advancedFiltersToggle");
+        const advancedFiltersPanel = document.getElementById("advancedFiltersPanel");
+        const advancedFiltersChevron = document.getElementById("advancedFiltersChevron");
+        const advancedFiltersBadge = document.getElementById("advancedFiltersBadge");
+        const clearAdvancedFiltersBtn = document.getElementById("clearAdvancedFiltersBtn");
+
+        let allApplications = [];
+        let applicantCache = {};
+        let currentModalAppId = null;
+
+        const statusConfig = {
+            "Applied":      { label: "Applied",      cls: "bg-blue-50 text-blue-700 border-blue-200" },
+            "Under_Review": { label: "Under Review",  cls: "bg-amber-50 text-amber-700 border-amber-200" },
+            "Accepted":     { label: "Accepted",      cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+            "Rejected":     { label: "Rejected",      cls: "bg-red-50 text-red-700 border-red-200" }
+        };
+
+        function showAdminError(text) {
+            adminAlert.textContent = text;
+            adminAlert.classList.remove("hidden");
+        }
+
+        function departmentLabel(value) {
+            return value || "-";
+        }
+
+        function syncDashboardFilters() {
+            if (!filterPosition) return;
+            filterPosition.innerHTML = '<option value="">Tüm Pozisyonlar</option>';
+            getAllPositionsAlphabetical().forEach(pos => {
+                const opt = document.createElement("option");
+                opt.value = pos;
+                opt.textContent = pos;
+                filterPosition.appendChild(opt);
+            });
+        }
+
+        function populateDepartmentFilter() {
+            if (!filterDepartment) return;
+            const currentValue = filterDepartment.value;
+
+            const uniqueDepartments = [...new Set(
+                allApplications
+                    .map(app => app.department)
+                    .filter(dep => dep && dep.trim() !== "")
+            )].sort((a, b) => a.localeCompare(b, "tr"));
+
+            filterDepartment.innerHTML = '<option value="">Tüm Departmanlar</option>';
+            uniqueDepartments.forEach(dep => {
+                const opt = document.createElement("option");
+                opt.value = dep;
+                opt.textContent = dep;
+                filterDepartment.appendChild(opt);
+            });
+
+            // Veri yenilendiğinde seçili filtre hâlâ mevcutsa koru
+            if (uniqueDepartments.includes(currentValue)) {
+                filterDepartment.value = currentValue;
+            }
+        }
+
+        // Aday detayındaki iç içe alanlardan (eğitim, dil) arama için düz metin çıkarır
+        function buildApplicantSearchIndex(applicant) {
+            if (!applicant) return "";
+
+            const parts = [
+                applicant.first_name,
+                applicant.last_name,
+                applicant.email,
+                applicant.phone,
+                applicant.city,
+                applicant.district,
+                applicant.nationality,
+                applicant.driving_license,
+                applicant.skills,
+                applicant.address_detail
+            ];
+
+            if (Array.isArray(applicant.educations)) {
+                applicant.educations.forEach(edu => {
+                    parts.push(edu.school_name, edu.education_level, edu.department);
+                });
+            }
+
+            if (Array.isArray(applicant.languages)) {
+                applicant.languages.forEach(lang => {
+                    parts.push(lang.language_name, lang.level);
+                });
+            }
+
+            return parts.filter(Boolean).join(" ").toLowerCase();
+        }
+
+        let countriesList = null; // countries.json'dan gelen ülke isimleri, önbelleğe alınır
+
+        // countries.json farklı formatlarda olabilir: ["Türkiye", ...] veya
+        // [{ name: "Türkiye" }, ...] veya [{ code: "TR", name: "Türkiye" }, ...]
+        function normalizeCountriesData(data) {
+            if (!Array.isArray(data)) return [];
+            return data
+                .map(item => {
+                    if (typeof item === "string") return item;
+                    if (item && typeof item === "object") return item.name || item.country || item.title || null;
+                    return null;
+                })
+                .filter(Boolean);
+        }
+
+        async function loadCountriesList() {
+            if (countriesList) return countriesList;
+            try {
+                const res = await fetch(`${BASE_URL}/static/countries.json`);
+                if (!res.ok) throw new Error(`countries.json çekilemedi. Durum: ${res.status}`);
+                const data = await res.json();
+                countriesList = normalizeCountriesData(data).sort((a, b) => a.localeCompare(b, "tr"));
+            } catch (error) {
+                console.error("Uyruk listesi yüklenemedi, aday verisinden türetiliyor:", error);
+                countriesList = null;
+            }
+            return countriesList;
+        }
+
+        async function populateNationalityFilter() {
+            if (!filterNationality) return;
+            const currentValue = filterNationality.value;
+
+            const countries = await loadCountriesList();
+
+            // countries.json başarıyla yüklendiyse onu kullan, aksi halde eski yönteme (aday verisinden
+            // türetme) geri düş — böylece dosya erişilemez olsa bile filtre çalışmaya devam eder.
+            const uniqueNationalities = countries || [...new Set(
+                Object.values(applicantCache)
+                    .map(applicant => applicant.nationality)
+                    .filter(nat => nat && nat.trim() !== "")
+            )].sort((a, b) => a.localeCompare(b, "tr"));
+
+            filterNationality.innerHTML = '<option value="">Tüm Uyruklar</option>';
+            uniqueNationalities.forEach(nat => {
+                const opt = document.createElement("option");
+                opt.value = nat;
+                opt.textContent = nat;
+                filterNationality.appendChild(opt);
+            });
+
+            if (uniqueNationalities.includes(currentValue)) {
+                filterNationality.value = currentValue;
+            }
+        }
+
+        function updateAdvancedFiltersBadge() {
+            const activeCount = [
+                filterExperienceMin.value,
+                filterExperienceMax.value,
+                filterDateFrom.value,
+                filterDateTo.value,
+                filterNationality.value
+            ].filter(v => v !== "").length;
+
+            if (activeCount > 0) {
+                advancedFiltersBadge.textContent = activeCount;
+                advancedFiltersBadge.classList.remove("hidden");
+            } else {
+                advancedFiltersBadge.classList.add("hidden");
+            }
+        }
+
+        advancedFiltersToggle.addEventListener("click", () => {
+            advancedFiltersPanel.classList.toggle("hidden");
+            advancedFiltersChevron.classList.toggle("rotate-180");
+        });
+
+        clearAdvancedFiltersBtn.addEventListener("click", () => {
+            filterExperienceMin.value = "";
+            filterExperienceMax.value = "";
+            filterDateFrom.value = "";
+            filterDateTo.value = "";
+            filterNationality.value = "";
+            updateAdvancedFiltersBadge();
+            renderTable();
+        });
+
+        function checkAdminAuth() {
+            const token = localStorage.getItem("admin_token");
+            if (!token || token === "undefined" || token === "null") {
+                panelContent.classList.add("hidden");
+                authGate.classList.remove("hidden");
+            } else {
+                authGate.classList.add("hidden");
+                panelContent.classList.remove("hidden");
+                loadDashboardData();
+            }
+        }
+
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            loginError.classList.add("hidden");
+
+            const login_name = document.getElementById("loginName").value.trim();
+            const password = document.getElementById("loginPassword").value;
+
+            try {
+                const res = await fetch(`${BASE_URL}/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ login_name, password })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.detail || "Giriş bilgileri hatalı.");
+                }
+
+                const data = await res.json();
+                localStorage.setItem("admin_token", data.access_token);
+
+                loginForm.reset();
+                checkAdminAuth();
+
+            } catch (error) {
+                loginError.textContent = error.message;
+                loginError.classList.remove("hidden");
+            }
+        });
+
+        async function loadDashboardData() {
+            const token = localStorage.getItem("admin_token");
+            adminAlert.classList.add("hidden");
+
+            try {
+                const appRes = await fetch(`${BASE_URL}/applications/`, {
+                    method: "GET",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (!appRes.ok) throw new Error(`Başvurular çekilemedi. Durum: ${appRes.status}`);
+                allApplications = await appRes.json();
+
+                const uniqueApplicantIds = [...new Set(allApplications.map(app => app.applicant_id))];
+
+                const applicantPromises = uniqueApplicantIds.map(async (id) => {
+                    if (applicantCache[id]) return;
+
+                    try {
+                        const applicantRes = await fetch(`${BASE_URL}/applicants/${id}`, {
+                            method: "GET",
+                            headers: { "Authorization": `Bearer ${token}` }
+                        });
+                        if (applicantRes.ok) {
+                            applicantCache[id] = await applicantRes.json();
+                        }
+                    } catch (err) {
+                        console.error(`Aday ID ${id} çekilirken hata:`, err);
+                    }
+                });
+
+                await Promise.all(applicantPromises);
+                populateDepartmentFilter();
+                await populateNationalityFilter();
+                renderTable();
+
+            } catch (error) {
+                showAdminError(`Sistem Hatası: ${error.message}`);
+            }
+        }
+
+        function renderTable() {
+            const searchTerm = searchBar.value.toLowerCase().trim();
+            const posFilter = filterPosition.value;
+            const depFilter = filterDepartment.value;
+            const statusFilter = filterStatus.value;
+            const expMinFilter = filterExperienceMin.value !== "" ? Number(filterExperienceMin.value) : null;
+            const expMaxFilter = filterExperienceMax.value !== "" ? Number(filterExperienceMax.value) : null;
+            const dateFromFilter = filterDateFrom.value ? new Date(filterDateFrom.value) : null;
+            const dateToFilter = filterDateTo.value ? new Date(filterDateTo.value) : null;
+            const nationalityFilter = filterNationality.value;
+
+            updateAdvancedFiltersBadge();
+
+            const filtered = allApplications.filter(app => {
+                const applicant = applicantCache[app.applicant_id] || { first_name: "Bilinmeyen", last_name: "Aday" };
+
+                // Arama: sadece isim/pozisyon değil, aday detayındaki tüm alanları (e-posta, şehir,
+                // yetenek, dil, okul, uyruk vb.) kapsayan tek bir metin index'i üzerinden eşleştirilir.
+                const searchIndex = [
+                    buildApplicantSearchIndex(applicant),
+                    app.position,
+                    app.department
+                ].filter(Boolean).join(" ").toLowerCase();
+
+                const matchesSearch = !searchTerm || searchIndex.includes(searchTerm);
+                const matchesPosition = !posFilter || app.position === posFilter;
+                const matchesDepartment = !depFilter || app.department === depFilter;
+                const matchesStatus = !statusFilter || app.status === statusFilter;
+
+                const expYears = Number(app.experience_years) || 0;
+                const matchesExperience =
+                    (expMinFilter === null || expYears >= expMinFilter) &&
+                    (expMaxFilter === null || expYears <= expMaxFilter);
+
+                const appDate = app.created_at ? new Date(app.created_at) : null;
+                const matchesDate =
+                    (!dateFromFilter || (appDate && appDate >= dateFromFilter)) &&
+                    (!dateToFilter || (appDate && appDate <= new Date(dateToFilter.getTime() + 24 * 60 * 60 * 1000 - 1)));
+
+                const matchesNationality = !nationalityFilter || applicant.nationality === nationalityFilter;
+
+                return matchesSearch && matchesPosition && matchesDepartment && matchesStatus
+                    && matchesExperience && matchesDate && matchesNationality;
+            });
+
+            desktopTableBody.innerHTML = "";
+            mobileCardsContainer.innerHTML = "";
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove("hidden");
+                return;
+            }
+            emptyState.classList.add("hidden");
+
+            filtered.forEach(app => {
+                const applicant = applicantCache[app.applicant_id] || { first_name: "Bilinmeyen", last_name: "Aday", email: "-" };
+                const createdDate = app.created_at ? new Date(app.created_at).toLocaleDateString("tr-TR") : "-";
+                const sc = statusConfig[app.status] || { label: app.status, cls: "bg-gray-100 text-gray-600 border-gray-200" };
+
+                // --- DESKTOP SATIRI ---
+                const desktopRow = document.createElement("tr");
+                desktopRow.className = "hover:bg-red-50/50 transition-colors border-b border-gray-200/50 cursor-pointer";
+                desktopRow.onclick = () => openDetailModal(app.id);
+                desktopRow.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="font-semibold text-gray-900">${applicant.first_name} ${applicant.last_name}</div>
+                        <div class="text-xs text-gray-500">${applicant.email}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-800">${app.position}</div>
+                        <div class="text-xs text-gray-500">${departmentLabel(app.department)}</div>
+                    </td>
+                    <td class="px-6 py-4 text-gray-500 text-xs">${app.experience_years} Yıl</td>
+                    <td class="px-6 py-4">
+                        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full border whitespace-nowrap ${sc.cls}">${sc.label}</span>
+                    </td>
+                    <td class="px-6 py-4 text-xs text-gray-500">${createdDate}</td>
+                `;
+                desktopTableBody.appendChild(desktopRow);
+
+                // --- MOBİL KART ---
+                const mobileCard = document.createElement("div");
+                mobileCard.className = "bg-white border border-gray-200 p-4 rounded-xl space-y-3 shadow-sm active:bg-red-50/40 transition-colors cursor-pointer";
+                mobileCard.onclick = () => openDetailModal(app.id);
+                mobileCard.innerHTML = `
+                    <div class="flex justify-between items-start gap-2">
+                        <div>
+                            <div class="font-bold text-gray-900 text-base">${applicant.first_name} ${applicant.last_name}</div>
+                            <div class="text-xs text-gray-500">${applicant.email}</div>
+                        </div>
+                        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full border whitespace-nowrap ${sc.cls}">${sc.label}</span>
+                    </div>
+                    <div class="text-xs bg-gray-50 p-2 rounded-lg border border-gray-200 space-y-1">
+                        <div><span class="text-gray-500">Pozisyon:</span> <span class="text-gray-800 font-medium">${app.position}</span></div>
+                        <div><span class="text-gray-500">Departman:</span> <span class="text-gray-700">${departmentLabel(app.department)}</span></div>
+                        <div><span class="text-gray-500">Deneyim:</span> <span class="text-gray-500">${app.experience_years} Yıl</span></div>
+                    </div>
+                    <div class="text-[10px] text-gray-400 text-right">${createdDate}</div>
+                `;
+                mobileCardsContainer.appendChild(mobileCard);
+            });
+        }
+
+        function openDetailModal(appId) {
+            const app = allApplications.find(a => a.id === appId);
+            if (!app) return;
+            const applicant = applicantCache[app.applicant_id] || {};
+
+            currentModalAppId = appId;
+
+            document.getElementById("modalName").textContent = `${applicant.first_name || 'Bilinmeyen'} ${applicant.last_name || ''}`;
+            document.getElementById("modalPosition").textContent = `${app.position} • ${departmentLabel(app.department)}`;
+
+            document.getElementById("modalStatusSelect").value = app.status;
+
+            
+            document.getElementById("modalPersonalInfo").innerHTML = `
+                <div><span class="text-gray-400">E-Posta:</span> ${applicant.email || '-'}</div>
+                <div><span class="text-gray-400">Telefon:</span> ${applicant.phone || '-'}</div>
+                <div><span class="text-gray-400">Doğum Tarihi:</span> ${applicant.birth_date || '-'}</div>
+                <div><span class="text-gray-400">Cinsiyet:</span> ${applicant.gender || '-'}</div>
+                <div><span class="text-gray-400">Medeni Durum:</span> ${applicant.marital_status || '-'}</div>
+                <div><span class="text-gray-400">Askerlik:</span> ${applicant.military_status || '-'}</div>
+                <div><span class="text-gray-400">Konum:</span> ${applicant.city || '-'} ${applicant.district ? '/ ' + applicant.district : ''}</div>
+                <div><span class="text-gray-400">Uyruk:</span> ${applicant.nationality || 'Belirtilmedi'}</div>
+                <div><span class="text-gray-400">Sürücü Belgesi:</span> ${applicant.driving_license || 'Yok / Belirtilmedi'}</div>
+                <div class="md:col-span-2"><span class="text-gray-400">Adres:</span> ${applicant.address_detail || '-'}</div>
+            `;
+
+            // Sosyal Linkler alanı dinamik dolduruluyor
+            const socialBox = document.getElementById("modalSocialLinks");
+            socialBox.innerHTML = "";
+            if (applicant.social_links && (applicant.social_links.link_1 || applicant.social_links.link_2)) {
+                let linksHTML = "";
+                if (applicant.social_links.link_1) {
+                    linksHTML += `<a href="${applicant.social_links.link_1}" target="_blank" class="text-[#e11b3a] hover:underline text-sm truncate flex items-center gap-1">🔗 ${applicant.social_links.link_1}</a>`;
+                }
+                if (applicant.social_links.link_2) {
+                    linksHTML += `<a href="${applicant.social_links.link_2}" target="_blank" class="text-[#e11b3a] hover:underline text-sm truncate flex items-center gap-1">🔗 ${applicant.social_links.link_2}</a>`;
+                }
+                socialBox.innerHTML = linksHTML;
+            } else {
+                socialBox.innerHTML = '<p class="text-gray-400 italic text-sm">Link eklenmemiş.</p>';
+            }
+
+            document.getElementById("modalSkills").textContent = applicant.skills || "Belirtilmedi";
+
+            const eduBox = document.getElementById("modalEducations");
+            if (applicant.educations && applicant.educations.length > 0) {
+                eduBox.innerHTML = applicant.educations.map(edu => `
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                        <span class="font-medium text-gray-800">${edu.school_name}</span>
+                        <span class="text-gray-500"> — ${edu.education_level}${edu.department ? ' • ' + edu.department : ''}${edu.graduation_year ? ' • ' + edu.graduation_year : ''}</span>
+                    </div>
+                `).join("");
+            } else {
+                eduBox.innerHTML = '<p class="text-gray-400 italic">Eğitim bilgisi eklenmemiş.</p>';
+            }
+
+            const langBox = document.getElementById("modalLanguages");
+            if (applicant.languages && applicant.languages.length > 0) {
+                langBox.innerHTML = applicant.languages.map(lang => `
+                    <span class="bg-[#e11b3a]/10 text-[#e11b3a] text-xs font-semibold px-2.5 py-1 rounded-md">${lang.language_name} (${lang.level})</span>
+                `).join("");
+            } else {
+                langBox.innerHTML = '<p class="text-gray-400 italic">Dil bilgisi eklenmemiş.</p>';
+            }
+
+            document.getElementById("modalExperience").textContent = app.experience_detail
+                ? `${app.experience_detail} (Toplam ${app.experience_years} Yıl)`
+                : `Belirtilmedi (Toplam ${app.experience_years || 0} Yıl)`;
+
+            document.getElementById("modalCoverLetter").textContent = app.cover_letter || "Önyazı eklenmemiş.";
+
+            const refBox = document.getElementById("modalReference");
+            if (app.reference_name) {
+                refBox.innerHTML = `
+                    <div><span class="text-gray-400">Ad Soyad:</span> ${app.reference_name}</div>
+                    <div><span class="text-gray-400">Pozisyon / Kurum:</span> ${app.reference_position || '-'}</div>
+                    <div><span class="text-gray-400">İletişim:</span> ${app.reference_contact || '-'}</div>
+                `;
+            } else {
+                refBox.innerHTML = '<p class="text-gray-400 italic">Referans bilgisi eklenmemiş.</p>';
+            }
+
+            document.getElementById("modalCvSection").innerHTML = app.cv_url
+                ? `<button onclick="downloadCV(${app.id})" class="w-full bg-red-50 text-[#e11b3a] font-semibold text-sm py-2.5 rounded-xl hover:bg-red-100 transition-colors">CV İndir</button>`
+                : `<div class="text-center text-xs text-gray-400 bg-gray-50 border border-gray-200 rounded-xl py-2.5">CV Yüklenmemiş</div>`;
+
+            document.getElementById("detailModal").classList.remove("hidden");
+        }
+
+        function closeDetailModal() {
+            document.getElementById("detailModal").classList.add("hidden");
+            currentModalAppId = null;
+        }
+        document.getElementById("detailModal").addEventListener("click", function(e) { if (e.target === this) closeDetailModal(); });
+
+        document.getElementById("modalStatusSelect").addEventListener("change", (e) => {
+            if (currentModalAppId) updateApplicationStatus(currentModalAppId, e.target.value);
+        });
+
+        async function updateApplicationStatus(id, newStatus) {
+            const token = localStorage.getItem("admin_token");
+            adminAlert.classList.add("hidden");
+
+            try {
+                const res = await fetch(`${BASE_URL}/applications/${id}/status`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.detail || "Statü güncellenemedi.");
+                }
+
+                const appIndex = allApplications.findIndex(app => app.id == id);
+                if (appIndex !== -1) {
+                    allApplications[appIndex].status = newStatus;
+                }
+                renderTable();
+
+            } catch (error) {
+                showAdminError(`Güncelleme Hatası: ${error.message}`);
+                loadDashboardData();
+            }
+        }
+
+        async function downloadCV(id) {
+            const token = localStorage.getItem("admin_token");
+            adminAlert.classList.add("hidden");
+
+            try {
+                const res = await fetch(`${BASE_URL}/applications/${id}/cv`, {
+                    method: "GET",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (!res.ok) throw new Error("Dosya çekilemedi veya yetki yetersiz.");
+
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `candidate_cv_${id}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+            } catch (error) {
+                showAdminError(`CV İndirme Hatası: ${error.message}`);
+            }
+        }
+
+        searchBar.addEventListener("input", renderTable);
+        filterPosition.addEventListener("change", renderTable);
+        filterDepartment.addEventListener("change", renderTable);
+        filterStatus.addEventListener("change", renderTable);
+        filterExperienceMin.addEventListener("input", renderTable);
+        filterExperienceMax.addEventListener("input", renderTable);
+        filterDateFrom.addEventListener("change", renderTable);
+        filterDateTo.addEventListener("change", renderTable);
+        filterNationality.addEventListener("change", renderTable);
+
+        adminLogoutBtn.addEventListener("click", () => {
+            localStorage.removeItem("admin_token");
+            allApplications = [];
+            checkAdminAuth();
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            checkAdminAuth();
+            syncDashboardFilters();
+        });
+    </script>
+</body>
+</html>

@@ -41,6 +41,12 @@ class Settings(BaseSettings):
     ALLOWED_EXTENSIONS: List[str] = [".pdf", ".doc", ".docx"]
 
     BASE_URL: str = "http://localhost:8000"
+
+    SEED_HR_LOGIN: str = "hr_admin"
+    SEED_HR_PASSWORD: str = ""
+    SEED_MANAGER_LOGIN: str = "manager_admin"
+    SEED_MANAGER_PASSWORD: str = ""
+    SEED_MANAGER_DEPARTMENT: str = "Yazılım Geliştirme"
    
 
 

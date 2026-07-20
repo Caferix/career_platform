@@ -6,7 +6,8 @@ from jose import jwt
 from cryptography.fernet import Fernet
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends, HTTPException, status
 from app.core.settings import settings
 
 # .env içindeki ENCRYPTION_KEY ile kriptolama motorunu başlatıyoruz
@@ -49,18 +50,17 @@ class JWTAuth:
         self.secret_key = settings.SECRET_KEY
         self.algorithm = settings.ALGORITHM
 
-    def create_token(self, user_id: int, role: str, department: Optional[str] = None) -> str:
-        """Kullanıcı için rol tabanlı JWT token üretir."""
-        expire = datetime.now(timezone.utc) + timedelta(minutes=60 * 24)  # 24 Saat geçerli
-        to_encode = {
-            "sub": str(user_id),
+    def create_token(self, user_id: int, role: str, department: str = None, sub: str = None) -> str:
+        expire = datetime.now(timezone.utc) + timedelta(days=settings.ACCESS_TOKEN_EXPIRE_DAYS)
+        payload = {
+            "sub": sub or str(user_id),
+            "user_id": user_id,
             "role": role,
             "exp": expire
         }
         if department:
-            to_encode["department"] = department
-            
-        return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
+            payload["department"] = department
+        return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
 
 auth = JWTAuth()
 
@@ -70,3 +70,47 @@ def hash_data(data: str) -> str:
     Veritabanında hızlı arama yapmak (WHERE) için kullanılır.
     """
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
+
+# app/core/security.py dosyasının EN ALTINA eklenecek DOĞRU asenkron katman:
+
+
+
+security = HTTPBearer()
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        return payload
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Oturum süresi dolmuş veya geçersiz token."
+        )
+
+async def require_hr(current_user: dict = Depends(get_current_user)) -> dict:
+    """Sadece 'hr' rolüne sahip kullanıcıların geçmesine izin verir."""
+    if current_user.get("role") != "hr":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bu işlem için yetkiniz bulunmamaktadır."
+        )
+    return current_user
+
+async def require_manager(current_user: dict = Depends(get_current_user)) -> dict:
+    """Sadece 'manager' rolüne sahip kullanıcıların geçmesine izin verir."""
+    if current_user.get("role") != "manager":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bu işlem için yetkiniz bulunmamaktadır."
+        )
+    return current_user
+
+async def require_hr_or_manager(current_user: dict = Depends(get_current_user)) -> dict:
+    """Kullanıcı 'hr' veya 'manager' değilse geçişi engeller (403)."""
+    if current_user.get("role") not in ["hr", "manager"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bu alana erişim yetkiniz bulunmamaktadır."
+        )
+    return current_user

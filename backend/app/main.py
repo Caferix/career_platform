@@ -3,9 +3,9 @@ from fastapi import FastAPI
 from sqlalchemy import text
 from app.core.settings import settings
 from app.routes.candidates import router as candidate_router
-# Veritabanı el sıkışması (ping) testi için engine'i merkezi yerden çekiyoruz
 from app.db.database import engine
-from app.routes import auth, applications
+# 🌟 DÜZELTME 1: consents router'ını import listesine dahil ediyoruz
+from app.routes import auth, applications, consents 
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.core.security import limiter
@@ -21,24 +21,18 @@ app = FastAPI(
     version="1.0.0"
 )
 
-#slowapi yi fastapi'ye bağladık
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
 # --- ROUTER ENTEGRASYONLARI ---
-# Aday (Applicants) endpoint'lerini buraya bağlıyoruz
 app.include_router(candidate_router)
-
-#Auth endpointlerini buraya bağlıyoruz
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
-
-# Başvuru ve CV Yönetimi endpoint'lerini buraya mühürlüyoruz
 app.include_router(applications.router)
+# 🌟 DÜZELTME 2: consents rotasını ana uygulamaya tamamen mühürlüyoruz!
+app.include_router(consents.router) 
 
 # 2. CORS Yapılandırması
-# Frontend static dosyalar üzerinden geleceği için geliştirme aşamasında tüm kökenlere, 
-# metodlara ve header'lara izin veriyoruz.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -48,21 +42,17 @@ app.add_middleware(
 )
 
 # 3. Static Files Serving (Statik Dosya Sunumu)
-# backend/static klasörünün yolunu güvenli bir şekilde çözümlüyoruz.
-current_dir = os.path.dirname(os.path.abspath(__file__)) # app/
-backend_dir = os.path.dirname(current_dir) # backend/
+current_dir = os.path.dirname(os.path.abspath(__file__)) 
+backend_dir = os.path.dirname(current_dir) 
 static_dir_path = os.path.join(backend_dir, "static")
 
-# Eğer klasör yoksa hata vermemesi için otomatik oluşturuyoruz (defansif kodlama)
 if not os.path.exists(static_dir_path):
     os.makedirs(static_dir_path)
 
-# /static prefix'i ile static klasörünü dışarı açıyoruz
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # --- TEMEL ENDPOINT'LER ---
-""""""
 @app.get("/", tags=["Root"])
 async def root():
     """Uygulamanın ayakta olup olmadığını kontrol eden kök dizin."""
@@ -71,17 +61,12 @@ async def root():
         "status": "Healthy",
         "environment": "Development"
     }
-""""""
 
 
 @app.get("/test-db", tags=["Root"])
 async def test_database_connection():
-    """
-    Kural 7: Kurumsal veritabanı sağlık kontrolü (Health Check).
-    """
     try:
         async with engine.connect() as connection:
-            # <-- 2. Sorguyu text() fonksiyonu içine alıyoruz
             await connection.execute(text("SELECT 1"))
             
         return {
@@ -89,17 +74,57 @@ async def test_database_connection():
             "database": "Connected successfully to Docker PostgreSQL!"
         }
     except Exception as e:
-        # Hatanın gerçek sebebini terminalde veya debug aşamasında görmek için loglayabilirsin
         return {
             "status": "Error", 
             "details": "Veritabanı bağlantısı başarısız oldu veya sorgu yorumlanamadı."
         }
     
-# Kolaylık: http://localhost:8000/ adresine girildiğinde direkt index.html'e yönlendirsin veya açsın
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
     index_path = os.path.join(static_dir_path, "index.html")
     if os.path.exists(index_path):
         with open(index_path, "r", encoding="utf-8") as f:
             return f.read()
-    return "<h3>Statik index.html dosyası bulunamadı. Lütfen backend/static/ altında oluşturun.</h3>"    
+    return "<h3>Statik index.html dosyası bulunamadı. Lütfen backend/static/ altında oluşturun.</h3>"
+
+
+    # app/main.py dosyasının en altına ekle:
+
+@app.get("/public/positions")
+async def get_public_positions():
+    """
+    Ön yüzlerin (apply ve dashboard) pozisyon-departman ilişkisini
+    canlı olarak çekebilmesi için merkezi sözlüğü döner.
+    """
+    # Şirket/Platform organizasyon şemasının merkezi burasıdır.
+    # İleride veritabanına taşınacak olan yapı tam olarak budur.
+    structure = {
+        "Yazılım Geliştirme": [
+            "Backend Developer", 
+            "Frontend Developer", 
+            "Android Developer", 
+            "iOS Developer",
+            "DevOps Engineer",
+            "Android Intern"
+        ],
+        "Gömülü Sistemler": [
+            "Embedded Systems Engineer",
+            "Embedded Intern"
+        ],
+        "Siber Güvenlik": [
+            "Cybersecurity Expert", 
+            "Penetration Tester"
+        ],
+        "İnsan Kaynakları": [
+            "HR Intern", 
+            "Talent Acquisition Specialist"
+        ]
+    }
+    
+    # Ön yüzün kolayca "Pozisyon -> Departman" araması yapabilmesi için yapıyı düzleştiriyoruz
+    flat_map = {}
+    for dept, positions in structure.items():
+        for pos in positions:
+            flat_map[pos] = dept
+            
+    return flat_map
