@@ -34,7 +34,7 @@ async def admin_login(
         password=payload.password
     )
     
-    # 🌟 Başarısız giriş brute-force kaydı
+    # Başarısız giriş brute-force kaydı
     if not user:
         failed_attempt = FailedLoginAttempt(
             login_name=payload.login_name,
@@ -55,7 +55,7 @@ async def admin_login(
         department=user.department
     )
     
-    # 🌟 Artık Pydantic şeması (TokenResponse) tarafından doğrulanarak güvenle döner
+    # Artık Pydantic şeması (TokenResponse) tarafından doğrulanarak güvenle döner
     return TokenResponse(
         access_token=access_token, 
         token_type="bearer",
