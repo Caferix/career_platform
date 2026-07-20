@@ -113,3 +113,9 @@ applicant henüz yok, token içinde applicant_id yok.
 Şu an GET /applicants/me boş applications listesi döndürüyor.
 selectinload ile ilişki yüklenmeli veya
 GET /applicants/me/applications ayrı endpoint yazılmalı.
+
+
+
+### Yetki ve Rol Yönetimi Soyutlaması 
+- [x] **Yetki Soyutlama Katmanı:** `app/core/permissions.py` modülü sisteme entegre edildi. Rotaların (`routes/`) içerisinde katı ve koda gömülü `user.role == "hr"` gibi kontroller tamamen kaldırıldı.
+- [ ] **Gelecek Planı (Faz 6 - Dinamik Rol Matrisi):** İlerleyen aşamalarda veritabanına `roles` ve `permissions` tabloları eklendiğinde rotalardaki veri sorgularına ve endpoint'lere asla dokunulmayacak. Sadece `permissions.py` içerisindeki fonksiyonların gövdesi dinamik DB kontrolü yapacak şekilde güncellenecek. Sistem mimarisi teknik borç üretmeyecek şekilde esnek bırakıldı.

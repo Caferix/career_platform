@@ -2,14 +2,16 @@ import os
 from fastapi import APIRouter, Depends, UploadFile, File, status, Query, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from fastapi.responses import FileResponse
+
 from app.db.database import get_db  
 from app.schemas.application import ApplicationCreate, ApplicationResponse, ApplicationStatusUpdate
 from app.services import application as app_service
 from app.services import storage
-from fastapi.responses import FileResponse
 from app.models.candidate import Application
 
-# Faz 6 Yetkilendirme ve KVKK Log Servis bağımlılıkları
+# Yeni Yetki Katmanı import edildi
+from app.core.permissions import get_department_filter
 from app.core.security import require_hr_or_manager
 from app.services.access_log import log_access
 
@@ -20,10 +22,7 @@ async def create_new_application(
     payload: ApplicationCreate, 
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Adayın pozisyona ilk başvurusunu kaydeder.
-    Mükerrer başvuru kontrolü servis katmanında işletilir.
-    """
+    """Adayın pozisyona ilk başvurusunu kaydeder."""
     return await app_service.create_application(db=db, payload=payload)
 
 
@@ -33,21 +32,22 @@ async def upload_application_cv(
     file: UploadFile = File(..., description="Yüklenecek CV dökümanı (PDF, DOC, DOCX)"), 
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Oluşturulan başvuruya güvenli bir şekilde CV dökümanı yükler.
-    Dosya boyutu ve uzantı denetimi arka planda storage servisiyle ortak yürütülür.
-    """
+    """Oluşturulan başvuruya güvenli bir şekilde CV dökümanı yükler."""
     return await app_service.upload_cv_to_application(db=db, app_id=app_id, file=file)
 
 
 @router.get("/{app_id}/cv")
 async def download_cv(
     app_id: int, 
-    request: Request,  # IP yakalamak için FastAPI'nin saf istek nesnesi
+    request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(require_hr_or_manager)  # <-- Asenkron Koruma Katmanı
+    current_user: dict = Depends(require_hr_or_manager)
 ):
-    # Başvuruyu getir
+    #  Soyutlanmış departman filtresini alıyoruz
+    dept_filter = get_department_filter(current_user)
+    if dept_filter is False:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu işlem için yetkiniz bulunmamaktadır.")
+
     result = await db.execute(
         select(Application).where(
             Application.id == app_id,
@@ -59,20 +59,17 @@ async def download_cv(
     if not application or not application.cv_url:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="İstenen döküman bulunamadı.")
 
-    # [ROL FİLTRESİ] Manager ise ve kendi departmanı değilse erişimi engelle
-    if current_user.get("role") == "manager" and application.department != current_user.get("department"):
+    #  Koda gömülü rol yerine filtre değerini check ediyoruz (Eğer kısıt varsa ve departman uymuyorsa)
+    if dept_filter and application.department != dept_filter:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, 
             detail="Bu işlem için yetkiniz bulunmamaktadır."
         )
 
     file_path = storage.get_file_path(application.cv_url)
-
-    # Güvenlik Kuralı: Dışarıya iç sunucu dosya detaylarını sızdırma
     if not os.path.exists(file_path):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="İstenen döküman sistemde mevcut değil.")
 
-    #  [KVKK DENETİM İZİ] İşlem tamamen doğrulanıp bittiği an mühürleniyor
     await log_access(
         db=db,
         user_id=int(current_user["sub"]),
@@ -93,13 +90,17 @@ async def download_cv(
 async def get_all_applications(
     department: str = Query(None, description="Departmana göre filtreleme"), 
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(require_hr_or_manager)  # <-- Asenkron Koruma Katmanı
+    current_user: dict = Depends(require_hr_or_manager)
 ):
-    """İK Yetkilileri için aktif (silinmemiş) tüm başvuruları listeler."""
-    
-    # [ROL FİLTRESİ] Manager ise sadece kendi departman verisini görebilir, global query ezilir
-    if current_user.get("role") == "manager":
-        department = current_user.get("department")
+    """Aktif başvuruları yetki sınırlarına göre listeler."""
+    #  Soyutlanmış departman filtresini tetikle
+    dept_filter = get_department_filter(current_user)
+    if dept_filter is False:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu işlem için yetkiniz bulunmamaktadır.")
+
+    #  Eğer filtre kısıtlıysa (Manager durumu), dışarıdan gelen query ezilir ve kendi departmanı basılır
+    if dept_filter:
+        department = dept_filter
 
     return await app_service.list_applications(db=db, department=department)
 
@@ -110,12 +111,15 @@ async def change_application_status(
     payload: ApplicationStatusUpdate, 
     request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(require_hr_or_manager)  # <-- Asenkron Koruma Katmanı
+    current_user: dict = Depends(require_hr_or_manager)
 ):
-    """İK Yetkililerinin başvuru statüsünü (pending, under_review vb.) güncellemesini sağlar."""
-    
-    #  [ROL FİLTRESİ] Manager ise statüsünü değiştireceği başvurunun kendi departmanında olduğunu doğrula
-    if current_user.get("role") == "manager":
+    """Başvuru statüsünü yetki dahilinde günceller."""
+    dept_filter = get_department_filter(current_user)
+    if dept_filter is False:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu işlem için yetkiniz bulunmamaktadır.")
+
+    # Yetki kısıtlaması kontrolü
+    if dept_filter:
         result = await db.execute(
             select(Application).where(
                 Application.id == app_id,
@@ -124,7 +128,7 @@ async def change_application_status(
         )
         application = result.scalar_one_or_none()
         
-        if not application or application.department != current_user.get("department"):
+        if not application or application.department != dept_filter:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Bu işlem için yetkiniz bulunmamaktadır."
@@ -132,7 +136,6 @@ async def change_application_status(
 
     updated_record = await app_service.update_application_status(db=db, app_id=app_id, payload=payload)
 
-    # [KVKK DENETİM İZİ] Durum başarıyla değiştirildiğinde log basılıyor
     await log_access(
         db=db,
         user_id=int(current_user["sub"]),

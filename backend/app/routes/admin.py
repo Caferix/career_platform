@@ -4,7 +4,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.db.database import get_db
-from app.core.security import require_admin, hash_data # Rol kontrol dependency'si
+from app.core.security import require_admin, hash_data, get_current_user,require_hr_or_manager # Rol kontrol dependency'si
+from app.core.permissions import get_department_filter, can_manage_users
 from app.models.user_model import User  # User modeli (Source 9'daki yapı)
 from app.models.company import Department, Position  # Organizasyon modelleri (Source 6)
 from app.schemas.admin import DepartmentCreate, DepartmentResponse, PositionCreate, PositionResponse
@@ -15,8 +16,19 @@ router = APIRouter(prefix="/admin", tags=["Admin Operations"], dependencies=[Dep
 # --- DEPARTMAN YÖNETİMİ ---
 
 @router.post("/departments", response_model=DepartmentResponse, status_code=status.HTTP_201_CREATED)
-async def create_department(payload: DepartmentCreate, db: AsyncSession = Depends(get_db)):
-    """Admin tarafından sisteme dinamik olarak yeni bir departman ekler."""
+async def create_department(
+    payload: DepartmentCreate, 
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Admin/Superadmin tarafından sisteme dinamik olarak yeni bir departman ekler."""
+    # Katı rol kontrolü yerine yetki soyutlama matrisini tetikliyoruz
+    if not can_manage_users(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Bu işlem için yetkiniz bulunmuyor."
+        )
+
     stmt = select(Department).where(Department.name == payload.name)
     result = await db.execute(stmt)
     if result.scalar_one_or_none():
@@ -27,14 +39,14 @@ async def create_department(payload: DepartmentCreate, db: AsyncSession = Depend
     await db.commit()
     await db.refresh(new_dept)
     
-    #  SQLAlchemy'nin ilişkisel 'positions' alanını tetiklemesini engellemek için 
-    # veriyi doğrudan temiz bir Pydantic nesnesine eşleyerek dönüyoruz.
     return DepartmentResponse(
         id=new_dept.id,
         name=new_dept.name,
         is_active=new_dept.is_active,
-        positions=[]  # Yeni açılan departmanın henüz hiçbir pozisyonu olmadığı için boş dizi veriyoruz
+        positions=[]
     )
+
+
 @router.get("/departments", response_model=list[DepartmentResponse])
 async def list_departments(db: AsyncSession = Depends(get_db)):
     """Sistemdeki tüm departmanları bağlı pozisyonları ile asenkron getirir."""
@@ -46,60 +58,75 @@ async def list_departments(db: AsyncSession = Depends(get_db)):
 # --- POZİSYON YÖNETİMİ ---
 
 @router.post("/positions", response_model=PositionResponse, status_code=status.HTTP_201_CREATED)
-async def create_position(payload: PositionCreate, db: AsyncSession = Depends(get_db)):
-    """Belirli bir departmana bağlı dinamik yeni bir iş pozisyonu açar."""
-    # Departman kontrolü
+async def create_position(
+    payload: PositionCreate, 
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Sistem yöneticileri tarafından dinamik olarak yeni bir iş ilanı (pozisyon) ekler."""
+    if not can_manage_users(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Bu işlem için yetkiniz bulunmuyor."
+        )
+
     dept_stmt = select(Department).where(Department.id == payload.department_id)
     dept_result = await db.execute(dept_stmt)
-    if not dept_result.scalar_one_or_none():
+    department = dept_result.scalar_one_or_none()
+    
+    if not department:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="İlgili departman bulunamadı.")
-
-    new_pos = Position(
-        name=payload.name,
-        department_id=payload.department_id,
-        is_active=payload.is_active
+        
+    pos_stmt = select(Position).where(
+        Position.title == payload.title, 
+        Position.department_id == payload.department_id
     )
-    db.add(new_pos)
+    pos_result = await db.execute(pos_stmt)
+    if pos_result.scalar_one_or_none():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bu departman altında bu pozisyon zaten mevcut.")
+
+    new_position = Position(
+        title=payload.title,
+        description=payload.description,
+        is_active=payload.is_active,
+        department_id=payload.department_id
+    )
+    db.add(new_position)
     await db.commit()
-    await db.refresh(new_pos)
-    return new_pos
+    await db.refresh(new_position)
+    
+    return PositionResponse(
+        id=new_position.id,
+        title=new_position.title,
+        description=new_position.description,
+        is_active=new_position.is_active,
+        department_id=new_position.department_id
+    )
 
 @router.post("/users", status_code=status.HTTP_201_CREATED)
-async def create_system_user(payload: UserCreate, db: AsyncSession = Depends(get_db)):
-    """
-    Admin tarafından sisteme yeni İK (hr) veya Departman Müdürü (manager) ekler.
-    Kullanıcı adı benzersiz olmalıdır. Şifre arka planda hashlenerek saklanır.
-    """
-    # 1. Kullanıcı adı benzersizlik kontrolü (Kural 4: select)
+async def create_system_user(
+    payload: UserCreate, 
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Sisteme yeni İK (hr) veya Departman Müdürü (manager) ekler."""
+    if not can_manage_users(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Bu işlem için yetkiniz bulunmuyor."
+        )
+
     stmt = select(User).where(User.login_name == payload.login_name)
     result = await db.execute(stmt)
     if result.scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
-            detail="Bu kullanıcı adı zaten alınmış."
-        )
+        raise HTTPException(status_code=400, detail="Bu kullanıcı adı zaten alınmış.")
     
-    # 2. İş kuralları doğrulaması (Manager için departman şartı)
-    if payload.role == "manager" and not payload.department:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Departman Müdürü rolü için departman seçimi zorunludur."
-        )
-        
-    if payload.role == "hr":
-        payload.department = None  # HR için departman bağımsızdır
-
-    # 3. Şifreyi hashleme ve veritabanına mühürleme
-    # Not: Servis katmanınız (user_service.create_user) zaten bu hashlemeyi yapıyorsa 
-    # doğrudan servisi de çağırabilirsiniz. Rota seviyesinde manuel ekleyeceksek:
-    hashed_pwd = hash_data(payload.password) # Projedeki sync hash motorunuz
-    
+    hashed_pwd = hash_data(payload.password)
     new_user = User(
         login_name=payload.login_name,
-        hashed_password=hashed_pwd,
+        password_hash=hashed_pwd,
         role=payload.role,
-        department=payload.department,
-        is_active=True
+        department=payload.department
     )
     
     db.add(new_user)
@@ -107,6 +134,8 @@ async def create_system_user(payload: UserCreate, db: AsyncSession = Depends(get
     await db.refresh(new_user)
     
     return {
-        "message": f"Kullanıcı başarıyla oluşturuldu: {new_user.login_name}",
-        "role": new_user.role
+        "id": new_user.id,
+        "login_name": new_user.login_name,
+        "role": new_user.role,
+        "department": new_user.department
     }
