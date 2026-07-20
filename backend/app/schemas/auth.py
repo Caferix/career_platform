@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr
+from typing import Optional
 
 class SendOTPRequest(BaseModel):
     """Kullanıcı sadece telefon numarasını girerek kod ister"""
@@ -14,6 +15,8 @@ class TokenResponse(BaseModel):
     """Doğrulama başarılıysa frontend'e döneceğimiz bilet formatı"""
     access_token: str
     token_type: str = "bearer"
+    role: str
+    department: Optional[str] = None
 
 
 class AdminLoginRequest(BaseModel):
