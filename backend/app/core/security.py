@@ -71,8 +71,6 @@ def hash_data(data: str) -> str:
     """
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-# app/core/security.py dosyasının EN ALTINA eklenecek DOĞRU asenkron katman:
-
 
 
 security = HTTPBearer()
@@ -83,14 +81,24 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         return payload
     except Exception:
+        # Kural 8 & 19: İç detay vermeden standart hata
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Oturum süresi dolmuş veya geçersiz token."
         )
 
+async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
+    """Sadece tam yetkili 'admin' rolüne sahip kullanıcıların geçmesine izin verir."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bu işlem için yetkiniz bulunmamaktadır."
+        )
+    return current_user
+
 async def require_hr(current_user: dict = Depends(get_current_user)) -> dict:
-    """Sadece 'hr' rolüne sahip kullanıcıların geçmesine izin verir."""
-    if current_user.get("role") != "hr":
+    """Sadece 'hr' veya üstü ('admin') rolüne sahip kullanıcıların geçmesine izin verir."""
+    if current_user.get("role") not in ["hr", "admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Bu işlem için yetkiniz bulunmamaktadır."
@@ -98,8 +106,8 @@ async def require_hr(current_user: dict = Depends(get_current_user)) -> dict:
     return current_user
 
 async def require_manager(current_user: dict = Depends(get_current_user)) -> dict:
-    """Sadece 'manager' rolüne sahip kullanıcıların geçmesine izin verir."""
-    if current_user.get("role") != "manager":
+    """Sadece 'manager' veya üstü ('admin') rolüne sahip kullanıcıların geçmesine izin verir."""
+    if current_user.get("role") not in ["manager", "admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Bu işlem için yetkiniz bulunmamaktadır."
@@ -107,8 +115,8 @@ async def require_manager(current_user: dict = Depends(get_current_user)) -> dic
     return current_user
 
 async def require_hr_or_manager(current_user: dict = Depends(get_current_user)) -> dict:
-    """Kullanıcı 'hr' veya 'manager' değilse geçişi engeller (403)."""
-    if current_user.get("role") not in ["hr", "manager"]:
+    """Kullanıcı 'hr', 'manager' veya 'admin' değilse geçişi engeller."""
+    if current_user.get("role") not in ["hr", "manager", "admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Bu alana erişim yetkiniz bulunmamaktadır."
