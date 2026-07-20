@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -295,3 +295,58 @@ async def get_failed_logins(
             for attempt in attempts
         ]
     }
+
+
+@router.get("/users", status_code=status.HTTP_200_OK)
+async def list_system_users(
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Sistemdeki tüm yöneticileri (HR, Manager vb.) listeler."""
+    if not can_manage_users(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Bu işlem için yetkiniz bulunmuyor."
+        )
+
+    # Veritabanındaki tüm kurumsal kullanıcıları çekiyoruz
+    stmt = select(User).order_by(User.id.asc())
+    result = await db.execute(stmt)
+    users = result.scalars().all()
+    
+    # Ön yüzün (admin.html) fetchUsers() fonksiyonunun beklediği JSON formatında dönüyoruz
+    return [
+        {
+            "id": user.id,
+            "login_name": user.login_name,
+            "role": user.role,
+            "department": user.department,
+            "is_active": user.is_active if hasattr(user, 'is_active') else True
+        }
+        for user in users
+    ]
+
+
+@router.post("/users/{user_id}/toggle", status_code=status.HTTP_200_OK)
+async def toggle_user_status(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """İlgili sistem kullanıcısının aktiflik durumunu tersine çevirir."""
+    if not can_manage_users(current_user):
+        raise HTTPException(status_code=403, detail="Yetkiniz yok.")
+        
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+        
+    # Eğer modelinde is_active alanı varsa durumunu tersine çevirir
+    if hasattr(user, 'is_active'):
+        user.is_active = not user.is_active
+        await db.commit()
+        
+    return {"status": "success", "message": "Kullanıcı durumu güncellendi."}

@@ -12,7 +12,7 @@ from app.models.candidate import Application
 
 # Yeni Yetki Katmanı import edildi
 from app.core.permissions import get_department_filter
-from app.core.security import require_hr_or_manager
+from app.core.security import require_hr_or_manager, get_current_user
 from app.services.access_log import log_access
 from app.core.security import require_hr_or_manager, limiter
 
@@ -93,15 +93,22 @@ async def download_cv(
 async def get_all_applications(
     department: str = Query(None, description="Departmana göre filtreleme"), 
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(require_hr_or_manager)
+    current_user: dict = Depends(get_current_user)  # <-- require_hr_or_manager yerine get_current_user yapıldı
 ):
-    """Aktif başvuruları yetki sınırlarına göre listeler."""
-    #  Soyutlanmış departman filtresini tetikle
+    """Aktif başvuruları yetki sınırlarına göre listeler. Admin/Superadmin her şeyi, Manager sadece kendi alanını görür."""
+    
+    user_role = current_user.get("role")
+
+    # 1. Admin veya Superadmin ise hiçbir süzgece takılmadan direkt geçsin
+    if user_role in ["admin", "superadmin"]:
+        return await app_service.list_applications(db=db, department=department)
+
+    # 2. Eğer admin değilse (HR veya Manager ise) departman filtresini tetikle
     dept_filter = get_department_filter(current_user)
     if dept_filter is False:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu işlem için yetkiniz bulunmamaktadır.")
 
-    #  Eğer filtre kısıtlıysa (Manager durumu), dışarıdan gelen query ezilir ve kendi departmanı basılır
+    # Eğer filtre kısıtlıysa (Manager durumu), dışarıdan gelen query ezilir ve kendi departmanı basılır
     if dept_filter:
         department = dept_filter
 

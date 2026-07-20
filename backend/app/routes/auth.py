@@ -11,6 +11,10 @@ from app.services import user as user_service  # Asenkron servis katmanı
 from app.core.security import limiter, auth, hash_data
 from app.services import candidate as candidate_service
 from app.models.auth_log import FailedLoginAttempt
+from datetime import datetime, timezone
+
+
+naive_utc_now = datetime.now(timezone.utc).replace(tzinfo=None)
 
 # Router tanımını yapıyoruz. main.py'de prefix="/auth" olarak bağlanacağı için 
 # altındaki rotaların path'lerini buna göre güncelliyoruz.
@@ -38,7 +42,8 @@ async def admin_login(
     if not user:
         failed_attempt = FailedLoginAttempt(
             login_name=payload.login_name,
-            ip_address=request.client.host or "0.0.0.0"
+            ip_address=request.client.host or "0.0.0.0",
+            attempted_at=naive_utc_now
         )
         db.add(failed_attempt)
         await db.commit()
@@ -49,11 +54,19 @@ async def admin_login(
             detail="Kullanıcı adı veya şifre hatalı."
         )
     
+    
+    
     access_token = auth.create_token(
         user_id=user.id, 
         role=user.role,
         department=user.department
     )
+
+    if hasattr(user, 'is_active') and not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Hesabınız pasif duruma getirilmiştir. Lütfen sistem yöneticisi ile iletişime geçin."
+        )
     
     # Artık Pydantic şeması (TokenResponse) tarafından doğrulanarak güvenle döner
     return TokenResponse(
