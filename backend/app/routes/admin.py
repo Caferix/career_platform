@@ -11,6 +11,11 @@ from app.models.company import Department, Position  # Organizasyon modelleri (S
 from app.schemas.admin import DepartmentCreate, DepartmentResponse, PositionCreate, PositionResponse
 from app.schemas.user import UserCreate  # Şema klasörünüzdeki mevcut yapı varsayımıyla
 from app.models.candidate import Candidate
+from app.models.consents import AccessLog
+from typing import Optional
+from app.models.auth_log import FailedLoginAttempt
+
+
 
 router = APIRouter(prefix="/admin", tags=["Admin Operations"], dependencies=[Depends(require_admin)])
 
@@ -178,4 +183,115 @@ async def soft_delete_candidate(
     return {
         "status": "Success",
         "message": f"{id} ID'li aday başarıyla arşivlendi (soft-deleted)."
+    }
+
+
+@router.get("/access-logs", status_code=status.HTTP_200_OK)
+async def get_access_logs(
+    user_role: Optional[str] = Query(None, description="Kullanıcı rolüne göre filtrele"),
+    action: Optional[str] = Query(None, description="Yapılan aksiyona göre filtrele (Örn: downloaded_cv)"),
+    date_from: Optional[datetime] = Query(None, description="Bu tarihten itibaren (YYYY-MM-DD HH:MM:SS)"),
+    date_to: Optional[datetime] = Query(None, description="Bu tarihe kadar (YYYY-MM-DD HH:MM:SS)"),
+    limit: int = Query(50, ge=1, le=100, description="Sayfa başına getirilecek kayıt sayısı"),
+    offset: int = Query(0, ge=0, description="Atlanacak kayıt sayısı"),
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Sistem yöneticilerinin hareketlerini takip edebilecek sorgu altyapısı.
+    Sadece süperadmin rütbesine açık asenkron filtreleme ve sayfalama altyapısı sunar.
+    """
+    # Güvenlik Kontrolü: Yalnızca can_manage_users izni olan (Superadmin) erişebilir
+    if not can_manage_users(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bu log verilerine erişim yetkiniz bulunmuyor."
+        )
+
+    # Temel sorgu oluşturma (En son log en üstte görünecek şekilde sıralı)
+    stmt = select(AccessLog).order_by(AccessLog.id.desc())
+
+    # Dinamik Filtreleme Kuralları
+    if user_role:
+        stmt = stmt.where(AccessLog.user_role == user_role)
+    if action:
+        stmt = stmt.where(AccessLog.action == action)
+    if date_from:
+        stmt = stmt.where(AccessLog.created_at >= date_from)
+    if date_to:
+        stmt = stmt.where(AccessLog.created_at <= date_to)
+
+    # Sayfalama (Pagination)
+    stmt = stmt.limit(limit).offset(offset)
+
+    result = await db.execute(stmt)
+    logs = result.scalars().all()
+
+    return {
+        "limit": limit,
+        "offset": offset,
+        "results": [
+            {
+                "id": log.id,
+                "user_id": log.user_id,
+                "user_role": log.user_role,
+                "action": log.action,
+                "target_id": log.target_id,
+                "ip_address": log.ip_address,
+                "created_at": log.created_at
+            }
+            for log in logs
+        ]
+    }
+
+
+# --- FAZ 4: BAŞARISIZ GİRİŞLER ENDPOINT (Adım 4.2) ---
+
+@router.get("/failed-logins", status_code=status.HTTP_200_OK)
+async def get_failed_logins(
+    login_name: Optional[str] = Query(None, description="Hatalı deneme yapılan kullanıcı adına göre filtrele"),
+    ip_address: Optional[str] = Query(None, description="Şüpheli IP adresine göre filtrele"),
+    limit: int = Query(50, ge=1, le=100, description="Getirilecek maksimum kayıt sayısı"),
+    offset: int = Query(0, ge=0, description="Atlanacak kayıt sayısı"),
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Son kaba kuvvet (brute-force) denemelerinin ve şüpheli IP adreslerinin
+    süperadmin ekranında asenkron olarak listelenmesini sağlar.
+    """
+    # Güvenlik Kontrolü: Yalnızca can_manage_users izni olan (Superadmin) erişebilir
+    if not can_manage_users(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bu verileri görüntüleme yetkiniz bulunmuyor."
+        )
+
+    # En son yapılan hatalı deneme en üstte görünecek şekilde sorgu kurulur
+    stmt = select(FailedLoginAttempt).order_by(FailedLoginAttempt.id.desc())
+
+    # Filtrelerin Uygulanması
+    if login_name:
+        stmt = stmt.where(FailedLoginAttempt.login_name == login_name)
+    if ip_address:
+        stmt = stmt.where(FailedLoginAttempt.ip_address == ip_address)
+
+    # Sayfalama
+    stmt = stmt.limit(limit).offset(offset)
+
+    result = await db.execute(stmt)
+    attempts = result.scalars().all()
+
+    return {
+        "limit": limit,
+        "offset": offset,
+        "results": [
+            {
+                "id": attempt.id,
+                "login_name": attempt.login_name,
+                "ip_address": attempt.ip_address,
+                "attempted_at": attempt.attempted_at
+            }
+            for attempt in attempts
+        ]
     }
