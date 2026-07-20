@@ -92,7 +92,7 @@ async def read_index():
     return "<h3>Statik index.html dosyası bulunamadı. Lütfen backend/static/ altında oluşturun.</h3>"
 
 
-# --- 🌟 DİNAMİK ORGANİZASYON ŞEMASI ENDPOINT'İ ---
+# --- DİNAMİK ORGANİZASYON ŞEMASI ENDPOINT'İ ---
 @app.get("/public/positions")
 async def get_public_positions(db: AsyncSession = Depends(get_db)):
     """

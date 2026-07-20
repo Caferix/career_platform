@@ -14,11 +14,14 @@ from app.models.candidate import Application
 from app.core.permissions import get_department_filter
 from app.core.security import require_hr_or_manager
 from app.services.access_log import log_access
+from app.core.security import require_hr_or_manager, limiter
 
 router = APIRouter(prefix="/applications", tags=["Applications"])
 
 @router.post("/", response_model=ApplicationResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("3/minute")
 async def create_new_application(
+    request: Request,
     payload: ApplicationCreate, 
     db: AsyncSession = Depends(get_db)
 ):
