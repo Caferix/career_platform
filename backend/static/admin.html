@@ -459,6 +459,46 @@
             }
         }
 
+        async function deactivateDepartment(deptId) {
+            if (!confirm("Bu departmanı pasife almak istediğinize emin misiniz?")) return;
+            try {
+                const token = localStorage.getItem("admin_token");
+                const res = await fetch(`/admin/departments/${deptId}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    fetchCompanyStructure();
+                } else {
+                    const err = await res.json();
+                    alert(`Hata: ${err.detail || 'Departman pasife alınamadı.'}`);
+                }
+            } catch (err) {
+                console.error("Departman pasife alınırken hata:", err);
+            }
+        }
+
+        async function deactivatePosition(posId) {
+            if (!confirm("Bu pozisyonu pasife almak istediğinize emin misiniz?")) return;
+            try {
+                const token = localStorage.getItem("admin_token");
+                const res = await fetch(`/admin/positions/${posId}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    fetchCompanyStructure();
+                } else {
+                    const err = await res.json();
+                    alert(`Hata: ${err.detail || 'Pozisyon pasife alınamadı.'}`);
+                }
+            } catch (err) {
+                console.error("Pozisyon pasife alınırken hata:", err);
+            }
+        }
+
         async function createPosition(e) {
             e.preventDefault();
             const token = localStorage.getItem("admin_token");
