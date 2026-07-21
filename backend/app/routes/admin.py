@@ -123,7 +123,7 @@ async def create_system_user(
     hashed_pwd = hash_data(payload.password)
     new_user = User(
         login_name=payload.login_name,
-        password_hash=hashed_pwd,
+        hashed_password=hashed_pwd,
         role=payload.role,
         department=payload.department
     )

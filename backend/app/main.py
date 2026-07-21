@@ -116,3 +116,29 @@ async def get_public_positions(db: AsyncSession = Depends(get_db)):
                 flat_map[pos.name] = dept.name
             
     return flat_map
+
+
+@app.get("/departments")
+async def get_departments(db: AsyncSession = Depends(get_db)):
+    """
+    apply.html'in beklediği iç içe (nested) formatı döner:
+    [{ name, is_active, positions: [{ name, is_active }, ...] }, ...]
+    """
+    stmt = (
+        select(Department)
+        .options(selectinload(Department.positions))
+    )
+    result = await db.execute(stmt)
+    departments = result.scalars().all()
+
+    return [
+        {
+            "name": dept.name,
+            "is_active": dept.is_active,
+            "positions": [
+                {"name": pos.name, "is_active": pos.is_active}
+                for pos in dept.positions
+            ],
+        }
+        for dept in departments
+    ]

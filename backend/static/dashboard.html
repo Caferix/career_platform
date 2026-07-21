@@ -187,8 +187,6 @@
         </div>
     </div>
 
-    <!-- Varsayılan JS Bağlantılarınız -->
-    <script src="/static/company-structure.js"></script>
     <script>
         const BASE_URL = window.location.origin;
 
@@ -223,6 +221,22 @@
             "Rejected":     { label: "Rejected",      cls: "bg-red-50 text-red-700 border-red-200" }
         };
 
+        // Token içindeki rol ve departman bilgisini okur
+        function getUserInfoFromToken() {
+            const token = localStorage.getItem("admin_token");
+            if (!token) return {};
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return {};
+            }
+        }
+
         function showAdminError(text) {
             adminAlert.textContent = text;
             adminAlert.classList.remove("hidden");
@@ -232,39 +246,81 @@
             return value || "-";
         }
 
-        function syncDashboardFilters() {
+        async function syncDashboardFilters() {
             if (!filterPosition) return;
             filterPosition.innerHTML = '<option value="">Tüm Pozisyonlar</option>';
-            if(typeof getAllPositionsAlphabetical === "function") {
-                getAllPositionsAlphabetical().forEach(pos => {
+            try {
+                const userInfo = getUserInfoFromToken();
+                const isManager = userInfo.role === "manager";
+                const userDept = userInfo.department;
+
+                const res = await fetch(`${BASE_URL}/departments`);
+                if (!res.ok) throw new Error("Departmanlar çekilemedi.");
+                const departments = await res.json();
+        
+                let allPositions = [];
+                departments.forEach(dept => {
+                    // 🚨 EĞER KULLANICI MANAGER İSE SADECE KENDİ DEPARTMANINI İŞLE 🚨
+                    if (isManager && userDept && dept.name !== userDept) return;
+
+                    if (dept.is_active !== false && dept.positions && dept.positions.length > 0) {
+                        dept.positions.forEach(pos => {
+                            if (pos.is_active !== false) {
+                                const posName = pos.name || pos.title;
+                                if (posName) allPositions.push(posName);
+                            }
+                        });
+                    }
+                });
+
+                const uniquePositions = [...new Set(allPositions)].sort((a, b) => a.localeCompare(b, "tr"));
+
+                uniquePositions.forEach(pos => {
                     const opt = document.createElement("option");
                     opt.value = pos;
                     opt.textContent = pos;
                     filterPosition.appendChild(opt);
                 });
+            } catch (err) {
+                console.error("Filtre için pozisyonlar yüklenemedi:", err);
             }
         }
 
         function populateDepartmentFilter() {
             if (!filterDepartment) return;
-            const currentValue = filterDepartment.value;
 
-            const uniqueDepartments = [...new Set(
-                allApplications
-                    .map(app => app.department)
-                    .filter(dep => dep && dep.trim() !== "")
-            )].sort((a, b) => a.localeCompare(b, "tr"));
+            const userInfo = getUserInfoFromToken();
+            const isManager = userInfo.role === "manager";
+            const userDept = userInfo.department;
 
-            filterDepartment.innerHTML = '<option value="">Tüm Departmanlar</option>';
-            uniqueDepartments.forEach(dep => {
-                const opt = document.createElement("option");
-                opt.value = dep;
-                opt.textContent = dep;
-                filterDepartment.appendChild(opt);
-            });
+            if (isManager && userDept) {
+                // 🚨 MANAGER İÇİN DEPARTMAN FİLTRESİNİ KİLİTLE 🚨
+                filterDepartment.innerHTML = `<option value="${userDept}">${userDept}</option>`;
+                filterDepartment.value = userDept;
+                filterDepartment.disabled = true; // Seçimi engelle
+                filterDepartment.classList.add("bg-gray-100", "cursor-not-allowed", "opacity-70");
+            } else {
+                // HR VE ADMIN İÇİN TÜM DEPARTMANLARI GÖSTER
+                const currentValue = filterDepartment.value;
+                const uniqueDepartments = [...new Set(
+                    allApplications
+                        .map(app => app.department)
+                        .filter(dep => dep && dep.trim() !== "")
+                )].sort((a, b) => a.localeCompare(b, "tr"));
 
-            if (uniqueDepartments.includes(currentValue)) {
-                filterDepartment.value = currentValue;
+                filterDepartment.innerHTML = '<option value="">Tüm Departmanlar</option>';
+                uniqueDepartments.forEach(dep => {
+                    const opt = document.createElement("option");
+                    opt.value = dep;
+                    opt.textContent = dep;
+                    filterDepartment.appendChild(opt);
+                });
+
+                if (uniqueDepartments.includes(currentValue)) {
+                    filterDepartment.value = currentValue;
+                }
+                filterDepartment.disabled = false;
+                filterDepartment.classList.remove("bg-gray-100", "cursor-not-allowed", "opacity-70");
             }
         }
 
@@ -357,11 +413,9 @@
             renderTable();
         });
 
-        // KİMLİK DOĞRULAMA KONTROLÜ - Bariyerimiz
         function checkAdminAuth() {
             const token = localStorage.getItem("admin_token");
             if (!token || token === "undefined" || token === "null") {
-                // Token yoksa login sayfasına at
                 window.location.href = "/static/login.html";
             } else {
                 loadDashboardData();
@@ -620,13 +674,11 @@
         filterDateTo.addEventListener("change", renderTable);
         filterNationality.addEventListener("change", renderTable);
 
-        // Çıkış Butonu revize edildi: Tüm oturumu temizle ve kapıya geri at
         adminLogoutBtn.addEventListener("click", () => {
             localStorage.clear();
             window.location.href = "/static/login.html";
         });
 
-        // Sayfa ilk yüklendiğinde otomatik bariyer kontrolünü tetikle
         document.addEventListener("DOMContentLoaded", () => {
             checkAdminAuth();
             syncDashboardFilters();

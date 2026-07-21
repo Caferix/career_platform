@@ -343,11 +343,11 @@
                             optgroup.label = dept.name;
 
                             activePositions.forEach(pos => {
-                                departmentMap[pos.title] = dept.name;
+                                departmentMap[pos.name] = dept.name;
 
                                 const option = document.createElement("option");
-                                option.value = pos.title;
-                                option.textContent = pos.title;
+                                option.value = pos.name;
+                                option.textContent = pos.name;
                                 optgroup.appendChild(option);
                             });
 
