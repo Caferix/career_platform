@@ -91,6 +91,7 @@ async def download_cv(
 
 @router.get("/", response_model=list[ApplicationResponse])
 async def get_all_applications(
+    request: Request,
     department: str = Query(None, description="Departmana göre filtreleme"), 
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)  # <-- require_hr_or_manager yerine get_current_user yapıldı
@@ -99,8 +100,8 @@ async def get_all_applications(
     
     user_role = current_user.get("role")
 
-    # 1. Admin veya Superadmin ise hiçbir süzgece takılmadan direkt geçsin
-    if user_role in ["admin", "superadmin"]:
+    # 1. Admin ise hiçbir süzgece takılmadan direkt geçsin
+    if user_role in ["admin"]:
         return await app_service.list_applications(db=db, department=department)
 
     # 2. Eğer admin değilse (HR veya Manager ise) departman filtresini tetikle
@@ -111,6 +112,15 @@ async def get_all_applications(
     # Eğer filtre kısıtlıysa (Manager durumu), dışarıdan gelen query ezilir ve kendi departmanı basılır
     if dept_filter:
         department = dept_filter
+
+    await log_access(
+        db=db,
+        user_id=int(current_user["sub"]),
+        user_role=current_user.get("role"),
+        action="viewed_applications_list",
+        target_id=None,
+        ip_address=request.client.host
+    )    
 
     return await app_service.list_applications(db=db, department=department)
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -14,6 +14,7 @@ from app.models.candidate import Candidate
 from app.models.consents import AccessLog
 from typing import Optional
 from app.models.auth_log import FailedLoginAttempt
+from app.services.access_log import log_access
 
 
 
@@ -71,10 +72,7 @@ async def create_position(
 ):
     """Sistem yöneticileri tarafından dinamik olarak yeni bir iş ilanı (pozisyon) ekler."""
     if not can_manage_users(current_user):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, 
-            detail="Bu işlem için yetkiniz bulunmuyor."
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu işlem için yetkiniz bulunmuyor.")
 
     dept_stmt = select(Department).where(Department.id == payload.department_id)
     dept_result = await db.execute(dept_stmt)
@@ -83,17 +81,18 @@ async def create_position(
     if not department:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="İlgili departman bulunamadı.")
         
+    # title yerine name ile kontrol ediyoruz
     pos_stmt = select(Position).where(
-        Position.title == payload.title, 
+        Position.name == payload.name, 
         Position.department_id == payload.department_id
     )
     pos_result = await db.execute(pos_stmt)
     if pos_result.scalar_one_or_none():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bu departman altında bu pozisyon zaten mevcut.")
 
+    # description'ı çıkardık, title yerine name kullandık
     new_position = Position(
-        title=payload.title,
-        description=payload.description,
+        name=payload.name,
         is_active=payload.is_active,
         department_id=payload.department_id
     )
@@ -101,13 +100,7 @@ async def create_position(
     await db.commit()
     await db.refresh(new_position)
     
-    return PositionResponse(
-        id=new_position.id,
-        title=new_position.title,
-        description=new_position.description,
-        is_active=new_position.is_active,
-        department_id=new_position.department_id
-    )
+    return new_position
 
 @router.post("/users", status_code=status.HTTP_201_CREATED)
 async def create_system_user(
@@ -138,6 +131,16 @@ async def create_system_user(
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
+
+    request = Depends(Request)
+    await log_access(
+        db=db,
+        user_id=int(current_user["sub"]),
+        user_role=current_user.get("role"),
+        action="created_system_user",
+        target_id=new_user.id,
+        ip_address="127.0.0.1"
+    )
     
     return {
         "id": new_user.id,
@@ -179,6 +182,16 @@ async def soft_delete_candidate(
     candidate.deleted_at = datetime.now(timezone.utc)
 
     await db.commit()
+
+    # KVKK Audit Log
+    await log_access(
+        db=db,
+        user_id=int(current_user["sub"]),
+        user_role=current_user.get("role"),
+        action="archived_candidate",
+        target_id=id,
+        ip_address="127.0.0.1"
+    )
 
     return {
         "status": "Success",
@@ -329,6 +342,7 @@ async def list_system_users(
 
 @router.post("/users/{user_id}/toggle", status_code=status.HTTP_200_OK)
 async def toggle_user_status(
+    request: Request,
     user_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
@@ -337,16 +351,84 @@ async def toggle_user_status(
     if not can_manage_users(current_user):
         raise HTTPException(status_code=403, detail="Yetkiniz yok.")
         
+    # ENGEL 1: Kullanıcı KENDİ hesabını pasife alamaz!
+    if int(current_user["sub"]) == user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Kendi hesabınızın aktiflik durumunu değiştiremezsiniz!"
+        )
+
     stmt = select(User).where(User.id == user_id)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
     
     if not user:
         raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+
+    # ENGEL 2: 'admin' veya 'superadmin' rolündeki hesaplar pasife alınamaz!
+    if user.role in ["admin", "superadmin"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Yönetici (Admin/Superadmin) hesapları pasif duruma getirilemez."
+        )
         
-    # Eğer modelinde is_active alanı varsa durumunu tersine çevirir
     if hasattr(user, 'is_active'):
         user.is_active = not user.is_active
         await db.commit()
+
+        await log_access(
+            db=db,
+            user_id=int(current_user["sub"]),
+            user_role=current_user.get("role"),
+            action="toggled_user_status",
+            target_id=user.id,
+            ip_address=request.client.host
+        )
         
     return {"status": "success", "message": "Kullanıcı durumu güncellendi."}
+
+@router.delete("/departments/{dept_id}", status_code=status.HTTP_200_OK)
+async def deactivate_department(
+    dept_id: int, 
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Departmanı ve bağlı tüm pozisyonları pasife alır (Veri bütünlüğü için soft delete)."""
+    if not can_manage_users(current_user):
+        raise HTTPException(status_code=403, detail="Bu işlem için yetkiniz yok.")
+
+    stmt = select(Department).options(selectinload(Department.positions)).where(Department.id == dept_id)
+    result = await db.execute(stmt)
+    dept = result.scalar_one_or_none()
+
+    if not dept:
+        raise HTTPException(status_code=404, detail="Departman bulunamadı.")
+
+    dept.is_active = False
+    for pos in dept.positions:
+        pos.is_active = False
+
+    await db.commit()
+    return {"message": "Departman ve bağlı pozisyonlar başarıyla pasife alındı."}
+
+
+@router.delete("/positions/{pos_id}", status_code=status.HTTP_200_OK)
+async def deactivate_position(
+    pos_id: int, 
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Pozisyonu pasife alır."""
+    if not can_manage_users(current_user):
+        raise HTTPException(status_code=403, detail="Bu işlem için yetkiniz yok.")
+
+    stmt = select(Position).where(Position.id == pos_id)
+    result = await db.execute(stmt)
+    pos = result.scalar_one_or_none()
+
+    if not pos:
+        raise HTTPException(status_code=404, detail="Pozisyon bulunamadı.")
+
+    pos.is_active = False
+    await db.commit()
+    return {"message": "Pozisyon başarıyla pasife alındı."}

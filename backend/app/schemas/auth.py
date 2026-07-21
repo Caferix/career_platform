@@ -15,7 +15,7 @@ class TokenResponse(BaseModel):
     """Doğrulama başarılıysa frontend'e döneceğimiz bilet formatı"""
     access_token: str
     token_type: str = "bearer"
-    role: str
+    role: Optional[str] = None
     department: Optional[str] = None
 
 
