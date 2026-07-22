@@ -31,6 +31,7 @@ async def create_application(db: AsyncSession, payload: ApplicationCreate) -> Ap
     # Yeni model alanlarına göre güncellenmiş kayıt
     new_app = Application(
         applicant_id=payload.applicant_id,
+        job_posting_id=payload.job_posting_id,
         position=payload.position,
         department=payload.department,
         experience_years=payload.experience_years,
