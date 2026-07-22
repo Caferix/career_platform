@@ -3,18 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aday Havuzu Paneli</title>
+    <title>Aday Havuzu & İlan Yönetimi Paneli</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 min-h-screen pb-12">
 
-    <!-- MAIN DASHBOARD -->
-    <nav class="bg-white border-b border-gray-200 px-6 py-4 mb-8 sticky top-0 z-40 shadow-sm">
+    <!-- MAIN DASHBOARD NAV -->
+    <nav class="bg-white border-b border-gray-200 px-6 py-4 mb-6 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <span class="w-2.5 h-2.5 bg-[#e11b3a] rounded-full animate-pulse"></span>
-                <span class="text-lg font-bold text-gray-900 tracking-tight">Dener Kariyer Aday Havuzu</span>
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-3">
+                    <span class="w-2.5 h-2.5 bg-[#e11b3a] rounded-full animate-pulse"></span>
+                    <span class="text-lg font-bold text-gray-900 tracking-tight">Dener Kariyer Yönetim Paneli</span>
+                </div>
+
+                <!-- SEKMELER (TABS) -->
+                <div class="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200 text-xs font-semibold">
+                    <button id="tabCandidatesBtn" onclick="switchTab('candidates')" class="px-4 py-2 rounded-lg transition-all bg-white text-gray-900 shadow-sm">
+                        Aday Havuzu
+                    </button>
+                    <button id="tabJobsBtn" onclick="switchTab('jobs')" class="px-4 py-2 rounded-lg transition-all text-gray-500 hover:text-gray-900">
+                        İlan Yönetimi
+                    </button>
+                </div>
             </div>
+
             <button id="adminLogoutBtn" class="text-sm font-medium text-[#e11b3a] hover:text-[#c51631] transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50">
                 Sistemden Çıkış
             </button>
@@ -25,101 +38,155 @@
 
         <div id="adminAlert" class="hidden p-4 rounded-xl text-sm font-medium border bg-red-50 border-red-200 text-red-700 transition-all duration-300"></div>
 
-        <!-- FİLTRELER -->
-        <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 shadow-sm">
-            <div>
-                <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Anahtar Kelime Arama</label>
-                <input type="text" id="searchBar" placeholder="Ad, e-posta, şehir, yetenek, dil..." class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
-            </div>
-            <div>
-                <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Pozisyon</label>
-                <select id="filterPosition" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all cursor-pointer">
-                    <option value="">Tüm Pozisyonlar</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Departman</label>
-                <select id="filterDepartment" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all cursor-pointer">
-                    <option value="">Tüm Departmanlar</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Başvuru Durumu</label>
-                <select id="filterStatus" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all cursor-pointer">
-                    <option value="">Tüm Durumlar</option>
-                    <option value="Applied">Yeni Başvuru</option>
-                    <option value="Under_Review">İncelemede</option>
-                    <option value="Accepted">Kabul Edildi</option>
-                    <option value="Rejected">Reddedildi</option>
-                </select>
-            </div>
-        </div>
+        <!-- ========================================== -->
+        <!-- SEKMELER 1: ADAY HAVUZU GÖRÜNÜMÜ          -->
+        <!-- ========================================== -->
+        <div id="candidatesTabSection" class="space-y-6">
 
-        <!-- GELİŞMİŞ FİLTRELER -->
-        <div class="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-            <button type="button" id="advancedFiltersToggle" class="w-full flex items-center justify-between px-4 md:px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors">
-                <span class="flex items-center gap-2">
-                    Gelişmiş Filtreler
-                    <span id="advancedFiltersBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e11b3a]/10 text-[#e11b3a]"></span>
-                </span>
-                <span id="advancedFiltersChevron" class="text-gray-400 transition-transform">▾</span>
-            </button>
-            <div id="advancedFiltersPanel" class="hidden px-4 md:px-6 pb-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-gray-200 pt-4">
+            <!-- FİLTRELER -->
+            <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 shadow-sm">
                 <div>
-                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Deneyim (Min Yıl)</label>
-                    <input type="number" id="filterExperienceMin" min="0" placeholder="0" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Anahtar Kelime</label>
+                    <input type="text" id="searchBar" placeholder="Ad, e-posta, şehir..." class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
                 </div>
+                <!-- YENİ: İLAN / HAVUZ FİLTRESİ -->
                 <div>
-                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Deneyim (Max Yıl)</label>
-                    <input type="number" id="filterExperienceMax" min="0" placeholder="Sınırsız" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Başvuru Tarihi (Başlangıç)</label>
-                    <input type="date" id="filterDateFrom" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Başvuru Tarihi (Bitiş)</label>
-                    <input type="date" id="filterDateTo" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Uyruk</label>
-                    <select id="filterNationality" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all cursor-pointer">
-                        <option value="">Tüm Uyruklar</option>
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">İlan / Havuz Tipi</label>
+                    <select id="filterJobPosting" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                        <option value="">Tüm Başvurular</option>
+                        <option value="general">Sadece Genel Havuz</option>
+                        <!-- Dinamik İlanlar JavaScript ile Yüklenecek -->
                     </select>
                 </div>
-                <div class="flex items-end lg:col-start-4">
-                    <button type="button" id="clearAdvancedFiltersBtn" class="w-full bg-white border border-gray-200 text-gray-600 hover:text-[#e11b3a] hover:border-[#e11b3a]/40 font-medium text-sm py-2 rounded-xl transition-all">
-                        Gelişmiş Filtreleri Temizle
-                    </button>
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Pozisyon</label>
+                    <select id="filterPosition" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                        <option value="">Tüm Pozisyonlar</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Departman</label>
+                    <select id="filterDepartment" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                        <option value="">Tüm Departmanlar</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Başvuru Durumu</label>
+                    <select id="filterStatus" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                        <option value="">Tüm Durumlar</option>
+                        <option value="Applied">Yeni Başvuru</option>
+                        <option value="Under_Review">İncelemede</option>
+                        <option value="Accepted">Kabul Edildi</option>
+                        <option value="Rejected">Reddedildi</option>
+                    </select>
                 </div>
             </div>
+
+            <!-- GELİŞMİŞ FİLTRELER -->
+            <div class="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                <button type="button" id="advancedFiltersToggle" class="w-full flex items-center justify-between px-4 md:px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors">
+                    <span class="flex items-center gap-2">
+                        Gelişmiş Filtreler
+                        <span id="advancedFiltersBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e11b3a]/10 text-[#e11b3a]"></span>
+                    </span>
+                    <span id="advancedFiltersChevron" class="text-gray-400 transition-transform">▾</span>
+                </button>
+                <div id="advancedFiltersPanel" class="hidden px-4 md:px-6 pb-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-gray-200 pt-4">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Deneyim (Min Yıl)</label>
+                        <input type="number" id="filterExperienceMin" min="0" placeholder="0" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Deneyim (Max Yıl)</label>
+                        <input type="number" id="filterExperienceMax" min="0" placeholder="Sınırsız" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Başvuru Tarihi (Başlangıç)</label>
+                        <input type="date" id="filterDateFrom" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Başvuru Tarihi (Bitiş)</label>
+                        <input type="date" id="filterDateTo" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Uyruk</label>
+                        <select id="filterNationality" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                            <option value="">Tüm Uyruklar</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end lg:col-start-4">
+                        <button type="button" id="clearAdvancedFiltersBtn" class="w-full bg-white border border-gray-200 text-gray-600 hover:text-[#e11b3a] hover:border-[#e11b3a]/40 font-medium text-sm py-2 rounded-xl transition-all">
+                            Gelişmiş Filtreleri Temizle
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADAY LİSTESİ TABLOSU -->
+            <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-4">Aday Bilgisi</th>
+                                <th class="px-6 py-4">Başvurulan İlan / Pozisyon</th>
+                                <th class="px-6 py-4">Deneyim</th>
+                                <th class="px-6 py-4">Durum</th>
+                                <th class="px-6 py-4">Tarih</th>
+                            </tr>
+                        </thead>
+                        <tbody id="desktopTableBody" class="divide-y divide-gray-200 text-sm text-gray-700"></tbody>
+                    </table>
+                </div>
+
+                <div id="mobileCardsContainer" class="block md:hidden p-4 space-y-3"></div>
+
+                <div id="emptyState" class="hidden p-12 text-center text-gray-500 text-sm font-medium">
+                    Kriterlere uygun başvuru kaydı bulunamadı.
+                </div>
+            </div>
+
         </div>
 
-        <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-            <div class="hidden md:block overflow-x-auto">
+        <!-- ========================================== -->
+        <!-- SEKMELER 2: İLAN YÖNETİMİ GÖRÜNÜMÜ          -->
+        <!-- ========================================== -->
+        <div id="jobsTabSection" class="hidden space-y-6">
+
+            <div class="flex justify-between items-center bg-white p-6 border border-gray-200 rounded-2xl shadow-sm">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900">Yayınlanan İş İlanları</h2>
+                    <p class="text-xs text-gray-500 mt-1">Sistemde aktif veya pasif durumda olan tüm ilanları yönetin.</p>
+                </div>
+                <button onclick="openCreateJobModal()" class="bg-[#e11b3a] hover:bg-[#c51631] text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+                    <span>+ Yeni İlan Aç</span>
+                </button>
+            </div>
+
+            <!-- İLANLAR TABLOSU -->
+            <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                            <th class="px-6 py-4">Aday Bilgisi</th>
-                            <th class="px-6 py-4">Pozisyon / Departman</th>
-                            <th class="px-6 py-4">Deneyim</th>
+                            <th class="px-6 py-4">İlan Başlığı</th>
+                            <th class="px-6 py-4">Lokasyon</th>
+                            <th class="px-6 py-4">Oluşturulma Tarihi</th>
                             <th class="px-6 py-4">Durum</th>
-                            <th class="px-6 py-4">Tarih</th>
+                            <th class="px-6 py-4 text-right">Aksiyonlar</th>
                         </tr>
                     </thead>
-                    <tbody id="desktopTableBody" class="divide-y divide-gray-200 text-sm text-gray-700"></tbody>
+                    <tbody id="jobsTableBody" class="divide-y divide-gray-200 text-sm text-gray-700"></tbody>
                 </table>
+                <div id="emptyJobsState" class="hidden p-12 text-center text-gray-500 text-sm font-medium">
+                    Henüz açılmış bir iş ilanı bulunmuyor.
+                </div>
             </div>
 
-            <div id="mobileCardsContainer" class="block md:hidden p-4 space-y-3"></div>
-
-            <div id="emptyState" class="hidden p-12 text-center text-gray-500 text-sm font-medium">
-                Kriterlere uygun başvuru kaydı bulunamadı.
-            </div>
         </div>
+
     </main>
 
-    <!-- DETAY MODALI -->
+    <!-- DETAY MODALI (ADAY DETAYI) -->
     <div id="detailModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
             <div class="flex items-center justify-between p-6 border-b border-slate-100">
@@ -131,7 +198,6 @@
             </div>
 
             <div class="p-6 overflow-y-auto space-y-6 text-sm">
-
                 <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-4">
                     <span class="text-xs font-semibold text-gray-600 uppercase">Başvuru Durumu</span>
                     <select id="modalStatusSelect" class="border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-1 focus:ring-[#e11b3a] outline-none cursor-pointer">
@@ -182,8 +248,48 @@
                 </div>
 
                 <div id="modalCvSection"></div>
-
             </div>
+        </div>
+    </div>
+
+    <!-- YENİ İLAN OLUŞTURMA / DÜZENLEME MODALI -->
+    <div id="jobModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
+                <h3 id="jobModalTitle" class="text-base font-bold text-gray-900">Yeni İş İlanı Ekle</h3>
+                <button onclick="closeJobModal()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+            </div>
+
+            <form id="jobForm" class="space-y-4">
+                <input type="hidden" id="jobEditId">
+                
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Pozisyon Seçin <span class="text-red-500">*</span></label>
+                    <select id="jobPositionSelect" required class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#e11b3a]">
+                        <option value="">Pozisyon Seçiniz</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">İlan Başlığı <span class="text-red-500">*</span></label>
+                    <input type="text" id="jobTitleInput" required placeholder="Örn: Senior Backend Developer (Python)" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#e11b3a]">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Çalışma Modeli / Lokasyon</label>
+                    <input type="text" id="jobLocationInput" placeholder="Örn: Hibrit - Kayseri / Uzaktan" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#e11b3a]">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Detaylı İlan Açıklaması <span class="text-red-500">*</span></label>
+                    <textarea id="jobDescriptionInput" required rows="4" placeholder="Genel nitelikler ve iş tanımı..." class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#e11b3a]"></textarea>
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2 border-t border-gray-100">
+                    <button type="button" onclick="closeJobModal()" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-200">İptal</button>
+                    <button type="submit" class="px-5 py-2 bg-[#e11b3a] text-white rounded-xl text-xs font-semibold hover:bg-[#c51631]">Kaydet</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -196,6 +302,7 @@
         const emptyState = document.getElementById("emptyState");
         const adminAlert = document.getElementById("adminAlert");
         const searchBar = document.getElementById("searchBar");
+        const filterJobPosting = document.getElementById("filterJobPosting");
         const filterPosition = document.getElementById("filterPosition");
         const filterDepartment = document.getElementById("filterDepartment");
         const filterStatus = document.getElementById("filterStatus");
@@ -211,6 +318,7 @@
         const clearAdvancedFiltersBtn = document.getElementById("clearAdvancedFiltersBtn");
 
         let allApplications = [];
+        let allJobsList = [];
         let applicantCache = {};
         let currentModalAppId = null;
 
@@ -221,7 +329,27 @@
             "Rejected":     { label: "Rejected",      cls: "bg-red-50 text-red-700 border-red-200" }
         };
 
-        // Token içindeki rol ve departman bilgisini okur
+        // --- SEKME DEĞİŞTİRME MANITIĞI ---
+        function switchTab(tab) {
+            const candSec = document.getElementById("candidatesTabSection");
+            const jobsSec = document.getElementById("jobsTabSection");
+            const candBtn = document.getElementById("tabCandidatesBtn");
+            const jobsBtn = document.getElementById("tabJobsBtn");
+
+            if (tab === 'candidates') {
+                candSec.classList.remove("hidden");
+                jobsSec.classList.add("hidden");
+                candBtn.className = "px-4 py-2 rounded-lg transition-all bg-white text-gray-900 shadow-sm";
+                jobsBtn.className = "px-4 py-2 rounded-lg transition-all text-gray-500 hover:text-gray-900";
+            } else {
+                candSec.classList.add("hidden");
+                jobsSec.classList.remove("hidden");
+                jobsBtn.className = "px-4 py-2 rounded-lg transition-all bg-white text-gray-900 shadow-sm";
+                candBtn.className = "px-4 py-2 rounded-lg transition-all text-gray-500 hover:text-gray-900";
+                loadJobsData();
+            }
+        }
+
         function getUserInfoFromToken() {
             const token = localStorage.getItem("admin_token");
             if (!token) return {};
@@ -249,6 +377,9 @@
         async function syncDashboardFilters() {
             if (!filterPosition) return;
             filterPosition.innerHTML = '<option value="">Tüm Pozisyonlar</option>';
+            const jobPosSelect = document.getElementById("jobPositionSelect");
+            if (jobPosSelect) jobPosSelect.innerHTML = '<option value="">Pozisyon Seçiniz</option>';
+
             try {
                 const userInfo = getUserInfoFromToken();
                 const isManager = userInfo.role === "manager";
@@ -260,26 +391,31 @@
         
                 let allPositions = [];
                 departments.forEach(dept => {
-                    // 🚨 EĞER KULLANICI MANAGER İSE SADECE KENDİ DEPARTMANINI İŞLE 🚨
                     if (isManager && userDept && dept.name !== userDept) return;
 
                     if (dept.is_active !== false && dept.positions && dept.positions.length > 0) {
                         dept.positions.forEach(pos => {
                             if (pos.is_active !== false) {
-                                const posName = pos.name || pos.title;
-                                if (posName) allPositions.push(posName);
+                                allPositions.push({ id: pos.id, name: pos.name || pos.title });
                             }
                         });
                     }
                 });
 
-                const uniquePositions = [...new Set(allPositions)].sort((a, b) => a.localeCompare(b, "tr"));
+                allPositions.sort((a, b) => a.name.localeCompare(b.name, "tr"));
 
-                uniquePositions.forEach(pos => {
+                allPositions.forEach(pos => {
                     const opt = document.createElement("option");
-                    opt.value = pos;
-                    opt.textContent = pos;
+                    opt.value = pos.name;
+                    opt.textContent = pos.name;
                     filterPosition.appendChild(opt);
+
+                    if (jobPosSelect) {
+                        const opt2 = document.createElement("option");
+                        opt2.value = pos.id;
+                        opt2.textContent = pos.name;
+                        jobPosSelect.appendChild(opt2);
+                    }
                 });
             } catch (err) {
                 console.error("Filtre için pozisyonlar yüklenemedi:", err);
@@ -294,13 +430,11 @@
             const userDept = userInfo.department;
 
             if (isManager && userDept) {
-                // 🚨 MANAGER İÇİN DEPARTMAN FİLTRESİNİ KİLİTLE 🚨
                 filterDepartment.innerHTML = `<option value="${userDept}">${userDept}</option>`;
                 filterDepartment.value = userDept;
-                filterDepartment.disabled = true; // Seçimi engelle
+                filterDepartment.disabled = true;
                 filterDepartment.classList.add("bg-gray-100", "cursor-not-allowed", "opacity-70");
             } else {
-                // HR VE ADMIN İÇİN TÜM DEPARTMANLARI GÖSTER
                 const currentValue = filterDepartment.value;
                 const uniqueDepartments = [...new Set(
                     allApplications
@@ -321,6 +455,32 @@
                 }
                 filterDepartment.disabled = false;
                 filterDepartment.classList.remove("bg-gray-100", "cursor-not-allowed", "opacity-70");
+            }
+        }
+
+        async function populateJobPostingFilter() {
+            if (!filterJobPosting) return;
+            const token = localStorage.getItem("admin_token");
+            try {
+                const res = await fetch(`${BASE_URL}/jobs`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (!res.ok) return;
+                allJobsList = await res.json();
+
+                filterJobPosting.innerHTML = `
+                    <option value="">Tüm Başvurular</option>
+                    <option value="general">Sadece Genel Havuz</option>
+                `;
+
+                allJobsList.forEach(j => {
+                    const opt = document.createElement("option");
+                    opt.value = j.id;
+                    opt.textContent = `İlan: ${j.title}`;
+                    filterJobPosting.appendChild(opt);
+                });
+            } catch (err) {
+                console.error("İlanlar filtreye yüklenemedi:", err);
             }
         }
 
@@ -460,6 +620,7 @@
 
                 await Promise.all(applicantPromises);
                 populateDepartmentFilter();
+                await populateJobPostingFilter();
                 await populateNationalityFilter();
                 renderTable();
 
@@ -470,6 +631,7 @@
 
         function renderTable() {
             const searchTerm = searchBar.value.toLowerCase().trim();
+            const jobFilterVal = filterJobPosting.value;
             const posFilter = filterPosition.value;
             const depFilter = filterDepartment.value;
             const statusFilter = filterStatus.value;
@@ -486,6 +648,15 @@
                 const searchIndex = [buildApplicantSearchIndex(applicant), app.position, app.department].filter(Boolean).join(" ").toLowerCase();
 
                 const matchesSearch = !searchTerm || searchIndex.includes(searchTerm);
+
+                // YENİ: İlan / Havuz Tipi Süzgeci
+                let matchesJobPosting = true;
+                if (jobFilterVal === "general") {
+                    matchesJobPosting = (app.job_posting_id === null || app.job_posting_id === undefined);
+                } else if (jobFilterVal !== "") {
+                    matchesJobPosting = (app.job_posting_id == jobFilterVal);
+                }
+
                 const matchesPosition = !posFilter || app.position === posFilter;
                 const matchesDepartment = !depFilter || app.department === depFilter;
                 const matchesStatus = !statusFilter || app.status === statusFilter;
@@ -499,7 +670,7 @@
 
                 const matchesNationality = !nationalityFilter || applicant.nationality === nationalityFilter;
 
-                return matchesSearch && matchesPosition && matchesDepartment && matchesStatus && matchesExperience && matchesDate && matchesNationality;
+                return matchesSearch && matchesJobPosting && matchesPosition && matchesDepartment && matchesStatus && matchesExperience && matchesDate && matchesNationality;
             });
 
             desktopTableBody.innerHTML = "";
@@ -516,12 +687,24 @@
                 const createdDate = app.created_at ? new Date(app.created_at).toLocaleDateString("tr-TR") : "-";
                 const sc = statusConfig[app.status] || { label: app.status, cls: "bg-gray-100 text-gray-600 border-gray-200" };
 
+                // İlan Etiketi Gösterimi
+                let jobLabel = `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border">Genel Havuz</span>`;
+                if (app.job_posting_id) {
+                    const matchedJob = allJobsList.find(j => j.id === app.job_posting_id);
+                    const jTitle = matchedJob ? matchedJob.title : `#${app.job_posting_id} İlanı`;
+                    jobLabel = `<span class="text-[10px] bg-indigo-50 text-indigo-700 font-semibold px-2 py-0.5 rounded border border-indigo-100">📌 ${jTitle}</span>`;
+                }
+
                 const desktopRow = document.createElement("tr");
                 desktopRow.className = "hover:bg-red-50/50 transition-colors border-b border-gray-200/50 cursor-pointer";
                 desktopRow.onclick = () => openDetailModal(app.id);
                 desktopRow.innerHTML = `
                     <td class="px-6 py-4"><div class="font-semibold text-gray-900">${applicant.first_name} ${applicant.last_name}</div><div class="text-xs text-gray-500">${applicant.email}</div></td>
-                    <td class="px-6 py-4"><div class="text-sm font-medium text-gray-800">${app.position}</div><div class="text-xs text-gray-500">${departmentLabel(app.department)}</div></td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-800">${app.position}</div>
+                        <div class="text-xs text-gray-500 mb-1">${departmentLabel(app.department)}</div>
+                        ${jobLabel}
+                    </td>
                     <td class="px-6 py-4 text-gray-500 text-xs">${app.experience_years} Yıl</td>
                     <td class="px-6 py-4"><span class="text-[10px] font-bold px-2.5 py-1 rounded-full border whitespace-nowrap ${sc.cls}">${sc.label}</span></td>
                     <td class="px-6 py-4 text-xs text-gray-500">${createdDate}</td>
@@ -539,12 +722,145 @@
                     <div class="text-xs bg-gray-50 p-2 rounded-lg border border-gray-200 space-y-1">
                         <div><span class="text-gray-500">Pozisyon:</span> <span class="text-gray-800 font-medium">${app.position}</span></div>
                         <div><span class="text-gray-500">Departman:</span> <span class="text-gray-700">${departmentLabel(app.department)}</span></div>
-                        <div><span class="text-gray-500">Deneyim:</span> <span class="text-gray-500">${app.experience_years} Yıl</span></div>
+                        <div class="pt-1">${jobLabel}</div>
                     </div>
                     <div class="text-[10px] text-gray-400 text-right">${createdDate}</div>
                 `;
                 mobileCardsContainer.appendChild(mobileCard);
             });
+        }
+
+        // --- İLAN YÖNETİMİ YARDIMCI FONKSİYONLARI ---
+        async function loadJobsData() {
+            const token = localStorage.getItem("admin_token");
+            const tbody = document.getElementById("jobsTableBody");
+            const emptyJobs = document.getElementById("emptyJobsState");
+
+            try {
+                const res = await fetch(`${BASE_URL}/jobs`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error("İlanlar getirilemedi.");
+
+                allJobsList = await res.json();
+                tbody.innerHTML = "";
+
+                if (allJobsList.length === 0) {
+                    emptyJobs.classList.remove("hidden");
+                    return;
+                }
+                emptyJobs.classList.add("hidden");
+
+                allJobsList.forEach(job => {
+                    const cDate = job.created_at ? new Date(job.created_at).toLocaleDateString("tr-TR") : "-";
+                    const statusBadge = job.is_active 
+                        ? `<span class="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-200">Yayında</span>`
+                        : `<span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2.5 py-1 rounded-full border border-gray-200">Pasif</span>`;
+
+                    const row = document.createElement("tr");
+                    row.className = "hover:bg-gray-50/80 transition-colors border-b border-gray-200/50";
+                    row.innerHTML = `
+                        <td class="px-6 py-4 font-semibold text-gray-900">${job.title}</td>
+                        <td class="px-6 py-4 text-xs text-gray-600">${job.location || 'Belirtilmedi'}</td>
+                        <td class="px-6 py-4 text-xs text-gray-500">${cDate}</td>
+                        <td class="px-6 py-4">${statusBadge}</td>
+                        <td class="px-6 py-4 text-right space-x-2">
+                            <button onclick="openEditJobModal(${job.id})" class="text-xs text-indigo-600 hover:text-indigo-900 font-medium bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">Düzenle</button>
+                            <button onclick="toggleJobStatus(${job.id})" class="text-xs ${job.is_active ? 'text-amber-600 hover:text-amber-900 bg-amber-50 border-amber-100' : 'text-emerald-600 hover:text-emerald-900 bg-emerald-50 border-emerald-100'} font-medium px-2.5 py-1 rounded-lg border">
+                                ${job.is_active ? 'Pasife Al' : 'Yayına Al'}
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                showAdminError(err.message);
+            }
+        }
+
+        function openCreateJobModal() {
+            document.getElementById("jobModalTitle").innerText = "Yeni İş İlanı Ekle";
+            document.getElementById("jobEditId").value = "";
+            document.getElementById("jobForm").reset();
+            document.getElementById("jobPositionSelect").disabled = false;
+            document.getElementById("jobModal").classList.remove("hidden");
+        }
+
+        function openEditJobModal(jobId) {
+            const job = allJobsList.find(j => j.id === jobId);
+            if (!job) return;
+
+            document.getElementById("jobModalTitle").innerText = "İlanı Düzenle";
+            document.getElementById("jobEditId").value = job.id;
+            document.getElementById("jobTitleInput").value = job.title;
+            document.getElementById("jobLocationInput").value = job.location || "";
+            document.getElementById("jobDescriptionInput").value = job.description;
+
+            // Düzenlerken pozisyon kilitlenir
+            const posSelect = document.getElementById("jobPositionSelect");
+            posSelect.value = job.position_id;
+            posSelect.disabled = true;
+
+            document.getElementById("jobModal").classList.remove("hidden");
+        }
+
+        function closeJobModal() {
+            document.getElementById("jobModal").classList.add("hidden");
+        }
+
+        document.getElementById("jobForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem("admin_token");
+            const editId = document.getElementById("jobEditId").value;
+
+            const payload = {
+                title: document.getElementById("jobTitleInput").value,
+                location: document.getElementById("jobLocationInput").value || null,
+                description: document.getElementById("jobDescriptionInput").value
+            };
+
+            try {
+                let url = `${BASE_URL}/jobs`;
+                let method = "POST";
+
+                if (editId) {
+                    url = `${BASE_URL}/jobs/${editId}`;
+                    method = "PATCH";
+                } else {
+                    payload.position_id = parseInt(document.getElementById("jobPositionSelect").value, 10);
+                }
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || "İşlem başarısız.");
+                }
+
+                closeJobModal();
+                loadJobsData();
+                await populateJobPostingFilter();
+            } catch (err) {
+                showAdminError(err.message);
+            }
+        });
+
+        async function toggleJobStatus(jobId) {
+            const token = localStorage.getItem("admin_token");
+            try {
+                const res = await fetch(`${BASE_URL}/jobs/${jobId}/toggle`, {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error("İlan durumu değiştirilemedi.");
+                loadJobsData();
+            } catch (err) {
+                showAdminError(err.message);
+            }
         }
 
         function openDetailModal(appId) {
@@ -665,6 +981,7 @@
         }
 
         searchBar.addEventListener("input", renderTable);
+        filterJobPosting.addEventListener("change", renderTable);
         filterPosition.addEventListener("change", renderTable);
         filterDepartment.addEventListener("change", renderTable);
         filterStatus.addEventListener("change", renderTable);
