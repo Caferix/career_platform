@@ -7,6 +7,7 @@ ApplicationStatus = Literal["Draft", "Applied", "Under_Review", "Accepted", "Rej
 class ApplicationCreate(BaseModel):
     """Adayın bir pozisyona ilk başvuruyu yaparken göndereceği veri modeli."""
     applicant_id: int = Field(..., description="Başvuran adayın ID'si")
+    job_posting_id: Optional[int] = Field(None, description="Başvurulan ilanın ID'si")
     position: str = Field(..., max_length=100, min_length=2, description="Başvurulan pozisyon (Örn: Android Developer)")
     department: str = Field(..., max_length=100, min_length=2, description="İlgili departman (Örn: Mobil Yazılım)")
     experience_years: int = Field(..., ge=0, description="Yıl bazında deneyim süresi")
@@ -28,6 +29,7 @@ class ApplicationResponse(BaseModel):
     """İstemciye güvenli bir şekilde döneceğimiz başvuru çıktı modeli."""
     id: int
     applicant_id: int
+    job_posting_id: Optional[int] = None
     position: str
     department: str
     experience_years: int
