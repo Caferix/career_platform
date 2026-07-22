@@ -396,21 +396,28 @@
                 });
 
                 setTimeout(async () => {
+                    // URL'deki job_id parametresini okuyoruz
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const jobId = urlParams.get("job_id");
+
                     if (profileRes.ok) {
-                        const candidate = await profileRes.json();
-        
-                        
-                        // Eğer veritabanında kaydı varsa (200) ama ad soyad alanları boşsa (Gölge adaysa):
+                       const candidate = await profileRes.json();
+
+                        // Gölge aday ise veya bilgileri eksikse başvuru formuna gider
                         if (!candidate.first_name || !candidate.last_name) {
                             showAlert("Profilinizin eksik kısımlarını tamamlamak üzere yönlendiriliyorsunuz...", "success");
-                            window.location.href = "/static/apply.html";
+                            window.location.href = jobId ? `/static/apply.html?job_id=${jobId}` : "/static/apply.html";
                         } else {
-                            // Aday kaydını tamamen bitirmiş gerçek bir kullanıcıysa:
-                            window.location.href = "/static/profile.html";
+                            // Aday zaten kayıtlıysa: Eğer bir ilana tıklayıp geldiyse doğrudan ilanın başvuru formuna, yoksa profil sayfasına gider
+                            if (jobId) {
+                                window.location.href = `/static/apply.html?job_id=${jobId}`;
+                            } else {
+                                window.location.href = "/static/profile.html";
+                            }
                         }
                     } else {
-                        // Eğer hiçbir şekilde token/profil eşleşmediyse başvuru formuna yönlendir
-                        window.location.href = "/static/apply.html";
+                        // Profil eşleşmediyse varsayılan başvuru formuna git
+                        window.location.href = jobId ? `/static/apply.html?job_id=${jobId}` : "/static/apply.html";
                     }
                 }, 1000);
 
