@@ -389,11 +389,14 @@
                     // DİKKAT: p.title yerine p.name yapıldı!
                     let posListHtml = dept.positions && dept.positions.length > 0
                         ? dept.positions.map(p => `
-                            <li class="text-xs text-gray-300 py-1.5 border-b border-gray-700/50 flex justify-between items-center">
-                                <span>• ${p.name}</span>
+                            <li class="text-xs py-1.5 border-b border-gray-700/50 flex justify-between items-center ${!p.is_active ? 'opacity-50' : 'text-gray-300'}">
+                                <span class="${!p.is_active ? 'line-through text-gray-500' : ''}">${p.name}</span>
                                 <div class="flex items-center gap-2">
+                                    <span class="text-[9px] px-1.5 py-0.5 rounded-full border ${p.is_active ? 'text-emerald-300 border-emerald-700 bg-emerald-950/40' : 'text-gray-400 border-gray-600 bg-gray-800/60'}">
+                                        ${p.is_active ? 'Aktif' : 'Pasif'}
+                                    </span>
                                     <span class="text-gray-500 font-mono text-[10px]">ID: ${p.id}</span>
-                                    <button onclick="deactivatePosition(${p.id})" title="Pasife Al" class="text-red-400 hover:text-red-300 font-bold px-1 text-xs">✕</button>
+                                    ${p.is_active ? `<button onclick="deactivatePosition(${p.id})" title="Pasife Al" class="text-red-400 hover:text-red-300 font-bold px-1 text-xs">✕</button>` : ''}
                                 </div>
                             </li>`).join("")
                         : `<li class="text-xs text-gray-500 italic py-1">Henüz pozisyon eklenmemiş.</li>`;
