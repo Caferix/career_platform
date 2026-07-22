@@ -1,19 +1,22 @@
 import os
-from fastapi import FastAPI
-from sqlalchemy import text
+from fastapi import FastAPI, Depends
+from sqlalchemy import text, select
+from sqlalchemy.orm import selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.settings import settings
-from app.routes.candidates import router as candidate_router
-from app.db.database import engine
-# 🌟 DÜZELTME 1: consents router'ını import listesine dahil ediyoruz
+from app.db.database import engine, get_db  # get_db eklendi
 from app.routes import auth, applications, consents 
+from app.routes.candidates import router as candidate_router
+from app.routes.admin import router as admin_router  # Yeni admin router'ı
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.core.security import limiter
-from app.routes.applications import router as applications_router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 
+# Modellerimizi asenkron select sorgusunda kullanmak için import ediyoruz
+from app.models.company import Department, Position  # Source 6'daki modeller
 
 app = FastAPI(
     title="Career Platform API",
@@ -29,8 +32,9 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.include_router(candidate_router)
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(applications.router)
-# 🌟 DÜZELTME 2: consents rotasını ana uygulamaya tamamen mühürlüyoruz!
 app.include_router(consents.router) 
+app.include_router(admin_router)  # Admin rotaları sisteme dahil edildi
+
 
 # 2. CORS Yapılandırması
 app.add_middleware(
@@ -88,43 +92,53 @@ async def read_index():
     return "<h3>Statik index.html dosyası bulunamadı. Lütfen backend/static/ altında oluşturun.</h3>"
 
 
-    # app/main.py dosyasının en altına ekle:
-
+# --- DİNAMİK ORGANİZASYON ŞEMASI ENDPOINT'İ ---
 @app.get("/public/positions")
-async def get_public_positions():
+async def get_public_positions(db: AsyncSession = Depends(get_db)):
     """
     Ön yüzlerin (apply ve dashboard) pozisyon-departman ilişkisini
-    canlı olarak çekebilmesi için merkezi sözlüğü döner.
+    veritabanından canlı olarak çekebilmesi için düzleştirilmiş sözlüğü döner.
     """
-    # Şirket/Platform organizasyon şemasının merkezi burasıdır.
-    # İleride veritabanına taşınacak olan yapı tam olarak budur.
-    structure = {
-        "Yazılım Geliştirme": [
-            "Backend Developer", 
-            "Frontend Developer", 
-            "Android Developer", 
-            "iOS Developer",
-            "DevOps Engineer",
-            "Android Intern"
-        ],
-        "Gömülü Sistemler": [
-            "Embedded Systems Engineer",
-            "Embedded Intern"
-        ],
-        "Siber Güvenlik": [
-            "Cybersecurity Expert", 
-            "Penetration Tester"
-        ],
-        "İnsan Kaynakları": [
-            "HR Intern", 
-            "Talent Acquisition Specialist"
-        ]
-    }
+    # Kural 4: select() ve ilişkili pozisyonları tek seferde çekmek için selectinload kullanımı
+    stmt = (
+        select(Department)
+        .where(Department.is_active == True)
+        .options(selectinload(Department.positions))
+    )
+    result = await db.execute(stmt)
+    departments = result.scalars().all()
     
-    # Ön yüzün kolayca "Pozisyon -> Departman" araması yapabilmesi için yapıyı düzleştiriyoruz
+    # Ön yüzün eski yapısını bozmamak için veriyi aynı düzleştirilmiş (flat_map) formatta hazırlıyoruz
     flat_map = {}
-    for dept, positions in structure.items():
-        for pos in positions:
-            flat_map[pos] = dept
+    for dept in departments:
+        for pos in dept.positions:
+            if pos.is_active:
+                flat_map[pos.name] = dept.name
             
     return flat_map
+
+
+@app.get("/departments")
+async def get_departments(db: AsyncSession = Depends(get_db)):
+    """
+    apply.html'in beklediği iç içe (nested) formatı döner:
+    [{ name, is_active, positions: [{ name, is_active }, ...] }, ...]
+    """
+    stmt = (
+        select(Department)
+        .options(selectinload(Department.positions))
+    )
+    result = await db.execute(stmt)
+    departments = result.scalars().all()
+
+    return [
+        {
+            "name": dept.name,
+            "is_active": dept.is_active,
+            "positions": [
+                {"name": pos.name, "is_active": pos.is_active}
+                for pos in dept.positions
+            ],
+        }
+        for dept in departments
+    ]

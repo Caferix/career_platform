@@ -10,13 +10,18 @@ from app.services import sms, otp
 from app.services import user as user_service  # Asenkron servis katmanı
 from app.core.security import limiter, auth, hash_data
 from app.services import candidate as candidate_service
+from app.models.auth_log import FailedLoginAttempt
+from datetime import datetime, timezone
+
+
+naive_utc_now = datetime.now(timezone.utc).replace(tzinfo=None)
 
 # Router tanımını yapıyoruz. main.py'de prefix="/auth" olarak bağlanacağı için 
 # altındaki rotaların path'lerini buna göre güncelliyoruz.
 router = APIRouter()
 
 # --- 1. GERÇEK VERİTABANI BAĞLANTILI ADMİN GİRİŞ ENDPOINT'İ ---
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login", response_model=TokenResponse) # 🌟 response_model geri geldi!
 @limiter.limit("5/minute")
 async def admin_login(
     request: Request, 
@@ -24,30 +29,52 @@ async def admin_login(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    HR ve Departman Yöneticileri için Güvenli Kurumsal Giriş Kapısı.
-    Girişler tamamen login_name ve asenkron şifre doğrulaması ile veritabanından yapılır.
+    Admin, HR ve Departman Yöneticileri için Güvenli Kurumsal Giriş Kapısı.
+    Şemaya tam uyumlu veri döner ve hatalı girişleri asenkron loglar.
     """
-    #  Mock DB tamamen kaldırıldı, asenkron veritabanı doğrulama servisi çağrılıyor
     user = await user_service.authenticate_user(
         db=db, 
         login_name=payload.login_name, 
         password=payload.password
     )
     
-    # Kural 8: Güvenlik sızıntısı vermemek için jenerik hata mesajı
+    # Başarısız giriş brute-force kaydı
     if not user:
+        failed_attempt = FailedLoginAttempt(
+            login_name=payload.login_name,
+            ip_address=request.client.host or "0.0.0.0",
+            attempted_at=naive_utc_now
+        )
+        db.add(failed_attempt)
+        await db.commit()
+
+        # Kural 8 & 19: Güvenlik sızıntısı vermemek için jenerik hata mesajı
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Kullanıcı adı veya şifre hatalı."
         )
     
-    # Başarılı girişte kullanıcının gerçek id, role ve department bilgileri JWT payload'una gömülür
+    
+    
     access_token = auth.create_token(
         user_id=user.id, 
         role=user.role,
         department=user.department
     )
-    return TokenResponse(access_token=access_token, token_type="bearer")
+
+    if hasattr(user, 'is_active') and not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Hesabınız pasif duruma getirilmiştir. Lütfen sistem yöneticisi ile iletişime geçin."
+        )
+    
+    # Artık Pydantic şeması (TokenResponse) tarafından doğrulanarak güvenle döner
+    return TokenResponse(
+        access_token=access_token, 
+        token_type="bearer",
+        role=user.role,
+        department=user.department
+    )
 
 
 # --- 2. ADAY OTP GÖNDERME ENDPOINT'İ ---

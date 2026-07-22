@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Platform - Yönetim Paneli</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+    <script>
+        // Sayfa yüklenmeden önce JWT Token kontrolü bariyeri
+        const token = localStorage.getItem("admin_token");
+        const role = localStorage.getItem("user_role");
+        
+        if (!token || (role !== "admin" && role !== "superadmin")) {
+            window.location.href = "/";
+        }
+    </script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+    <!-- Üst Bar / Navigasyon -->
+    <header class="bg-gray-800 border-b border-gray-700 px-6 py-4 flex justify-between items-center shadow-md">
+        <div class="flex items-center space-x-3">
+            <h1 class="text-xl font-bold text-indigo-400 tracking-wider">Dener Kariyer Admin Paneli</h1>
+            <span class="bg-indigo-900/50 text-indigo-300 text-xs px-2.5 py-1 rounded-full border border-indigo-700">Admin</span>
+        </div>
+        <button onclick="logout()" class="bg-red-600/80 hover:bg-red-600 text-white text-sm px-4 py-2 rounded-lg transition-colors shadow">
+            Güvenli Çıkış
+        </button>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Sekme Butonları (Tabs) -->
+        <div class="border-b border-gray-700 mb-8">
+            <nav class="flex space-x-4" aria-label="Tabs">
+                <button onclick="switchTab('users-tab')" id="users-tab-btn" class="tab-btn border-b-2 border-indigo-500 text-indigo-400 px-4 py-2.5 font-medium text-sm transition-all focus:outline-none">
+                     Kullanıcı Yönetimi
+                </button>
+                <button onclick="switchTab('company-tab')" id="company-tab-btn" class="tab-btn border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600 px-4 py-2.5 font-medium text-sm transition-all focus:outline-none">
+                     Şirket & Organizasyon Yapısı
+                </button>
+                <button onclick="switchTab('logs-tab')" id="logs-tab-btn" class="tab-btn border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600 px-4 py-2.5 font-medium text-sm transition-all focus:outline-none">
+                     Güvenlik İzleri & Loglar
+                </button>
+            </nav>
+        </div>
+
+        <!-- ================= SEKMELERİN İÇERİKLERİ ================= -->
+
+        <!-- SEKMELER 1: KULLANICI YÖNETİMİ -->
+        <div id="users-tab" class="tab-content active space-y-8">
+            <!-- Yeni Kullanıcı Ekleme Formu -->
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-sm">
+                <h3 class="text-lg font-semibold text-gray-200 mb-4">Yeni Kurumsal Kullanıcı Ekle (HR / Manager)</h3>
+                <form id="user-form" onsubmit="createUser(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Kullanıcı Adı</label>
+                        <input type="text" id="user-login-name" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Şifre</label>
+                        <input type="password" id="user-password" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Rolü</label>
+                        <select id="user-role" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
+                            <option value="hr">HR (İnsan Kaynakları)</option>
+                            <option value="manager">Manager (Departman Sorumlusu)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Departmanı (Sadece Manager İçin)</label>
+                        <input type="text" id="user-dept" placeholder="Örn: Yazılım Geliştirme" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
+                    </div>
+                    <div class="md:col-span-4 flex justify-end">
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-6 py-2 rounded-lg transition-colors shadow">
+                            Kullanıcıyı Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Mevcut Yöneticiler Listesi -->
+            <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-200">Mevcut Sistem Yöneticileri</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-gray-300">
+                        <thead class="bg-gray-750 text-xs uppercase text-gray-400 border-b border-gray-700">
+                            <tr>
+                                <th class="px-6 py-3.5">ID</th>
+                                <th class="px-6 py-3.5">Kullanıcı Adı</th>
+                                <th class="px-6 py-3.5">Rol</th>
+                                <th class="px-6 py-3.5">Bağlı Departman</th>
+                                <th class="px-6 py-3.5">Durum</th>
+                                <th class="px-6 py-3.5 text-center">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body" class="divide-y divide-gray-700">
+                            <!-- JS ile doldurulacak -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEKMELER 2: ŞİRKET & ORGANİZASYON YAPISI -->
+        <div id="company-tab" class="tab-content space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Departman Ekleme -->
+                <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-lg font-semibold text-gray-200 mb-4">Yeni Departman Tanımla</h3>
+                    <form id="dept-form" onsubmit="createDepartment(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Departman Adı</label>
+                            <input type="text" id="dept-name" required placeholder="Örn: Yazılım Geliştirme" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm py-2 rounded-lg transition-colors shadow">
+                            Departman Ekle
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Pozisyon Ekleme -->
+                <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-sm">
+                    <h3 class="text-lg font-semibold text-gray-200 mb-4">Yeni İş İlanı / Pozisyon Tanımla</h3>
+                    <form id="pos-form" onsubmit="createPosition(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Bağlı Olduğu Departman ID</label>
+                            <input type="number" id="pos-dept-id" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Pozisyon Unvanı (Title)</label>
+                            <input type="text" id="pos-title" required placeholder="Örn: Python Developer" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">İş Tanımı (Description)</label>
+                            <textarea id="pos-desc" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm h-20"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm py-2 rounded-lg transition-colors shadow">
+                            Pozisyon Ekle
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Şirket Şeması Listesi -->
+            <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-200">Aktif Şirket Şeması ve Pozisyon Haritası</h3>
+                </div>
+                <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6" id="company-tree-container">
+                    <!-- JS ile dinamik kartlar basılacak -->
+                </div>
+            </div>
+        </div>
+
+        <!-- SEKMELER 3: GÜVENLİK İZLERİ & LOGLAR -->
+        <div id="logs-tab" class="tab-content space-y-8">
+            <!-- KVKK Erişim Denetim İzleri ve Filtreleme Header'ı -->
+            <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b border-gray-700 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-teal-400">Erişim Denetim ve Yönetim Logları</h3>
+                    
+                   
+                    <select id="logCategoryFilter" onchange="filterLogsInUI()" class="bg-gray-700 text-gray-200 border border-gray-600 rounded-lg px-3 py-1.5 text-xs focus:border-indigo-500 focus:outline-none cursor-pointer">
+                        <option value="all">Tüm Loglar</option>
+                        <option value="kvkk">Sadece KVKK (Erişim/Sorgu)</option>
+                        <option value="system">Sadece Sistem/İdari İzinler</option>
+                    </select>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-gray-300">
+                        <thead class="bg-gray-750 text-xs uppercase text-gray-400 border-b border-gray-700">
+                            <tr>
+                                <th class="px-6 py-3.5">ID</th>
+                                <th class="px-6 py-3.5">Yapan Kullanıcı / Rol</th>
+                                <th class="px-6 py-3.5">Aksiyon</th>
+                                <th class="px-6 py-3.5">Hedef ID</th>
+                                <th class="px-6 py-3.5">IP Adresi</th>
+                                <th class="px-6 py-3.5">İşlem Zamanı</th>
+                            </tr>
+                        </thead>
+                        <tbody id="access-logs-table-body" class="divide-y divide-gray-700 text-xs">
+                            <!-- JS ile doldurulacak -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Kaba Kuvvet Şüpheli Giriş Denemeleri -->
+            <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b border-gray-700">
+                    <h3 class="text-lg font-semibold text-amber-500">Şüpheli & Başarısız Giriş Denemeleri</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-gray-300">
+                        <thead class="bg-gray-750 text-xs uppercase text-gray-400 border-b border-gray-700">
+                            <tr>
+                                <th class="px-6 py-3.5">Log ID</th>
+                                <th class="px-6 py-3.5">Deneme Yapan Kullanıcı</th>
+                                <th class="px-6 py-3.5">Kaynak IP Adresi</th>
+                                <th class="px-6 py-3.5">Deneme Zamanı</th>
+                            </tr>
+                        </thead>
+                        <tbody id="failed-logins-table-body" class="divide-y divide-gray-700 text-xs">
+                            <!-- JS ile doldurulacak -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- UI Kontrol ve Veri Motoru Scripti -->
+    <script>
+        let rawAccessLogs = []; // Süzme işlemleri için hafızada tutulan ham log verisi
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchUsers();
+            fetchAccessLogs();
+            fetchFailedLogins();
+            fetchCompanyStructure();
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-indigo-500', 'text-indigo-400');
+                btn.classList.add('border-transparent', 'text-gray-400');
+            });
+
+            const activeBtn = document.getElementById(`${tabId}-btn`);
+            activeBtn.classList.remove('border-transparent', 'text-gray-400');
+            activeBtn.classList.add('border-indigo-500', 'text-indigo-400');
+
+            if (tabId === 'users-tab') fetchUsers();
+            if (tabId === 'company-tab') fetchCompanyStructure();
+            if (tabId === 'logs-tab') { fetchAccessLogs(); fetchFailedLogins(); }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "/static/login.html";
+        }
+
+        // --- KULLANICI YÖNETİMİ ---
+        async function fetchUsers() {
+            try {
+                const token = localStorage.getItem("admin_token");
+                const res = await fetch("/admin/users", { 
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+        
+                if (res.status === 403) return console.warn("Kullanıcı listeleme yetkiniz yok.");
+        
+                const users = res.ok ? await res.json() : [];
+                renderUserRows(users);
+            } catch (err) {
+                console.error("Kullanıcılar yüklenirken hata oluştu:", err);
+            }
+        }
+
+        function renderUserRows(users) {
+            const tbody = document.getElementById("users-table-body");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            users.forEach(user => {
+                const badgeClass = user.is_active 
+                    ? "bg-green-950 text-green-300 border-green-700" 
+                    : "bg-red-950 text-red-300 border-red-700";
+
+                const btnClass = user.is_active
+                    ? "bg-amber-600/80 hover:bg-amber-600"
+                    : "bg-emerald-600/80 hover:bg-emerald-600";
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-800/50 transition-colors text-sm">
+                        <td class="px-6 py-4 font-medium">${user.id}</td>
+                        <td class="px-6 py-4 font-semibold text-gray-200">${user.login_name}</td>
+                        <td class="px-6 py-4"><span class="bg-blue-950 text-blue-300 text-xs px-2.5 py-1 rounded border border-blue-700 font-medium">${user.role}</span></td>
+                        <td class="px-6 py-4 text-gray-400">${user.department || '-'}</td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${badgeClass}">
+                                ${user.is_active ? 'Aktif' : 'Pasif'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <button onclick="toggleUserStatus(${user.id})" class="text-xs text-white px-3 py-1.5 rounded transition-colors shadow-sm font-medium ${btnClass}">
+                                ${user.is_active ? 'Pasife Al' : 'Aktife Al'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function createUser(e) {
+            e.preventDefault();
+            try {
+                const token = localStorage.getItem("admin_token");
+                const payload = {
+                    login_name: document.getElementById("user-login-name").value,
+                    password: document.getElementById("user-password").value,
+                    role: document.getElementById("user-role").value,
+                    department: document.getElementById("user-dept").value || null
+                };
+
+                const res = await fetch("/admin/users", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    document.getElementById("user-form").reset();
+                    fetchUsers();
+                } else {
+                    const err = await res.json();
+                    alert(`Hata: ${err.detail || 'Kullanıcı oluşturulamadı.'}`);
+                }
+            } catch (err) {
+                console.error("Kullanıcı eklenirken hata:", err);
+            }
+        }
+
+        async function toggleUserStatus(userId) {
+            try {
+                const token = localStorage.getItem("admin_token");
+                const res = await fetch(`/admin/users/${userId}/toggle`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (res.ok) {
+                    fetchUsers();
+                } else {
+                    const errData = await res.json();
+                    alert(`Hata: ${errData.detail || "Kullanıcı durumu değiştirilemedi."}`);
+                }
+            } catch (err) {
+                console.error("Durum değiştirilirken hata oluştu:", err);
+            }
+        }
+
+        // --- ORGANİZASYON YAPISI ---
+        async function fetchCompanyStructure() {
+            try {
+                const token = localStorage.getItem("admin_token");
+                if (!token) return;
+
+                const res = await fetch("/admin/departments", {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (!res.ok) return console.error("Departmanlar çekilemedi:", res.status);
+
+                const depts = await res.json();
+                const container = document.getElementById("company-tree-container");
+                if (!container) return;
+                container.innerHTML = "";
+
+                if (!depts || depts.length === 0) {
+                    container.innerHTML = `<div class="col-span-3 text-center py-8 text-gray-500 text-sm">Henüz tanımlanmış bir departman bulunmuyor.</div>`;
+                    return;
+                }
+
+                depts.forEach(dept => {
+                    // DİKKAT: p.title yerine p.name yapıldı!
+                    let posListHtml = dept.positions && dept.positions.length > 0
+                        ? dept.positions.map(p => `
+                            <li class="text-xs py-1.5 border-b border-gray-700/50 flex justify-between items-center ${!p.is_active ? 'opacity-50' : 'text-gray-300'}">
+                                <span class="${!p.is_active ? 'line-through text-gray-500' : ''}">${p.name}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[9px] px-1.5 py-0.5 rounded-full border ${p.is_active ? 'text-emerald-300 border-emerald-700 bg-emerald-950/40' : 'text-gray-400 border-gray-600 bg-gray-800/60'}">
+                                        ${p.is_active ? 'Aktif' : 'Pasif'}
+                                    </span>
+                                    <span class="text-gray-500 font-mono text-[10px]">ID: ${p.id}</span>
+                                    ${p.is_active ? `<button onclick="deactivatePosition(${p.id})" title="Pasife Al" class="text-red-400 hover:text-red-300 font-bold px-1 text-xs">✕</button>` : ''}
+                                </div>
+                            </li>`).join("")
+                        : `<li class="text-xs text-gray-500 italic py-1">Henüz pozisyon eklenmemiş.</li>`;
+
+                    const isDeptActive = dept.is_active !== false;
+                    const badgeClass = isDeptActive 
+                        ? "bg-green-950/60 text-green-300 border-green-800" 
+                        : "bg-red-950/60 text-red-300 border-red-800";
+
+                    container.innerHTML += `
+                        <div class="bg-gray-750 border border-gray-700 rounded-xl p-4 shadow-sm relative ${!isDeptActive ? 'opacity-60' : ''}">
+                            <div class="flex justify-between items-start mb-3 pb-2 border-b border-gray-600">
+                                <div>
+                                    <h4 class="font-bold text-indigo-300 text-sm flex items-center gap-2">
+                                        ${dept.name}
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full border ${badgeClass}">
+                                            ${isDeptActive ? 'Aktif' : 'Pasif'}
+                                        </span>
+                                    </h4>
+                                    <span class="text-[10px] text-gray-400 font-mono">Dept ID: ${dept.id}</span>
+                                </div>
+                                ${isDeptActive ? `
+                                    <button onclick="deactivateDepartment(${dept.id})" class="text-[11px] bg-red-950/80 hover:bg-red-900 text-red-300 border border-red-800 px-2 py-1 rounded transition">
+                                        Pasife Al
+                                    </button>
+                                ` : ''}
+                            </div>
+                            <ul class="space-y-1">
+                                ${posListHtml}
+                            </ul>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.error("Şirket yapısı yüklenirken hata oluştu:", err);
+            }
+        }
+
+        async function createDepartment(e) {
+            e.preventDefault();
+            try {
+                const token = localStorage.getItem("admin_token");
+                const name = document.getElementById("dept-name").value;
+
+                const res = await fetch("/admin/departments", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ name: name, is_active: true })
+                });
+
+                if (res.ok) {
+                    document.getElementById("dept-form").reset();
+                    fetchCompanyStructure();
+                } else {
+                    const err = await res.json();
+                    alert(`Hata: ${err.detail || 'Departman eklenemedi.'}`);
+                }
+            } catch (err) {
+                console.error("Departman eklenirken hata:", err);
+            }
+        }
+
+        async function deactivateDepartment(deptId) {
+            if (!confirm("Bu departmanı pasife almak istediğinize emin misiniz?")) return;
+            try {
+                const token = localStorage.getItem("admin_token");
+                const res = await fetch(`/admin/departments/${deptId}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    fetchCompanyStructure();
+                } else {
+                    const err = await res.json();
+                    alert(`Hata: ${err.detail || 'Departman pasife alınamadı.'}`);
+                }
+            } catch (err) {
+                console.error("Departman pasife alınırken hata:", err);
+            }
+        }
+
+        async function deactivatePosition(posId) {
+            if (!confirm("Bu pozisyonu pasife almak istediğinize emin misiniz?")) return;
+            try {
+                const token = localStorage.getItem("admin_token");
+                const res = await fetch(`/admin/positions/${posId}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    fetchCompanyStructure();
+                } else {
+                    const err = await res.json();
+                    alert(`Hata: ${err.detail || 'Pozisyon pasife alınamadı.'}`);
+                }
+            } catch (err) {
+                console.error("Pozisyon pasife alınırken hata:", err);
+            }
+        }
+
+        async function createPosition(e) {
+            e.preventDefault();
+            const token = localStorage.getItem("admin_token");
+
+            const deptId = parseInt(document.getElementById("pos-dept-id").value, 10);
+            const titleInput = document.getElementById("pos-title").value.trim();
+
+            if (!deptId || isNaN(deptId)) {
+                alert("Lütfen geçerli bir Departman ID giriniz.");
+                return;
+            }
+
+            // DİKKAT: title değil name yolluyoruz
+            const payload = {
+                department_id: deptId,
+                name: titleInput, 
+                is_active: true
+            };
+
+            try {
+                const res = await fetch("/admin/positions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    document.getElementById("pos-form").reset();
+                    fetchCompanyStructure();
+                    alert("Pozisyon başarıyla eklendi.");
+                } else {
+                    const err = await res.json();
+                    alert(`Hata: ${err.detail || 'Pozisyon eklenemedi.'}`);
+                }
+            } catch (err) {
+                console.error("Pozisyon ekleme hatası:", err);
+            }
+        }
+
+        // --- GÜVENLİK İZLERİ VE LOGLAR (FİLTRELEME MOTORU BURADA) ---
+        async function fetchAccessLogs() {
+            try {
+                const token = localStorage.getItem("admin_token");
+                const res = await fetch("/admin/access-logs?limit=100", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (!res.ok) return console.error("Erişim logları çekilemedi:", res.status);
+
+                const data = await res.json();
+                rawAccessLogs = data.results || [];
+                
+                filterLogsInUI(); // Süzülmüş halini ekrana bas
+            } catch (err) {
+                console.error("Erişim logları yüklenirken hata:", err);
+            }
+        }
+
+        function filterLogsInUI() {
+            const filterValue = document.getElementById("logCategoryFilter").value;
+            const tbody = document.getElementById("access-logs-table-body");
+            if (!tbody) return;
+            
+            tbody.innerHTML = "";
+
+            // Kişisel veri ve KVKK sorgu aksiyonları
+            const kvkkActions = ["viewed_applications_list", "downloaded_cv", "viewed_candidate_detail"];
+
+            const filtered = rawAccessLogs.filter(log => {
+                if (filterValue === "kvkk") return kvkkActions.includes(log.action);
+                if (filterValue === "system") return !kvkkActions.includes(log.action);
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-500 text-xs">Aramanıza uygun log kaydı bulunamadı.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(log => {
+                const dateStr = log.created_at ? new Date(log.created_at).toLocaleString('tr-TR') : '-';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-800/50 transition-colors text-xs border-b border-gray-700/50">
+                        <td class="px-6 py-3.5 font-medium text-gray-300 whitespace-nowrap">${log.id}</td>
+                        <td class="px-6 py-3.5 text-gray-300 whitespace-nowrap">
+                            <span class="font-semibold text-gray-200">${log.user_role || 'Sistem'}</span> 
+                            <span class="text-gray-500 text-[11px]">(ID: ${log.user_id})</span>
+                        </td>
+                        <td class="px-6 py-3.5 whitespace-nowrap">
+                            <span class="bg-purple-950/80 text-purple-300 px-2.5 py-1 rounded-md border border-purple-800 text-[10px] font-mono font-bold tracking-wide">
+                                ${log.action}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3.5 text-gray-400 font-mono whitespace-nowrap">${log.target_id !== null ? log.target_id : '-'}</td>
+                        <td class="px-6 py-3.5 text-gray-400 font-mono whitespace-nowrap">${log.ip_address}</td>
+                        <td class="px-6 py-3.5 text-gray-400 whitespace-nowrap">${dateStr}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function fetchFailedLogins() {
+            try {
+                const token = localStorage.getItem("admin_token");
+                const res = await fetch("/admin/failed-logins?limit=50", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (!res.ok) return console.error("Hatalı giriş logları çekilemedi:", res.status);
+
+                const data = await res.json();
+                const attempts = data.results || [];
+
+                const tbody = document.getElementById("failed-logins-table-body");
+                if (!tbody) return;
+                tbody.innerHTML = "";
+
+                attempts.forEach(attempt => {
+                    const dateStr = attempt.attempted_at ? new Date(attempt.attempted_at).toLocaleString('tr-TR') : '-';
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-800/50 transition-colors text-xs border-b border-gray-700/50">
+                            <td class="px-6 py-3.5 font-medium text-red-400 whitespace-nowrap">${attempt.id}</td>
+                            <td class="px-6 py-3.5 font-bold text-gray-200 whitespace-nowrap">${attempt.login_name}</td>
+                            <td class="px-6 py-3.5 text-gray-400 font-mono whitespace-nowrap">${attempt.ip_address}</td>
+                            <td class="px-6 py-3.5 text-red-300/80 whitespace-nowrap">${dateStr}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error("Hatalı giriş logları yüklenirken hata:", err);
+            }
+        }
+    </script>
+</body>
+</html>

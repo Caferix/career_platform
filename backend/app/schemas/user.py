@@ -5,7 +5,7 @@ from datetime import datetime
 class UserCreate(BaseModel):
     login_name: str = Field(..., min_length=3, max_length=50)
     password: str = Field(..., min_length=6)
-    role: str = Field(..., description="'hr' veya 'manager'")
+    role: str = Field(..., description="Kullanıcıya atanacak rol (Örn: admin, hr, manager)")
     department: Optional[str] = None
 
 class UserResponse(BaseModel):

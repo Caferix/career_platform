@@ -99,9 +99,23 @@ async def get_candidate_by_id(candidate_id: int, db: AsyncSession = Depends(get_
     return await candidate_service.get_candidate(db=db, candidate_id=candidate_id)
 
 @router.get("/", response_model=list[CandidateResponse])
-async def list_all_candidates(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)):
-    """Aktif adayları sayfalayarak listeler."""
-    return await candidate_service.list_candidates(db=db, skip=skip, limit=limit)
+async def list_all_candidates(
+    skip: int = 0, 
+    limit: int = 10, 
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)  # 🌟 Token doğrulama bariyeri eklendi
+):
+    """
+    Aktif adayları yetki ve departman filtresine göre 
+    servis katmanında işleyerek asenkron listeler.
+    """
+    # Rota seviyesinde if-else kalabalığı yapmadan veriyi doğrudan servise delege ediyoruz
+    return await candidate_service.list_candidates(
+        db=db, 
+        skip=skip, 
+        limit=limit, 
+        current_user=current_user
+    )
 
 @router.put("/{candidate_id:int}", response_model=CandidateResponse)
 async def update_candidate_by_id(candidate_id: int, data: CandidateUpdate, db: AsyncSession = Depends(get_db)):

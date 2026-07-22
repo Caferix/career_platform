@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aday Başvuru Formu</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/static/company-structure.js"></script>
     <style>
         .step-hidden { display: none; }
         .fade-in { animation: fadeIn 0.4s ease-in-out; }
@@ -130,7 +129,6 @@
                             <label class="block text-xs font-semibold text-gray-600 uppercase">Sürücü Belgeleri (Ehliyet)</label>
                             <button type="button" onclick="addLicenseRow()" class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Ehliyet Ekle</button>
                         </div>
-                        <!-- Izgara yapısı dikeyde ferah olsun diye space-y-1 ve padding ayarları yapıldı -->
                         <div id="licenseContainer" class="space-y-1">
                             <!-- Dinamik ehliyet satırları buraya eklenecek -->
                         </div>
@@ -153,7 +151,6 @@
                         <p class="text-sm text-gray-500 mt-1">Eğitim bilgilerinizi ve bildiğiniz dilleri ekleyin.</p>
                     </div>
 
-                    <!-- Dinamik Eğitim Alanı -->
                     <div class="mb-8">
                         <div class="flex justify-between items-center mb-3">
                             <h3 class="text-sm font-semibold text-gray-800">Eğitim Bilgileri <span class="text-red-500">*</span></h3>
@@ -164,7 +161,6 @@
                         </div>
                     </div>
 
-                    <!-- Dinamik Dil Alanı -->
                     <div class="mb-4">
                         <div class="flex justify-between items-center mb-3">
                             <h3 class="text-sm font-semibold text-gray-800">Yabancı Dil Bilgisi</h3>
@@ -193,7 +189,6 @@
                         <select id="position" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-[#e11b3a]"></select>
                     </div>
 
-                    <!-- DİNAMİK DENEYİM SATIRLARI -->
                     <div class="mb-6">
                         <div class="flex justify-between items-center mb-3">
                             <label class="block text-xs font-semibold text-gray-600 uppercase">İş / Proje Deneyimleri</label>
@@ -208,7 +203,6 @@
                         <input type="text" id="skills" placeholder="Java, Python, Jetpack Compose vb. (Virgülle ayırın)" class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a]">
                     </div>
 
-                    <!-- SOSYAL LİNKLER -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Sosyal Medya / Portfolyo 1</label>
@@ -257,7 +251,6 @@
                             <input type="checkbox" id="kvkkGeneral" class="w-5 h-5 mt-0.5 accent-[#e11b3a]">
                             <span class="text-sm text-gray-600 leading-relaxed">
                                 Başvuru süreçlerimin yürütülmesi amacıyla kişisel verilerimin işlenmesine ilişkin
-                                <!-- DEĞİŞİKLİK: iframe modalını tetikleyecek şekilde onclick bağlandı -->
                                 <button type="button" onclick="openKvkkPdfModal()" class="text-[#e11b3a] font-semibold underline underline-offset-2 hover:text-[#c51631]">Aydınlatma Metnini</button>
                                 okudum ve onaylıyorum. <span class="text-red-500">*</span>
                             </span>
@@ -291,7 +284,7 @@
 
     </main>
 
-    <!-- 🌟 YENİ: KVKK PDF IFRAME MODAL -->
+    <!-- KVKK PDF IFRAME MODAL -->
     <div id="kvkkPdfModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden">
             <div class="flex items-center justify-between p-4 border-b border-slate-100 bg-gray-50">
@@ -329,13 +322,49 @@
             window.location.href = "/static/index.html";
         });
 
-        // 🌟 KVKK IFRAME MODAL GÖSTERİM FONKSİYONLARI
-        // Mobil tarayıcılar (gerçek cihaz) ve dar viewport'lar genelde <embed>/<iframe> içinde
-        // PDF'i native render edemiyor. Sadece user-agent'a güvenmek yeterli değil (DevTools'ta
-        // cihaz seçilmeden sadece pencere daraltıldığında UA hâlâ masaüstü olarak kalabiliyor ve
-        // Chrome'un PDF eklentisi dar genişlikte başlatılamayabiliyor). Bu yüzden üç sinyali
-        // birlikte kullanıyoruz: user-agent, viewport genişliği ve tarayıcının PDF görüntüleme
-        // yeteneğini doğrudan bildiren navigator.pdfViewerEnabled (destekleniyorsa).
+        // 🌟 YENİ EKLENEN: DİNAMİK POZİSYON VE DEPARTMAN VERİSİ
+        let departmentMap = {};
+
+        async function loadDynamicPositions() {
+            try {
+                const res = await fetch(`${BASE_URL}/departments`);
+                if (!res.ok) throw new Error("Departman ve pozisyon verisi çekilemedi.");
+                
+                const departments = await res.json();
+                const positionSelect = document.getElementById("position");
+                positionSelect.innerHTML = '<option value="">Pozisyon Seçiniz</option>';
+
+                departments.forEach(dept => {
+                    if (dept.is_active !== false && dept.positions && dept.positions.length > 0) {
+                        const activePositions = dept.positions.filter(p => p.is_active !== false);
+
+                        if (activePositions.length > 0) {
+                            const optgroup = document.createElement("optgroup");
+                            optgroup.label = dept.name;
+
+                            activePositions.forEach(pos => {
+                                departmentMap[pos.name] = dept.name;
+
+                                const option = document.createElement("option");
+                                option.value = pos.name;
+                                option.textContent = pos.name;
+                                optgroup.appendChild(option);
+                            });
+
+                            positionSelect.appendChild(optgroup);
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error("Pozisyon yükleme hatası:", err);
+            }
+        }
+
+        function getDepartmentByPosition(positionTitle) {
+            return departmentMap[positionTitle] || "Genel";
+        }
+
+
         function isMobileBrowser() {
             const uaLooksMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
             const narrowViewport = window.innerWidth < 768;
@@ -346,7 +375,6 @@
         let kvkkPdfObjectUrl = null;
 
         async function openKvkkPdfModal() {
-            // Modalı önce görünür yapıyoruz (display:none iken PDF render sorunlarını önlemek için).
             document.getElementById("kvkkPdfModal").classList.remove("hidden");
 
             const embedEl = document.getElementById("kvkkIframe");
@@ -367,20 +395,12 @@
             loadingBox.classList.remove("hidden");
 
             try {
-                // 304 Not Modified + boş/bozuk tarayıcı önbelleği kombinasyonunun iframe içinde
-                // boş sayfa göstermesini engellemek için dosyayı doğrudan fetch ile çekip blob
-                // URL'e çeviriyoruz. cache: "no-store" ile tarayıcı önbelleğini tamamen devre dışı
-                // bırakıyoruz, böylece 304 kaynaklı boş gövde riski ortadan kalkıyor.
                 const res = await fetch("/static/kvkk.pdf", { cache: "no-store" });
                 if (!res.ok) throw new Error(`PDF alınamadı (durum: ${res.status})`);
 
                 const rawBlob = await res.blob();
                 if (rawBlob.size === 0) throw new Error("PDF dosyası boş geldi.");
 
-                // Sunucu Content-Type header'ını doğru göndermeyebilir (örn. application/octet-stream
-                // veya Content-Disposition: attachment ile birlikte). Blob'un MIME tipini burada elle
-                // application/pdf olarak zorluyoruz, aksi halde tarayıcı iframe içinde PDF olarak
-                // render etmeyi reddedip boş sayfa gösterebiliyor.
                 const blob = rawBlob.type === "application/pdf"
                     ? rawBlob
                     : new Blob([rawBlob], { type: "application/pdf" });
@@ -408,12 +428,10 @@
             }
         }
 
-        // Modal dışına tıklayınca kapanma desteği
         document.getElementById("kvkkPdfModal").addEventListener("click", function(e) {
             if (e.target === this) closeKvkkPdfModal();
         });
 
-        // ASKERLİK GÖSTER/GİZLE KONTROLÜ
         function handleGenderChange() {
             const gender = document.getElementById("gender").value;
             const militaryContainer = document.getElementById("militaryStatusContainer");
@@ -427,7 +445,6 @@
             }
         }
 
-        // --- ÜLKELERİ GETİR (countries.json) ---
         async function fetchCountries() {
             try {
                 const response = await fetch('/static/countries.json');
@@ -446,7 +463,6 @@
             }
         }
 
-        // --- İL / İLÇE (locations.json) ---
         let locationData = {};
         const citySelect = document.getElementById("citySelect");
         const distSelect = document.getElementById("districtSelect");
@@ -475,7 +491,6 @@
             }
         }
 
-        // --- WIZARD YÖNETİMİ ---
         let currentStep = 1;
         function nextStep(step) {
             if (step === 2) {
@@ -544,7 +559,6 @@
             hideAlert();
         }
 
-        // --- DİNAMİK ALANLAR: EĞİTİM ---
         const currentYear = new Date().getFullYear();
         let yearOptions = `<option value="">Mezuniyet Yılı</option>`;
         for (let y = currentYear + 5; y >= 1980; y--) { yearOptions += `<option value="${y}">${y}</option>`; }
@@ -554,10 +568,11 @@
             div.className = "grid grid-cols-1 md:grid-cols-4 gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200 relative";
             div.innerHTML = `
                 <select class="edu-level text-xs border rounded-lg px-2 py-1.5">
+                    <option value="Ortaöğretim">Ortaöğretim</option>
+                    <option value="Önlisans">Önlisans</option>
                     <option value="Lisans">Lisans</option>
-                    <option value="Önlisans">Ön Lisans</option>
                     <option value="Yüksek Lisans">Yüksek Lisans</option>
-                    <option value="Ortaöğretim">Lise</option>
+                    <option value="Doktora">Doktora</option>
                 </select>
                 <input type="text" class="edu-school text-xs border rounded-lg px-2 py-1.5" placeholder="Okul Adı">
                 <input type="text" class="edu-dept text-xs border rounded-lg px-2 py-1.5" placeholder="Bölüm">
@@ -573,13 +588,11 @@
 
             function addLicenseRow(val = "") {
                 const container = document.getElementById("licenseContainer");
-                const rowCount = container.children.length; // Mevcut satır sayısı
+                const rowCount = container.children.length; 
 
-                // Eğer tüm ehliyet sınıfları zaten eklenmişse daha fazla ekletme
                 if (rowCount >= LICENSE_OPTIONS.length) return;
 
                 const div = document.createElement("div");
-                // Arka planı transparan, padding ve gap değerleri diğer form elemanlarıyla birebir uyumlu
                 div.className = "flex gap-4 items-center py-1.5 max-w-sm relative";
     
                 let optionsHtml = LICENSE_OPTIONS.map(opt => 
@@ -593,7 +606,6 @@
                         </select>
                     </div>
                     <div class="w-20 flex items-center justify-end">
-                        <!-- 🌟 Eğer ilk satırsa (rowCount === 0) silme butonunu hiç göstermiyoruz -->
                         ${rowCount > 0 ? `
                             <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 font-bold px-3 py-2 hover:bg-red-50 rounded-xl text-xs transition-colors">
                                 ✕ <span class="hidden md:inline font-medium">Kaldır</span>
@@ -604,8 +616,6 @@
                 container.appendChild(div);
             }
 
-
-        // --- DİNAMİK ALANLAR: DİL  ---
         function addLanguageRow() {
             const div = document.createElement("div");
             div.className = "grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200 relative";
@@ -623,7 +633,6 @@
             document.getElementById("languageContainer").appendChild(div);
         }
 
-        // --- DİNAMİK ALANLAR: DENEYİM (firma/proje adı + yıl) ---
         function addExperienceRow() {
             const div = document.createElement("div");
             div.className = "flex gap-2 bg-gray-50 p-2 rounded-xl border border-gray-200";
@@ -638,38 +647,31 @@
         }
 
         document.addEventListener("DOMContentLoaded", async () => {
-
             try {
-                    const checkRes = await fetch(`${BASE_URL}/applicants/me`, {
-                        headers: { "Authorization": `Bearer ${token}` }
-                    });
+                const checkRes = await fetch(`${BASE_URL}/applicants/me`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+    
+                if (checkRes.ok) {
+                    const currentCandidate = await checkRes.json();
         
-                    if (checkRes.ok) {
-                        const currentCandidate = await checkRes.json();
-            
-                        if (currentCandidate.first_name && currentCandidate.last_name) {
-                            window.location.href = "/static/profile.html";
-                            return; 
-                        }
+                    if (currentCandidate.first_name && currentCandidate.last_name) {
+                        window.location.href = "/static/profile.html";
+                        return; 
                     }
-                } catch (err) {
-                    console.error("Profil kontrolü başarısız:", err);
                 }
+            } catch (err) {
+                console.error("Profil kontrolü başarısız:", err);
+            }
 
             fetchLocations();
             fetchCountries();
             addEducationRow();
             addLanguageRow();
             addExperienceRow();
-
-            const positionSelect = document.getElementById("position");
-            positionSelect.innerHTML = '<option value="">Pozisyon Seçiniz</option>';
-            getAllPositionsAlphabetical().forEach(pos => {
-                positionSelect.add(new Option(pos, pos));
-            });
+            await loadDynamicPositions();
         });
 
-        // --- YARDIMCI FONKSİYONLAR ---
         function showAlert(msg) {
             const alert = document.getElementById("statusAlert");
             alert.textContent = msg;
@@ -679,7 +681,6 @@
         }
         function hideAlert() { document.getElementById("statusAlert").classList.add("hidden"); }
 
-        // --- SUBMIT (TÜM VERİLERİ API'YE GÖNDERME) ---
         document.getElementById("mainApplyForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             if (!document.getElementById("kvkkGeneral").checked) return showAlert("KVKK onayını vermelisiniz.");
@@ -689,51 +690,64 @@
             btn.textContent = "Kaydediliyor...";
 
             try {
-                // 1. Eğitim verilerini topla
-                const educations = Array.from(document.querySelectorAll("#educationContainer > div")).map(row => ({
-                    education_level: row.querySelector(".edu-level").value,
-                    school_name: row.querySelector(".edu-school").value || "Belirtilmedi",
-                    department: row.querySelector(".edu-dept").value || null,
-                    graduation_year: row.querySelector(".edu-year").value ? parseInt(row.querySelector(".edu-year").value) : null
-                })).filter(e => e.school_name !== "Belirtilmedi");
+                const educations = Array.from(document.querySelectorAll("#educationContainer > div")).map(row => {
+                    const school = row.querySelector(".edu-school")?.value.trim();
+                    const yearVal = row.querySelector(".edu-year")?.value;
+                    return school ? {
+                        education_level: row.querySelector(".edu-level").value,
+                        school_name: school,
+                        department: row.querySelector(".edu-dept")?.value.trim() || null,
+                        graduation_year: yearVal ? parseInt(yearVal, 10) : null
+                    } : null;
+                }).filter(Boolean);
 
-                // 2. Dil verilerini topla
-                const languages = Array.from(document.querySelectorAll("#languageContainer > div")).map(row => ({
-                    language_name: row.querySelector(".lang-name").value,
-                    level: row.querySelector(".lang-level").value
-                })).filter(l => l.language_name);
+                const languages = Array.from(document.querySelectorAll("#languageContainer > div")).map(row => {
+                    const name = row.querySelector(".lang-name")?.value.trim();
+                    return name ? {
+                        language_name: name,
+                        level: row.querySelector(".lang-level").value
+                    } : null;
+                }).filter(Boolean);
 
-                // 3. Deneyim verilerini topla (dinamik satırlardan otomatik hesaplama)
                 const experiences = Array.from(document.querySelectorAll("#experienceContainer > div")).map(row => {
-                    const name = row.querySelector(".exp-name").value.trim();
-                    const year = row.querySelector(".exp-year").value;
-                    return name ? { name, year: parseInt(year) || 0 } : null;
+                    const name = row.querySelector(".exp-name")?.value.trim();
+                    const year = row.querySelector(".exp-year")?.value;
+                    return name ? { name, year: parseInt(year, 10) || 0 } : null;
                 }).filter(Boolean);
 
                 const experienceDetailStr = experiences.length > 0
                     ? experiences.map(e => `${e.name} (${e.year} Yıl)`).join(" | ")
                     : null;
                 const totalExperienceYears = experiences.reduce((sum, e) => sum + e.year, 0);
+                
+                const selectedLicenses = Array.from(document.querySelectorAll(".license-select"))
+                    .map(select => select.value)
+                    .filter(Boolean);
+                const drivingLicenseStr = selectedLicenses.length > 0 
+                    ? [...new Set(selectedLicenses)].join(", ") 
+                    : null;
 
-                // 4. Aday (Candidate) Gövdesi
+                const rawBirthDate = document.getElementById("birthDate").value;
+                const cleanBirthDate = rawBirthDate && rawBirthDate.trim() !== "" ? rawBirthDate : null;
+
                 const applicantPayload = {
-                    first_name: document.getElementById("firstName").value,
-                    last_name: document.getElementById("lastName").value,
-                    email: document.getElementById("email").value,
+                    first_name: document.getElementById("firstName").value.trim(),
+                    last_name: document.getElementById("lastName").value.trim(),
+                    email: document.getElementById("email").value.trim(),
                     phone: localStorage.getItem("phone") || "",
-                    birth_date: document.getElementById("birthDate").value || null,
+                    birth_date: cleanBirthDate,
                     nationality: document.getElementById("nationality").value || "Türkiye",
                     gender: document.getElementById("gender").value || null,
                     marital_status: document.getElementById("maritalStatus").value || null,
-                    driving_license: document.getElementById("drivingLicense").value.trim() || null,
+                    driving_license: drivingLicenseStr,
                     military_status: document.getElementById("militaryStatus").value || null,
                     city: document.getElementById("citySelect").value || null,
                     district: document.getElementById("districtSelect").value || null,
-                    address_detail: document.getElementById("addressDetail").value.trim(),
-                    skills: document.getElementById("skills").value || null,
+                    address_detail: document.getElementById("addressDetail").value.trim() || null,
+                    skills: document.getElementById("skills").value.trim() || null,
                     social_links: {
-                    link_1: document.getElementById("socialLink1").value.trim(),
-                    link_2: document.getElementById("socialLink2").value.trim()
+                        link_1: document.getElementById("socialLink1").value.trim() || "",
+                        link_2: document.getElementById("socialLink2").value.trim() || ""
                     },
                     educations: educations,
                     languages: languages
@@ -741,7 +755,6 @@
 
                 const isCommConsented = document.getElementById("marketingConsent").checked;
 
-                // ADIM 1: Adayı Yarat
                 const appRes = await fetch(`${BASE_URL}/applicants/?is_communication_consented=${isCommConsented}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
@@ -756,7 +769,6 @@
                     applicantId = (await meRes.json()).id;
                 } else if (!appRes.ok) throw new Error(applicantData.detail || "Aday profili oluşturulamadı.");
 
-                // ADIM 2: Başvuruyu (Application) Yarat
                 const applicationPayload = {
                     applicant_id: applicantId,
                     position: document.getElementById("position").value,
@@ -778,7 +790,6 @@
                 if (!applRes.ok) throw new Error((await applRes.json()).detail || "Başvuru oluşturulamadı.");
                 const applicationId = (await applRes.json()).id;
 
-                // ADIM 3: CV Yükleme
                 const cvFile = document.getElementById("cvFile").files[0];
                 if (cvFile) {
                     const formData = new FormData();
@@ -788,7 +799,6 @@
                     });
                 }
 
-                // BAŞARILI
                 document.getElementById("formContainer").classList.add("hidden");
                 document.getElementById("successContainer").classList.remove("hidden");
 

@@ -28,6 +28,8 @@ from app.models.candidate import Candidate, Application
 from app.models.security_models import OTPRecord
 from app.models.user_model import User
 from app.models.consents import Consent, AccessLog
+from app.models.company import Department, Position
+from app.models.auth_log import FailedLoginAttempt
 
 # 3. Alembic'e hedef metadata'nın bizim Base olduğunu söylüyoruz
 target_metadata = Base.metadata
