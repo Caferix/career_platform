@@ -14,6 +14,8 @@ from app.core.security import limiter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from app.routes.public_jobs import router as public_jobs_router
+from app.routes.job_postings import router as job_postings_router
 
 # Modellerimizi asenkron select sorgusunda kullanmak için import ediyoruz
 from app.models.company import Department, Position  # Source 6'daki modeller
@@ -33,7 +35,9 @@ app.include_router(candidate_router)
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(applications.router)
 app.include_router(consents.router) 
-app.include_router(admin_router)  # Admin rotaları sisteme dahil edildi
+app.include_router(admin_router)
+app.include_router(public_jobs_router)
+app.include_router(job_postings_router)
 
 
 # 2. CORS Yapılandırması
