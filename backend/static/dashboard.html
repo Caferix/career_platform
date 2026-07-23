@@ -632,20 +632,11 @@
 
                 const uniqueApplicantIds = [...new Set(allApplications.map(app => app.applicant_id))];
 
-                const applicantPromises = uniqueApplicantIds.map(async (id) => {
-                    if (applicantCache[id]) return;
-                    try {
-                        const applicantRes = await fetch(`${BASE_URL}/applicants/${id}`, {
-                            method: "GET",
-                            headers: { "Authorization": `Bearer ${token}` }
-                        });
-                        if (applicantRes.ok) {
-                            applicantCache[id] = await applicantRes.json();
-                        }
-                    } catch (err) { }
+                allApplications.forEach(app => {
+                    if (app.candidate && !applicantCache[app.applicant_id]) {
+                        applicantCache[app.applicant_id] = app.candidate;
+                    }
                 });
-
-                await Promise.all(applicantPromises);
                 populateDepartmentFilter();
                 await populateJobPostingFilter();
                 await populateNationalityFilter();

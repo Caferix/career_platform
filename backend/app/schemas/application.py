@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
-from datetime import datetime
-from typing import Optional, Literal
+from datetime import datetime, date
+from typing import Optional, Literal, List
 
 ApplicationStatus = Literal["Draft", "Applied", "Under_Review", "Accepted", "Rejected"]
 
@@ -25,6 +25,30 @@ class ApplicationStatusUpdate(BaseModel):
     """İK yetkilisinin başvuru sürecini güncellerken kullanacağı model."""
     status: ApplicationStatus
 
+from app.schemas.candidate import EducationSchema, LanguageSchema
+
+class CandidateDetail(BaseModel):
+    id: int
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: str
+    birth_date: Optional[date] = None
+    nationality: Optional[str] = None
+    marital_status: Optional[str] = None
+    driving_license: Optional[str] = None
+    gender: Optional[str] = None
+    city: Optional[str] = None
+    district: Optional[str] = None
+    address_detail: Optional[str] = None
+    military_status: Optional[str] = None
+    skills: Optional[str] = None
+    social_links: Optional[dict[str, str]] = None
+    educations: List[EducationSchema] = []
+    languages: List[LanguageSchema] = []
+
+    model_config = {"from_attributes": True}
+
 class ApplicationResponse(BaseModel):
     """İstemciye güvenli bir şekilde döneceğimiz başvuru çıktı modeli."""
     id: int
@@ -41,6 +65,7 @@ class ApplicationResponse(BaseModel):
     status: str
     cv_url: Optional[str] = None
     is_deleted: bool
+    candidate: Optional[CandidateDetail] = None
     created_at: datetime
 
     class Config:

@@ -276,10 +276,34 @@
         </div>
 
         <!-- BAŞARILI EKRANI -->
-        <div id="successContainer" class="hidden bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm space-y-4">
+        <div id="successContainer" class="hidden bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm space-y-4 mt-8">
             <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100 text-2xl font-bold">✓</div>
             <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Başvurunuz Alındı!</h2>
             <p class="text-sm text-gray-500 max-w-md mx-auto">Verileriniz sisteme güvenle kaydedildi. Profil sayfanıza yönlendiriliyorsunuz...</p>
+        </div>
+
+        <!-- HIZLI BAŞVURU EKRANI (Mevcut Kullanıcılar İçin) -->
+        <div id="quickApplyContainer" class="hidden bg-white border border-gray-200 rounded-2xl p-8 shadow-sm max-w-2xl mx-auto mt-8">
+            <h2 class="text-2xl font-bold text-gray-900 tracking-tight mb-2">Hızlı Başvuru</h2>
+            <p class="text-sm text-gray-500 mb-6" id="quickApplyText">Merhaba, başvurunuzu tamamlamak için aşağıdaki eksik bilgileri doldurun.</p>
+            
+            <form id="quickApplyForm" class="space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Toplam Deneyim (Yıl) <span class="text-red-500">*</span></label>
+                        <input type="number" id="quickExpYears" required min="0" class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Özgeçmiş (CV) Yükle <span class="text-red-500">*</span></label>
+                        <input type="file" id="quickCvFile" required accept=".pdf" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#e11b3a]/10 file:text-[#e11b3a] hover:file:bg-[#e11b3a]/20 cursor-pointer">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Önyazı</label>
+                    <textarea id="quickCoverLetter" rows="3" placeholder="Kısaca neden bu pozisyona başvurduğunuzdan bahsedin..." class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] resize-none"></textarea>
+                </div>
+                <button type="submit" id="quickSubmitBtn" class="w-full bg-[#e11b3a] hover:bg-[#c51631] text-white px-8 py-3 rounded-xl font-medium transition-all shadow-md mt-4">Başvuruyu Tamamla</button>
+            </form>
         </div>
 
     </main>
@@ -660,8 +684,24 @@
                     const currentCandidate = await checkRes.json();
         
                     if (currentCandidate.first_name && currentCandidate.last_name) {
-                        window.location.href = "/static/profile.html";
-                        return; 
+                        const qJobId = new URLSearchParams(window.location.search).get("job_id");
+                        if (qJobId) {
+                            document.getElementById("multiStepForm").classList.add("hidden");
+                            document.getElementById("quickApplyContainer").classList.remove("hidden");
+                            document.getElementById("quickApplyText").textContent = `Merhaba ${currentCandidate.first_name}, başvurunuzu tamamlamak için son bir adım kaldı!`;
+                            window.quickApplicantId = currentCandidate.id;
+                            
+                            try {
+                                const jobsRes = await fetch(`${BASE_URL}/public/jobs`);
+                                const jobs = await jobsRes.json();
+                                const job = jobs.find(j => j.id == qJobId);
+                                if(job) { window.quickApplyJob = job; }
+                            } catch(e) {}
+                            return;
+                        } else {
+                            window.location.href = "/static/profile.html";
+                            return; 
+                        }
                     }
                 }
             } catch (err) {
@@ -855,6 +895,65 @@
 
             } catch (error) {
                 showAlert(error.message);
+                btn.disabled = false;
+                btn.textContent = "Başvuruyu Tamamla";
+            }
+        });
+        document.getElementById("quickApplyForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("quickSubmitBtn");
+            btn.disabled = true;
+            btn.textContent = "Kaydediliyor...";
+
+            try {
+                const qJobId = new URLSearchParams(window.location.search).get("job_id");
+                let deptName = "Genel";
+                let positionTitle = "Genel Başvuru";
+
+                if (window.quickApplyJob) {
+                    positionTitle = window.quickApplyJob.title;
+                    try {
+                        const deptRes = await fetch(`${BASE_URL}/departments`);
+                        if (deptRes.ok) {
+                            const departments = await deptRes.json();
+                            const matchedDept = departments.find(d => d.id === window.quickApplyJob.department_id);
+                            if (matchedDept) deptName = matchedDept.name;
+                        }
+                    } catch(e) {}
+                }
+
+                const applicationPayload = {
+                    applicant_id: window.quickApplicantId,
+                    position: positionTitle,
+                    department: deptName,
+                    experience_years: parseInt(document.getElementById("quickExpYears").value) || 0,
+                    cover_letter: document.getElementById("quickCoverLetter").value || null
+                };
+                if (qJobId) applicationPayload.job_posting_id = parseInt(qJobId);
+
+                const applRes = await fetch(`${BASE_URL}/applications/`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                    body: JSON.stringify(applicationPayload)
+                });
+
+                if (!applRes.ok) throw new Error((await applRes.json()).detail || "Başvuru oluşturulamadı.");
+                const applicationId = (await applRes.json()).id;
+
+                const cvFile = document.getElementById("quickCvFile").files[0];
+                if (cvFile) {
+                    const formData = new FormData();
+                    formData.append("file", cvFile);
+                    await fetch(`${BASE_URL}/applications/${applicationId}/upload-cv`, {
+                        method: "POST", headers: { "Authorization": `Bearer ${token}` }, body: formData
+                    });
+                }
+
+                document.getElementById("quickApplyContainer").classList.add("hidden");
+                document.getElementById("successContainer").classList.remove("hidden");
+                setTimeout(() => window.location.href = "/static/profile.html", 2000);
+            } catch (err) {
+                showAlert(err.message);
                 btn.disabled = false;
                 btn.textContent = "Başvuruyu Tamamla";
             }

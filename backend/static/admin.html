@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,28 +8,36 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
     </style>
     <script>
         // Sayfa yüklenmeden önce JWT Token kontrolü bariyeri
         const token = localStorage.getItem("admin_token");
         const role = localStorage.getItem("user_role");
-        
+
         if (!token || (role !== "admin" && role !== "superadmin")) {
             window.location.href = "/";
         }
     </script>
 </head>
+
 <body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
 
     <!-- Üst Bar / Navigasyon -->
     <header class="bg-gray-800 border-b border-gray-700 px-6 py-4 flex justify-between items-center shadow-md">
         <div class="flex items-center space-x-3">
             <h1 class="text-xl font-bold text-indigo-400 tracking-wider">Dener Kariyer Admin Paneli</h1>
-            <span class="bg-indigo-900/50 text-indigo-300 text-xs px-2.5 py-1 rounded-full border border-indigo-700">Admin</span>
+            <span
+                class="bg-indigo-900/50 text-indigo-300 text-xs px-2.5 py-1 rounded-full border border-indigo-700">Admin</span>
         </div>
-        <button onclick="logout()" class="bg-red-600/80 hover:bg-red-600 text-white text-sm px-4 py-2 rounded-lg transition-colors shadow">
+        <button onclick="logout()"
+            class="bg-red-600/80 hover:bg-red-600 text-white text-sm px-4 py-2 rounded-lg transition-colors shadow">
             Güvenli Çıkış
         </button>
     </header>
@@ -37,14 +46,17 @@
         <!-- Sekme Butonları (Tabs) -->
         <div class="border-b border-gray-700 mb-8">
             <nav class="flex space-x-4" aria-label="Tabs">
-                <button onclick="switchTab('users-tab')" id="users-tab-btn" class="tab-btn border-b-2 border-indigo-500 text-indigo-400 px-4 py-2.5 font-medium text-sm transition-all focus:outline-none">
-                     Kullanıcı Yönetimi
+                <button onclick="switchTab('users-tab')" id="users-tab-btn"
+                    class="tab-btn border-b-2 border-indigo-500 text-indigo-400 px-4 py-2.5 font-medium text-sm transition-all focus:outline-none">
+                    Kullanıcı Yönetimi
                 </button>
-                <button onclick="switchTab('company-tab')" id="company-tab-btn" class="tab-btn border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600 px-4 py-2.5 font-medium text-sm transition-all focus:outline-none">
-                     Şirket & Organizasyon Yapısı
+                <button onclick="switchTab('company-tab')" id="company-tab-btn"
+                    class="tab-btn border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600 px-4 py-2.5 font-medium text-sm transition-all focus:outline-none">
+                    Şirket & Organizasyon Yapısı
                 </button>
-                <button onclick="switchTab('logs-tab')" id="logs-tab-btn" class="tab-btn border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600 px-4 py-2.5 font-medium text-sm transition-all focus:outline-none">
-                     Güvenlik İzleri & Loglar
+                <button onclick="switchTab('logs-tab')" id="logs-tab-btn"
+                    class="tab-btn border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600 px-4 py-2.5 font-medium text-sm transition-all focus:outline-none">
+                    Güvenlik İzleri & Loglar
                 </button>
             </nav>
         </div>
@@ -56,28 +68,35 @@
             <!-- Yeni Kullanıcı Ekleme Formu -->
             <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-sm">
                 <h3 class="text-lg font-semibold text-gray-200 mb-4">Yeni Kurumsal Kullanıcı Ekle (HR / Manager)</h3>
-                <form id="user-form" onsubmit="createUser(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <form id="user-form" onsubmit="createUser(event)"
+                    class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Kullanıcı Adı</label>
-                        <input type="text" id="user-login-name" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
+                        <input type="text" id="user-login-name" required
+                            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Şifre</label>
-                        <input type="password" id="user-password" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
+                        <input type="password" id="user-password" required
+                            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Rolü</label>
-                        <select id="user-role" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
+                        <select id="user-role"
+                            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
                             <option value="hr">HR (İnsan Kaynakları)</option>
                             <option value="manager">Manager (Departman Sorumlusu)</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Departmanı (Sadece Manager İçin)</label>
-                        <input type="text" id="user-dept" placeholder="Örn: Yazılım Geliştirme" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Departmanı (Sadece
+                            Manager İçin)</label>
+                        <input type="text" id="user-dept" placeholder="Örn: Yazılım Geliştirme"
+                            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
                     </div>
                     <div class="md:col-span-4 flex justify-end">
-                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-6 py-2 rounded-lg transition-colors shadow">
+                        <button type="submit"
+                            class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-6 py-2 rounded-lg transition-colors shadow">
                             Kullanıcıyı Kaydet
                         </button>
                     </div>
@@ -117,10 +136,13 @@
                     <h3 class="text-lg font-semibold text-gray-200 mb-4">Yeni Departman Tanımla</h3>
                     <form id="dept-form" onsubmit="createDepartment(event)" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Departman Adı</label>
-                            <input type="text" id="dept-name" required placeholder="Örn: Yazılım Geliştirme" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Departman
+                                Adı</label>
+                            <input type="text" id="dept-name" required placeholder="Örn: Yazılım Geliştirme"
+                                class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
                         </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm py-2 rounded-lg transition-colors shadow">
+                        <button type="submit"
+                            class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm py-2 rounded-lg transition-colors shadow">
                             Departman Ekle
                         </button>
                     </form>
@@ -131,18 +153,25 @@
                     <h3 class="text-lg font-semibold text-gray-200 mb-4">Yeni İş İlanı / Pozisyon Tanımla</h3>
                     <form id="pos-form" onsubmit="createPosition(event)" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Bağlı Olduğu Departman ID</label>
-                            <input type="number" id="pos-dept-id" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Bağlı Olduğu
+                                Departman ID</label>
+                            <input type="number" id="pos-dept-id" required
+                                class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Pozisyon Unvanı (Title)</label>
-                            <input type="text" id="pos-title" required placeholder="Örn: Python Developer" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Pozisyon Unvanı
+                                (Title)</label>
+                            <input type="text" id="pos-title" required placeholder="Örn: Python Developer"
+                                class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">İş Tanımı (Description)</label>
-                            <textarea id="pos-desc" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm h-20"></textarea>
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">İş Tanımı
+                                (Description)</label>
+                            <textarea id="pos-desc"
+                                class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 focus:outline-none text-sm h-20"></textarea>
                         </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm py-2 rounded-lg transition-colors shadow">
+                        <button type="submit"
+                            class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm py-2 rounded-lg transition-colors shadow">
                             Pozisyon Ekle
                         </button>
                     </form>
@@ -166,9 +195,10 @@
             <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden shadow-sm">
                 <div class="px-6 py-4 border-b border-gray-700 flex justify-between items-center">
                     <h3 class="text-lg font-semibold text-teal-400">Erişim Denetim ve Yönetim Logları</h3>
-                    
-                   
-                    <select id="logCategoryFilter" onchange="filterLogsInUI()" class="bg-gray-700 text-gray-200 border border-gray-600 rounded-lg px-3 py-1.5 text-xs focus:border-indigo-500 focus:outline-none cursor-pointer">
+
+
+                    <select id="logCategoryFilter" onchange="filterLogsInUI()"
+                        class="bg-gray-700 text-gray-200 border border-gray-600 rounded-lg px-3 py-1.5 text-xs focus:border-indigo-500 focus:outline-none cursor-pointer">
                         <option value="all">Tüm Loglar</option>
                         <option value="kvkk">Sadece KVKK (Erişim/Sorgu)</option>
                         <option value="system">Sadece Sistem/İdari İzinler</option>
@@ -255,15 +285,15 @@
         async function fetchUsers() {
             try {
                 const token = localStorage.getItem("admin_token");
-                const res = await fetch("/admin/users", { 
+                const res = await fetch("/admin/users", {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`
                     }
                 });
-        
+
                 if (res.status === 403) return console.warn("Kullanıcı listeleme yetkiniz yok.");
-        
+
                 const users = res.ok ? await res.json() : [];
                 renderUserRows(users);
             } catch (err) {
@@ -277,8 +307,8 @@
             tbody.innerHTML = "";
 
             users.forEach(user => {
-                const badgeClass = user.is_active 
-                    ? "bg-green-950 text-green-300 border-green-700" 
+                const badgeClass = user.is_active
+                    ? "bg-green-950 text-green-300 border-green-700"
                     : "bg-red-950 text-red-300 border-red-700";
 
                 const btnClass = user.is_active
@@ -402,8 +432,8 @@
                         : `<li class="text-xs text-gray-500 italic py-1">Henüz pozisyon eklenmemiş.</li>`;
 
                     const isDeptActive = dept.is_active !== false;
-                    const badgeClass = isDeptActive 
-                        ? "bg-green-950/60 text-green-300 border-green-800" 
+                    const badgeClass = isDeptActive
+                        ? "bg-green-950/60 text-green-300 border-green-800"
                         : "bg-red-950/60 text-red-300 border-red-800";
 
                     container.innerHTML += `
@@ -517,7 +547,7 @@
             // DİKKAT: title değil name yolluyoruz
             const payload = {
                 department_id: deptId,
-                name: titleInput, 
+                name: titleInput,
                 is_active: true
             };
 
@@ -556,7 +586,7 @@
 
                 const data = await res.json();
                 rawAccessLogs = data.results || [];
-                
+
                 filterLogsInUI(); // Süzülmüş halini ekrana bas
             } catch (err) {
                 console.error("Erişim logları yüklenirken hata:", err);
@@ -567,7 +597,7 @@
             const filterValue = document.getElementById("logCategoryFilter").value;
             const tbody = document.getElementById("access-logs-table-body");
             if (!tbody) return;
-            
+
             tbody.innerHTML = "";
 
             // Kişisel veri ve KVKK sorgu aksiyonları
@@ -641,4 +671,5 @@
         }
     </script>
 </body>
+
 </html>
