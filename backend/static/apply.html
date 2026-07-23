@@ -1,18 +1,43 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aday Başvuru Formu</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .step-hidden { display: none; }
-        .fade-in { animation: fadeIn 0.4s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; }
-        input[type="date"]:focus::-webkit-calendar-picker-indicator { opacity: 1; }
+        .step-hidden {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.6;
+        }
+
+        input[type="date"]:focus::-webkit-calendar-picker-indicator {
+            opacity: 1;
+        }
     </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen pb-12">
 
     <nav class="bg-white border-b border-gray-200 px-6 py-4 mb-8 sticky top-0 z-40 shadow-sm">
@@ -31,7 +56,9 @@
         <!-- WIZARD PROGRESS BAR -->
         <div class="mb-8 relative">
             <div class="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-gray-200">
-                <div id="progressBar" style="width: 25%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-[#e11b3a] transition-all duration-500"></div>
+                <div id="progressBar" style="width: 25%"
+                    class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-[#e11b3a] transition-all duration-500">
+                </div>
             </div>
             <div class="flex justify-between text-xs font-semibold text-gray-500 px-1">
                 <span id="indicator1" class="text-[#e11b3a]">Kişisel</span>
@@ -41,7 +68,8 @@
             </div>
         </div>
 
-        <div id="formContainer" class="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm relative overflow-hidden">
+        <div id="formContainer"
+            class="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm relative overflow-hidden">
 
             <form id="mainApplyForm" class="space-y-6">
 
@@ -54,27 +82,36 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Adı <span class="text-red-500">*</span></label>
-                            <input type="text" id="firstName" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Adı <span
+                                    class="text-red-500">*</span></label>
+                            <input type="text" id="firstName" required
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Soyadı <span class="text-red-500">*</span></label>
-                            <input type="text" id="lastName" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Soyadı <span
+                                    class="text-red-500">*</span></label>
+                            <input type="text" id="lastName" required
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">E-Posta <span class="text-red-500">*</span></label>
-                            <input type="email" id="email" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">E-Posta <span
+                                    class="text-red-500">*</span></label>
+                            <input type="email" id="email" required
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Doğum Tarihi <span class="text-red-500">*</span></label>
-                            <input type="date" id="birthDate" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Doğum Tarihi <span
+                                    class="text-red-500">*</span></label>
+                            <input type="date" id="birthDate" required
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Uyruk</label>
-                            <select id="nationality" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                            <select id="nationality"
+                                class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none">
                                 <option value="Türkiye">Türkiye</option>
                             </select>
                         </div>
@@ -82,24 +119,30 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Cinsiyet <span class="text-red-500">*</span></label>
-                            <select id="gender" onchange="handleGenderChange()" required class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Cinsiyet <span
+                                    class="text-red-500">*</span></label>
+                            <select id="gender" onchange="handleGenderChange()" required
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
                                 <option value="">Seçiniz</option>
                                 <option value="Kadın">Kadın</option>
                                 <option value="Erkek">Erkek</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Medeni Durum <span class="text-red-500">*</span></label>
-                            <select id="maritalStatus" required class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Medeni Durum <span
+                                    class="text-red-500">*</span></label>
+                            <select id="maritalStatus" required
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
                                 <option value="">Seçiniz</option>
                                 <option value="Bekar">Bekar</option>
                                 <option value="Evli">Evli</option>
                             </select>
                         </div>
                         <div id="militaryStatusContainer" style="display: none;">
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Askerlik Durumu <span class="text-red-500">*</span></label>
-                            <select id="militaryStatus" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Askerlik Durumu
+                                <span class="text-red-500">*</span></label>
+                            <select id="militaryStatus"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
                                 <option value="">Seçiniz</option>
                                 <option value="Yapıldı">Yapıldı</option>
                                 <option value="Muaf">Muaf</option>
@@ -111,14 +154,18 @@
                     <!-- DİNAMİK İL/İLÇE -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">İl <span class="text-red-500">*</span></label>
-                            <select id="citySelect" onchange="loadDistricts()" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">İl <span
+                                    class="text-red-500">*</span></label>
+                            <select id="citySelect" onchange="loadDistricts()" required
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none">
                                 <option value="">İl Seçiniz</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">İlçe <span class="text-red-500">*</span></label>
-                            <select id="districtSelect" disabled required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none disabled:bg-gray-100 disabled:opacity-50">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">İlçe <span
+                                    class="text-red-500">*</span></label>
+                            <select id="districtSelect" disabled required
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none disabled:bg-gray-100 disabled:opacity-50">
                                 <option value="">Önce İl Seçiniz</option>
                             </select>
                         </div>
@@ -126,8 +173,10 @@
 
                     <div class="my-6 pt-4 border-t border-gray-100">
                         <div class="flex justify-between items-center mb-1.5">
-                            <label class="block text-xs font-semibold text-gray-600 uppercase">Sürücü Belgeleri (Ehliyet)</label>
-                            <button type="button" onclick="addLicenseRow()" class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Ehliyet Ekle</button>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase">Sürücü Belgeleri
+                                (Ehliyet)</label>
+                            <button type="button" onclick="addLicenseRow()"
+                                class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Ehliyet Ekle</button>
                         </div>
                         <div id="licenseContainer" class="space-y-1">
                             <!-- Dinamik ehliyet satırları buraya eklenecek -->
@@ -135,12 +184,16 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Açık Adres (Opsiyonel)</label>
-                        <textarea id="addressDetail" rows="2" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none resize-none"></textarea>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Açık Adres
+                            (Opsiyonel)</label>
+                        <textarea id="addressDetail" rows="2"
+                            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none resize-none"></textarea>
                     </div>
 
                     <div class="flex justify-end pt-4">
-                        <button type="button" onclick="nextStep(2)" class="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition">İleri →</button>
+                        <button type="button" onclick="nextStep(2)"
+                            class="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition">İleri
+                            →</button>
                     </div>
                 </div>
 
@@ -153,8 +206,10 @@
 
                     <div class="mb-8">
                         <div class="flex justify-between items-center mb-3">
-                            <h3 class="text-sm font-semibold text-gray-800">Eğitim Bilgileri <span class="text-red-500">*</span></h3>
-                            <button type="button" onclick="addEducationRow()" class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Yeni Okul Ekle</button>
+                            <h3 class="text-sm font-semibold text-gray-800">Eğitim Bilgileri <span
+                                    class="text-red-500">*</span></h3>
+                            <button type="button" onclick="addEducationRow()"
+                                class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Yeni Okul Ekle</button>
                         </div>
                         <div id="educationContainer" class="space-y-3">
                             <!-- JS ile doldurulacak -->
@@ -164,7 +219,8 @@
                     <div class="mb-4">
                         <div class="flex justify-between items-center mb-3">
                             <h3 class="text-sm font-semibold text-gray-800">Yabancı Dil Bilgisi</h3>
-                            <button type="button" onclick="addLanguageRow()" class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Yeni Dil Ekle</button>
+                            <button type="button" onclick="addLanguageRow()"
+                                class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Yeni Dil Ekle</button>
                         </div>
                         <div id="languageContainer" class="space-y-3">
                             <!-- JS ile doldurulacak -->
@@ -172,8 +228,12 @@
                     </div>
 
                     <div class="flex justify-between pt-4">
-                        <button type="button" onclick="prevStep(1)" class="text-gray-500 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 transition">← Geri</button>
-                        <button type="button" onclick="nextStep(3)" class="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition">İleri →</button>
+                        <button type="button" onclick="prevStep(1)"
+                            class="text-gray-500 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 transition">←
+                            Geri</button>
+                        <button type="button" onclick="nextStep(3)"
+                            class="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition">İleri
+                            →</button>
                     </div>
                 </div>
 
@@ -185,57 +245,79 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Pozisyon <span class="text-red-500">*</span></label>
-                        <select id="position" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-[#e11b3a]"></select>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Pozisyon <span
+                                class="text-red-500">*</span></label>
+                        <select id="position" required
+                            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-[#e11b3a]"></select>
                     </div>
 
                     <div class="mb-6">
                         <div class="flex justify-between items-center mb-3">
-                            <label class="block text-xs font-semibold text-gray-600 uppercase">İş / Proje Deneyimleri</label>
-                            <button type="button" onclick="addExperienceRow()" class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Deneyim Ekle</button>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase">İş / Proje
+                                Deneyimleri</label>
+                            <button type="button" onclick="addExperienceRow()"
+                                class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Deneyim Ekle</button>
                         </div>
-                        <p class="text-[11px] text-gray-400 mb-2">Her satıra bir firma/proje adı ve o işteki yıl sayınızı girin.</p>
+                        <p class="text-[11px] text-gray-400 mb-2">Her satıra bir firma/proje adı ve o işteki yıl
+                            sayınızı girin.</p>
                         <div id="experienceContainer" class="space-y-2"></div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Teknik Yetkinlikler</label>
-                        <input type="text" id="skills" placeholder="Java, Python, Jetpack Compose vb. (Virgülle ayırın)" class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a]">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Teknik
+                            Yetkinlikler</label>
+                        <input type="text" id="skills" placeholder="Java, Python, Jetpack Compose vb. (Virgülle ayırın)"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a]">
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Sosyal Medya / Portfolyo 1</label>
-                            <input type="url" id="socialLink1" placeholder="https://..." class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] outline-none">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Sosyal Medya /
+                                Portfolyo 1</label>
+                            <input type="url" id="socialLink1" placeholder="https://..."
+                                class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Sosyal Medya / Portfolyo 2</label>
-                            <input type="url" id="socialLink2" placeholder="https://..." class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] outline-none">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Sosyal Medya /
+                                Portfolyo 2</label>
+                            <input type="url" id="socialLink2" placeholder="https://..."
+                                class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] outline-none">
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Önyazı</label>
-                        <textarea id="coverLetter" rows="4" placeholder="Kısaca kendinizden ve hedeflerinizden bahsedin..." class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] resize-none"></textarea>
+                        <textarea id="coverLetter" rows="4"
+                            placeholder="Kısaca kendinizden ve hedeflerinizden bahsedin..."
+                            class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] resize-none"></textarea>
                     </div>
 
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4">
                         <h3 class="text-xs font-semibold text-gray-800 uppercase mb-3">Referans Bilgisi</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <input type="text" id="refName" placeholder="Ad Soyad" class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
-                            <input type="text" id="refPosition" placeholder="Pozisyon / Kurum" class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
-                            <input type="text" id="refContact" placeholder="İletişim" class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
+                            <input type="text" id="refName" placeholder="Ad Soyad"
+                                class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
+                            <input type="text" id="refPosition" placeholder="Pozisyon / Kurum"
+                                class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
+                            <input type="text" id="refContact" placeholder="İletişim"
+                                class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Özgeçmiş (CV) Yükle <span class="text-red-500">*</span></label>
-                        <input type="file" id="cvFile" accept=".pdf" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#e11b3a]/10 file:text-[#e11b3a] hover:file:bg-[#e11b3a]/20 cursor-pointer">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Özgeçmiş (CV) Yükle
+                            <span class="text-red-500">*</span></label>
+                        <input type="file" id="cvFile" accept=".pdf"
+                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#e11b3a]/10 file:text-[#e11b3a] hover:file:bg-[#e11b3a]/20 cursor-pointer">
                     </div>
 
                     <div class="flex justify-between pt-4">
-                        <button type="button" onclick="prevStep(2)" class="text-gray-500 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 transition">← Geri</button>
-                        <button type="button" onclick="nextStep(4)" class="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition">İleri →</button>
+                        <button type="button" onclick="prevStep(2)"
+                            class="text-gray-500 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 transition">←
+                            Geri</button>
+                        <button type="button" onclick="nextStep(4)"
+                            class="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition">İleri
+                            →</button>
                     </div>
                 </div>
 
@@ -247,16 +329,20 @@
                     </div>
 
                     <div class="space-y-4 mb-8">
-                        <label class="flex items-start gap-3 cursor-pointer bg-white p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
+                        <label
+                            class="flex items-start gap-3 cursor-pointer bg-white p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
                             <input type="checkbox" id="kvkkGeneral" class="w-5 h-5 mt-0.5 accent-[#e11b3a]">
                             <span class="text-sm text-gray-600 leading-relaxed">
                                 Başvuru süreçlerimin yürütülmesi amacıyla kişisel verilerimin işlenmesine ilişkin
-                                <button type="button" onclick="openKvkkPdfModal()" class="text-[#e11b3a] font-semibold underline underline-offset-2 hover:text-[#c51631]">Aydınlatma Metnini</button>
+                                <button type="button" onclick="openKvkkPdfModal()"
+                                    class="text-[#e11b3a] font-semibold underline underline-offset-2 hover:text-[#c51631]">Aydınlatma
+                                    Metnini</button>
                                 okudum ve onaylıyorum. <span class="text-red-500">*</span>
                             </span>
                         </label>
 
-                        <label class="flex items-start gap-3 cursor-pointer bg-white p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
+                        <label
+                            class="flex items-start gap-3 cursor-pointer bg-white p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
                             <input type="checkbox" id="marketingConsent" class="w-5 h-5 mt-0.5 accent-[#e11b3a]">
                             <span class="text-sm text-gray-600 leading-relaxed">
                                 Kariyer fırsatları için tarafımla iletişime geçilmesine izin veriyorum. (Opsiyonel)
@@ -265,8 +351,11 @@
                     </div>
 
                     <div class="flex justify-between items-center pt-4 border-t border-gray-100">
-                        <button type="button" onclick="prevStep(3)" class="text-gray-500 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 transition">← Geri</button>
-                        <button type="submit" id="submitApplyBtn" class="bg-[#e11b3a] hover:bg-[#c51631] text-white px-8 py-3 rounded-xl font-medium transition-all shadow-md flex items-center gap-2">
+                        <button type="button" onclick="prevStep(3)"
+                            class="text-gray-500 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 transition">←
+                            Geri</button>
+                        <button type="submit" id="submitApplyBtn"
+                            class="bg-[#e11b3a] hover:bg-[#c51631] text-white px-8 py-3 rounded-xl font-medium transition-all shadow-md flex items-center gap-2">
                             <span>Başvuruyu Tamamla</span>
                         </button>
                     </div>
@@ -276,34 +365,14 @@
         </div>
 
         <!-- BAŞARILI EKRANI -->
-        <div id="successContainer" class="hidden bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm space-y-4 mt-8">
-            <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100 text-2xl font-bold">✓</div>
+        <div id="successContainer"
+            class="hidden bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm space-y-4">
+            <div
+                class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100 text-2xl font-bold">
+                ✓</div>
             <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Başvurunuz Alındı!</h2>
-            <p class="text-sm text-gray-500 max-w-md mx-auto">Verileriniz sisteme güvenle kaydedildi. Profil sayfanıza yönlendiriliyorsunuz...</p>
-        </div>
-
-        <!-- HIZLI BAŞVURU EKRANI (Mevcut Kullanıcılar İçin) -->
-        <div id="quickApplyContainer" class="hidden bg-white border border-gray-200 rounded-2xl p-8 shadow-sm max-w-2xl mx-auto mt-8">
-            <h2 class="text-2xl font-bold text-gray-900 tracking-tight mb-2">Hızlı Başvuru</h2>
-            <p class="text-sm text-gray-500 mb-6" id="quickApplyText">Merhaba, başvurunuzu tamamlamak için aşağıdaki eksik bilgileri doldurun.</p>
-            
-            <form id="quickApplyForm" class="space-y-5">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Toplam Deneyim (Yıl) <span class="text-red-500">*</span></label>
-                        <input type="number" id="quickExpYears" required min="0" class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a]">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Özgeçmiş (CV) Yükle <span class="text-red-500">*</span></label>
-                        <input type="file" id="quickCvFile" required accept=".pdf" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#e11b3a]/10 file:text-[#e11b3a] hover:file:bg-[#e11b3a]/20 cursor-pointer">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Önyazı</label>
-                    <textarea id="quickCoverLetter" rows="3" placeholder="Kısaca neden bu pozisyona başvurduğunuzdan bahsedin..." class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] resize-none"></textarea>
-                </div>
-                <button type="submit" id="quickSubmitBtn" class="w-full bg-[#e11b3a] hover:bg-[#c51631] text-white px-8 py-3 rounded-xl font-medium transition-all shadow-md mt-4">Başvuruyu Tamamla</button>
-            </form>
+            <p class="text-sm text-gray-500 max-w-md mx-auto">Verileriniz sisteme güvenle kaydedildi. Profil sayfanıza
+                yönlendiriliyorsunuz...</p>
         </div>
 
     </main>
@@ -314,24 +383,34 @@
             <div class="flex items-center justify-between p-4 border-b border-slate-100 bg-gray-50">
                 <span class="text-sm font-bold text-slate-800">KVKK Aydınlatma Metni</span>
                 <div class="flex items-center gap-4">
-                    <a href="/static/kvkk.pdf" target="_blank" rel="noopener" class="text-xs font-semibold text-[#e11b3a] hover:text-[#c51631] underline underline-offset-2">Yeni sekmede aç</a>
-                    <button type="button" onclick="closeKvkkPdfModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">✕</button>
+                    <a href="/static/kvkk.pdf" target="_blank" rel="noopener"
+                        class="text-xs font-semibold text-[#e11b3a] hover:text-[#c51631] underline underline-offset-2">Yeni
+                        sekmede aç</a>
+                    <button type="button" onclick="closeKvkkPdfModal()"
+                        class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">✕</button>
                 </div>
             </div>
             <!-- PDF Önizleme iframe alanı -->
             <div class="flex-1 bg-slate-100 relative">
-                <div id="kvkkLoading" class="hidden absolute inset-0 flex items-center justify-center text-sm text-gray-500 font-medium">
+                <div id="kvkkLoading"
+                    class="hidden absolute inset-0 flex items-center justify-center text-sm text-gray-500 font-medium">
                     Yükleniyor...
                 </div>
-                <div id="kvkkError" class="hidden absolute inset-0 flex items-center justify-center text-sm text-red-600 font-medium p-6 text-center"></div>
-                <div id="kvkkMobileFallback" class="hidden absolute inset-0 flex flex-col items-center justify-center gap-4 text-center p-6">
+                <div id="kvkkError"
+                    class="hidden absolute inset-0 flex items-center justify-center text-sm text-red-600 font-medium p-6 text-center">
+                </div>
+                <div id="kvkkMobileFallback"
+                    class="hidden absolute inset-0 flex flex-col items-center justify-center gap-4 text-center p-6">
                     <p class="text-sm text-gray-600">Mobil tarayıcılar PDF önizlemesini bu pencerede gösteremiyor.</p>
-                    <a href="/static/kvkk.pdf" target="_blank" rel="noopener" class="bg-[#e11b3a] hover:bg-[#c51631] text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors">PDF'i Aç</a>
+                    <a href="/static/kvkk.pdf" target="_blank" rel="noopener"
+                        class="bg-[#e11b3a] hover:bg-[#c51631] text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors">PDF'i
+                        Aç</a>
                 </div>
                 <embed id="kvkkIframe" src="" type="application/pdf" class="w-full h-full border-0" />
             </div>
             <div class="p-4 border-t border-slate-100 bg-gray-50 flex justify-end">
-                <button type="button" onclick="closeKvkkPdfModal()" class="bg-[#e11b3a] hover:bg-[#c51631] text-white px-6 py-2 rounded-xl text-xs font-semibold transition-colors">Kapat</button>
+                <button type="button" onclick="closeKvkkPdfModal()"
+                    class="bg-[#e11b3a] hover:bg-[#c51631] text-white px-6 py-2 rounded-xl text-xs font-semibold transition-colors">Kapat</button>
             </div>
         </div>
     </div>
@@ -357,7 +436,7 @@
             try {
                 const res = await fetch(`${BASE_URL}/departments`);
                 if (!res.ok) throw new Error("Departman ve pozisyon verisi çekilemedi.");
-                
+
                 const departments = await res.json();
                 const positionSelect = document.getElementById("position");
                 positionSelect.innerHTML = '<option value="">Pozisyon Seçiniz</option>';
@@ -456,7 +535,7 @@
             }
         }
 
-        document.getElementById("kvkkPdfModal").addEventListener("click", function(e) {
+        document.getElementById("kvkkPdfModal").addEventListener("click", function (e) {
             if (e.target === this) closeKvkkPdfModal();
         });
 
@@ -469,7 +548,7 @@
                 militaryContainer.style.display = "block";
             } else {
                 militaryContainer.style.display = "none";
-                militarySelect.value = ""; 
+                militarySelect.value = "";
             }
         }
 
@@ -478,9 +557,9 @@
                 const response = await fetch('/static/countries.json');
                 if (!response.ok) throw new Error("Ülkeler JSON yüklenemedi.");
                 const countries = await response.json();
-                
+
                 const natSelect = document.getElementById("nationality");
-                
+
                 countries.forEach(country => {
                     if (country !== "Türkiye") {
                         natSelect.add(new Option(country, country));
@@ -566,7 +645,7 @@
             document.getElementById(`step${currentStep}`).classList.add("step-hidden");
             document.getElementById(`step${step}`).classList.remove("step-hidden");
 
-            document.getElementById("progressBar").style.width = `${(step/4)*100}%`;
+            document.getElementById("progressBar").style.width = `${(step / 4) * 100}%`;
             document.querySelectorAll("[id^='indicator']").forEach((el, idx) => {
                 el.classList.toggle("text-[#e11b3a]", idx + 1 <= step);
             });
@@ -578,7 +657,7 @@
         function prevStep(step) {
             document.getElementById(`step${currentStep}`).classList.add("step-hidden");
             document.getElementById(`step${step}`).classList.remove("step-hidden");
-            document.getElementById("progressBar").style.width = `${(step/4)*100}%`;
+            document.getElementById("progressBar").style.width = `${(step / 4) * 100}%`;
 
             document.querySelectorAll("[id^='indicator']").forEach((el, idx) => {
                 el.classList.toggle("text-[#e11b3a]", idx + 1 <= step);
@@ -614,20 +693,20 @@
 
         const LICENSE_OPTIONS = ["M", "A1", "A2", "A", "B1", "B", "BE", "C1", "C1E", "C", "CE", "D1", "D1E", "D", "DE", "F", "G"];
 
-            function addLicenseRow(val = "") {
-                const container = document.getElementById("licenseContainer");
-                const rowCount = container.children.length; 
+        function addLicenseRow(val = "") {
+            const container = document.getElementById("licenseContainer");
+            const rowCount = container.children.length;
 
-                if (rowCount >= LICENSE_OPTIONS.length) return;
+            if (rowCount >= LICENSE_OPTIONS.length) return;
 
-                const div = document.createElement("div");
-                div.className = "flex gap-4 items-center py-1.5 max-w-sm relative";
-    
-                let optionsHtml = LICENSE_OPTIONS.map(opt => 
-                    `<option value="${opt}" ${opt === val ? "selected" : ""}>${opt} Sınıfı</option>`
-                ).join("");
+            const div = document.createElement("div");
+            div.className = "flex gap-4 items-center py-1.5 max-w-sm relative";
 
-                div.innerHTML = `
+            let optionsHtml = LICENSE_OPTIONS.map(opt =>
+                `<option value="${opt}" ${opt === val ? "selected" : ""}>${opt} Sınıfı</option>`
+            ).join("");
+
+            div.innerHTML = `
                     <div class="flex-1">
                         <select class="license-select w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer transition-all">
                             ${optionsHtml}
@@ -641,8 +720,8 @@
                         ` : ''}
                     </div>
                 `;
-                container.appendChild(div);
-            }
+            container.appendChild(div);
+        }
 
         function addLanguageRow() {
             const div = document.createElement("div");
@@ -679,29 +758,13 @@
                 const checkRes = await fetch(`${BASE_URL}/applicants/me`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
-    
+
                 if (checkRes.ok) {
                     const currentCandidate = await checkRes.json();
-        
+
                     if (currentCandidate.first_name && currentCandidate.last_name) {
-                        const qJobId = new URLSearchParams(window.location.search).get("job_id");
-                        if (qJobId) {
-                            document.getElementById("multiStepForm").classList.add("hidden");
-                            document.getElementById("quickApplyContainer").classList.remove("hidden");
-                            document.getElementById("quickApplyText").textContent = `Merhaba ${currentCandidate.first_name}, başvurunuzu tamamlamak için son bir adım kaldı!`;
-                            window.quickApplicantId = currentCandidate.id;
-                            
-                            try {
-                                const jobsRes = await fetch(`${BASE_URL}/public/jobs`);
-                                const jobs = await jobsRes.json();
-                                const job = jobs.find(j => j.id == qJobId);
-                                if(job) { window.quickApplyJob = job; }
-                            } catch(e) {}
-                            return;
-                        } else {
-                            window.location.href = "/static/profile.html";
-                            return; 
-                        }
+                        window.location.href = "/static/profile.html";
+                        return;
                     }
                 }
             } catch (err) {
@@ -720,13 +783,13 @@
                     if (jobsRes.ok) {
                         const jobs = await jobsRes.json();
                         const selectedJob = jobs.find(j => j.id == jobId);
-                        
+
                         if (selectedJob) {
                             const posSelect = document.getElementById("position");
-                            
+
                             // Arka planda <select> içine sadece o ilanı ekle ve seçili yap
                             posSelect.innerHTML = `<option value="${selectedJob.title}" selected>${selectedJob.title}</option>`;
-                            
+
                             // YENİ DÜZENLEME: Departman adını çekip doğru şekilde atıyoruz
                             try {
                                 const deptRes = await fetch(`${BASE_URL}/departments`);
@@ -740,7 +803,7 @@
                             } catch (e) {
                                 departmentMap[selectedJob.title] = "Genel";
                             }
-                            
+
                             // Adayın bu menüyü görmesini engelle (tüm etiketiyle birlikte gizle)
                             posSelect.parentElement.style.display = "none";
                         } else {
@@ -754,7 +817,8 @@
                 }
             } else {
                 // Genel başvuru: URL'de job_id yoksa, eski usül tüm pozisyon listesini yükle
-                await loadDynamicPositions();}
+                await loadDynamicPositions();
+            }
         });
 
         function showAlert(msg) {
@@ -762,7 +826,7 @@
             alert.textContent = msg;
             alert.classList.remove("hidden");
             alert.classList.add("bg-red-50", "text-red-700", "border-red-200");
-            alert.scrollIntoView({behavior: "smooth"});
+            alert.scrollIntoView({ behavior: "smooth" });
         }
         function hideAlert() { document.getElementById("statusAlert").classList.add("hidden"); }
 
@@ -804,12 +868,12 @@
                     ? experiences.map(e => `${e.name} (${e.year} Yıl)`).join(" | ")
                     : null;
                 const totalExperienceYears = experiences.reduce((sum, e) => sum + e.year, 0);
-                
+
                 const selectedLicenses = Array.from(document.querySelectorAll(".license-select"))
                     .map(select => select.value)
                     .filter(Boolean);
-                const drivingLicenseStr = selectedLicenses.length > 0 
-                    ? [...new Set(selectedLicenses)].join(", ") 
+                const drivingLicenseStr = selectedLicenses.length > 0
+                    ? [...new Set(selectedLicenses)].join(", ")
                     : null;
 
                 const rawBirthDate = document.getElementById("birthDate").value;
@@ -899,65 +963,7 @@
                 btn.textContent = "Başvuruyu Tamamla";
             }
         });
-        document.getElementById("quickApplyForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById("quickSubmitBtn");
-            btn.disabled = true;
-            btn.textContent = "Kaydediliyor...";
-
-            try {
-                const qJobId = new URLSearchParams(window.location.search).get("job_id");
-                let deptName = "Genel";
-                let positionTitle = "Genel Başvuru";
-
-                if (window.quickApplyJob) {
-                    positionTitle = window.quickApplyJob.title;
-                    try {
-                        const deptRes = await fetch(`${BASE_URL}/departments`);
-                        if (deptRes.ok) {
-                            const departments = await deptRes.json();
-                            const matchedDept = departments.find(d => d.id === window.quickApplyJob.department_id);
-                            if (matchedDept) deptName = matchedDept.name;
-                        }
-                    } catch(e) {}
-                }
-
-                const applicationPayload = {
-                    applicant_id: window.quickApplicantId,
-                    position: positionTitle,
-                    department: deptName,
-                    experience_years: parseInt(document.getElementById("quickExpYears").value) || 0,
-                    cover_letter: document.getElementById("quickCoverLetter").value || null
-                };
-                if (qJobId) applicationPayload.job_posting_id = parseInt(qJobId);
-
-                const applRes = await fetch(`${BASE_URL}/applications/`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-                    body: JSON.stringify(applicationPayload)
-                });
-
-                if (!applRes.ok) throw new Error((await applRes.json()).detail || "Başvuru oluşturulamadı.");
-                const applicationId = (await applRes.json()).id;
-
-                const cvFile = document.getElementById("quickCvFile").files[0];
-                if (cvFile) {
-                    const formData = new FormData();
-                    formData.append("file", cvFile);
-                    await fetch(`${BASE_URL}/applications/${applicationId}/upload-cv`, {
-                        method: "POST", headers: { "Authorization": `Bearer ${token}` }, body: formData
-                    });
-                }
-
-                document.getElementById("quickApplyContainer").classList.add("hidden");
-                document.getElementById("successContainer").classList.remove("hidden");
-                setTimeout(() => window.location.href = "/static/profile.html", 2000);
-            } catch (err) {
-                showAlert(err.message);
-                btn.disabled = false;
-                btn.textContent = "Başvuruyu Tamamla";
-            }
-        });
     </script>
 </body>
+
 </html>
