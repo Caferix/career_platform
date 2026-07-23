@@ -322,6 +322,10 @@
             window.location.href = "/static/index.html";
         });
 
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const jobId = urlParams.get("job_id");
+
         // 🌟 YENİ EKLENEN: DİNAMİK POZİSYON VE DEPARTMAN VERİSİ
         let departmentMap = {};
 
@@ -669,7 +673,48 @@
             addEducationRow();
             addLanguageRow();
             addExperienceRow();
-            await loadDynamicPositions();
+            if (jobId) {
+                // Spesifik ilana başvuru: İlanı bul, seç, menüyü gizle!
+                try {
+                    const jobsRes = await fetch(`${BASE_URL}/public/jobs`);
+                    if (jobsRes.ok) {
+                        const jobs = await jobsRes.json();
+                        const selectedJob = jobs.find(j => j.id == jobId);
+                        
+                        if (selectedJob) {
+                            const posSelect = document.getElementById("position");
+                            
+                            // Arka planda <select> içine sadece o ilanı ekle ve seçili yap
+                            posSelect.innerHTML = `<option value="${selectedJob.title}" selected>${selectedJob.title}</option>`;
+                            
+                            // YENİ DÜZENLEME: Departman adını çekip doğru şekilde atıyoruz
+                            try {
+                                const deptRes = await fetch(`${BASE_URL}/departments`);
+                                if (deptRes.ok) {
+                                    const departments = await deptRes.json();
+                                    const matchedDept = departments.find(d => d.id === selectedJob.department_id);
+                                    departmentMap[selectedJob.title] = matchedDept ? matchedDept.name : "Genel";
+                                } else {
+                                    departmentMap[selectedJob.title] = "Genel";
+                                }
+                            } catch (e) {
+                                departmentMap[selectedJob.title] = "Genel";
+                            }
+                            
+                            // Adayın bu menüyü görmesini engelle (tüm etiketiyle birlikte gizle)
+                            posSelect.parentElement.style.display = "none";
+                        } else {
+
+                            await loadDynamicPositions(); // İlan silinmişse/bulunamazsa normale dön
+                        }
+                    }
+                } catch (err) {
+                    console.error("İlan verisi alınamadı:", err);
+                    await loadDynamicPositions();
+                }
+            } else {
+                // Genel başvuru: URL'de job_id yoksa, eski usül tüm pozisyon listesini yükle
+                await loadDynamicPositions();}
         });
 
         function showAlert(msg) {
@@ -780,6 +825,10 @@
                     reference_position: document.getElementById("refPosition").value || null,
                     reference_contact: document.getElementById("refContact").value || null
                 };
+
+                if (jobId) {
+                    applicationPayload.job_posting_id = parseInt(jobId);
+                }
 
                 const applRes = await fetch(`${BASE_URL}/applications/`, {
                     method: "POST",

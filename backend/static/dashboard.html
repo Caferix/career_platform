@@ -1,81 +1,87 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aday Havuzu & İlan Yönetimi Paneli</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-slate-50 min-h-screen pb-12">
 
     <!-- MAIN DASHBOARD NAV -->
-    <nav class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 mb-6 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full sm:w-auto">
-                <div class="flex items-center justify-between w-full sm:w-auto">
-                    <div class="flex items-center gap-3">
-                        <span class="w-2.5 h-2.5 bg-[#e11b3a] rounded-full animate-pulse"></span>
-                        <span class="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Dener Kariyer Yönetimi</span>
-                    </div>
-                    <!-- Mobil Çıkış Butonu -->
-                    <button onclick="logoutAdmin()" class="sm:hidden text-xs font-medium text-[#e11b3a] bg-red-50 px-3 py-1.5 rounded-lg border border-red-100">Çıkış</button>
-                </div>
-
-                <!-- SEKMELER (TABS) -->
-                <div class="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200 text-xs font-semibold w-full sm:w-auto justify-center">
-                    <button id="tabCandidatesBtn" onclick="switchTab('candidates')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg transition-all bg-white text-gray-900 shadow-sm text-center">
-                        Aday Havuzu
-                    </button>
-                    <button id="tabJobsBtn" onclick="switchTab('jobs')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg transition-all text-gray-500 hover:text-gray-900 text-center">
-                        İlan Yönetimi
-                    </button>
-                </div>
-            </div>
-
-            <!-- Masaüstü Çıkış Butonu -->
-            <button onclick="logoutAdmin()" class="hidden sm:block text-sm font-medium text-[#e11b3a] hover:text-[#c51631] transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50">
-                Sistemden Çıkış
-            </button>
+    <nav
+        class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 mb-6 sticky top-0 z-40 shadow-sm flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <span class="w-2.5 h-2.5 bg-[#e11b3a] rounded-full animate-pulse"></span>
+            <span class="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Dener Kariyer Yönetim
+                Paneli</span>
         </div>
+        <button onclick="logoutAdmin()"
+            class="text-xs sm:text-sm font-medium text-[#e11b3a] bg-red-50 sm:bg-transparent sm:hover:bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 sm:border-transparent transition-colors">
+            Çıkış Yap
+        </button>
     </nav>
 
     <main class="max-w-7xl mx-auto px-4 space-y-6">
 
-        <div id="adminAlert" class="hidden p-4 rounded-xl text-sm font-medium border bg-red-50 border-red-200 text-red-700 transition-all duration-300"></div>
+        <!-- MOBİL UYUMLU SEKMELER (TABS) -->
+        <div
+            class="flex items-center bg-gray-100 p-1.5 rounded-xl border border-gray-200 text-sm font-semibold w-full sm:w-max shadow-sm">
+            <button id="tabCandidatesBtn" onclick="switchTab('candidates')"
+                class="flex-1 sm:flex-none px-6 py-2.5 rounded-lg transition-all bg-[#e11b3a] text-white shadow-sm text-center">
+                Aday Havuzu
+            </button>
+            <button id="tabJobsBtn" onclick="switchTab('jobs')"
+                class="flex-1 sm:flex-none px-6 py-2.5 rounded-lg transition-all text-gray-500 hover:text-gray-900 text-center hover:bg-white/50">
+                İlan Yönetimi
+            </button>
+        </div>
+
+        <div id="adminAlert"
+            class="hidden p-4 rounded-xl text-sm font-medium border bg-red-50 border-red-200 text-red-700 transition-all duration-300">
+        </div>
 
         <!-- ========================================== -->
         <!-- SEKMELER 1: ADAY HAVUZU GÖRÜNÜMÜ          -->
         <!-- ========================================== -->
-        <div id="candidatesTabSection" class="space-y-6">
-
+        <div id="candidatesTabSection" class="space-y-6 block">
             <!-- FİLTRELER -->
-            <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 shadow-sm">
+            <div
+                class="bg-gray-50 border border-gray-200 rounded-2xl p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 shadow-sm">
                 <div>
                     <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Anahtar Kelime</label>
-                    <input type="text" id="searchBar" placeholder="Ad, e-posta, şehir..." class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
+                    <input type="text" id="searchBar" placeholder="Ad, e-posta, şehir..."
+                        class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none transition-all">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">İlan / Havuz Tipi</label>
-                    <select id="filterJobPosting" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">İlan / Havuz
+                        Tipi</label>
+                    <select id="filterJobPosting"
+                        class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
                         <option value="">Tüm Başvurular</option>
                         <option value="general">Sadece Genel Havuz</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Pozisyon</label>
-                    <select id="filterPosition" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                    <select id="filterPosition"
+                        class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
                         <option value="">Tüm Pozisyonlar</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Departman</label>
-                    <select id="filterDepartment" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                    <select id="filterDepartment"
+                        class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
                         <option value="">Tüm Departmanlar</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Başvuru Durumu</label>
-                    <select id="filterStatus" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                    <select id="filterStatus"
+                        class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
                         <option value="">Tüm Durumlar</option>
                         <option value="Applied">Yeni Başvuru</option>
                         <option value="Under_Review">İncelemede</option>
@@ -87,39 +93,52 @@
 
             <!-- GELİŞMİŞ FİLTRELER -->
             <div class="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-                <button type="button" id="advancedFiltersToggle" class="w-full flex items-center justify-between px-4 md:px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors">
+                <button type="button" id="advancedFiltersToggle"
+                    class="w-full flex items-center justify-between px-4 md:px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors">
                     <span class="flex items-center gap-2">
                         Gelişmiş Filtreler
-                        <span id="advancedFiltersBadge" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e11b3a]/10 text-[#e11b3a]"></span>
+                        <span id="advancedFiltersBadge"
+                            class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e11b3a]/10 text-[#e11b3a]"></span>
                     </span>
                     <span id="advancedFiltersChevron" class="text-gray-400 transition-transform">▾</span>
                 </button>
-                <div id="advancedFiltersPanel" class="hidden px-4 md:px-6 pb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-gray-200 pt-4">
+                <div id="advancedFiltersPanel"
+                    class="hidden px-4 md:px-6 pb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-gray-200 pt-4">
                     <div>
-                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Deneyim (Min Yıl)</label>
-                        <input type="number" id="filterExperienceMin" min="0" placeholder="0" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Deneyim (Min
+                            Yıl)</label>
+                        <input type="number" id="filterExperienceMin" min="0" placeholder="0"
+                            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Deneyim (Max Yıl)</label>
-                        <input type="number" id="filterExperienceMax" min="0" placeholder="Sınırsız" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Deneyim (Max
+                            Yıl)</label>
+                        <input type="number" id="filterExperienceMax" min="0" placeholder="Sınırsız"
+                            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Tarih (Başlangıç)</label>
-                        <input type="date" id="filterDateFrom" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Tarih
+                            (Başlangıç)</label>
+                        <input type="date" id="filterDateFrom"
+                            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Tarih (Bitiş)</label>
-                        <input type="date" id="filterDateTo" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                        <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Tarih
+                            (Bitiş)</label>
+                        <input type="date" id="filterDateTo"
+                            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
                     </div>
                     <div>
                         <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Uyruk</label>
-                        <select id="filterNationality" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                        <select id="filterNationality"
+                            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
                             <option value="">Tüm Uyruklar</option>
                         </select>
                     </div>
                     <div class="flex items-end lg:col-start-4">
-                        <button type="button" id="clearAdvancedFiltersBtn" class="w-full bg-white border border-gray-200 text-gray-600 hover:text-[#e11b3a] hover:border-[#e11b3a]/40 font-medium text-sm py-2 rounded-xl transition-all">
-                            Gelişmiş Filtreleri Temizle
+                        <button type="button" id="clearAdvancedFiltersBtn"
+                            class="w-full bg-white border border-gray-200 text-gray-600 hover:text-[#e11b3a] hover:border-[#e11b3a]/40 font-medium text-sm py-2 rounded-xl transition-all">
+                            Filtreleri Temizle
                         </button>
                     </div>
                 </div>
@@ -130,7 +149,8 @@
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left border-collapse min-w-[800px]">
                         <thead>
-                            <tr class="bg-gray-50 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                            <tr
+                                class="bg-gray-50 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                                 <th class="px-6 py-4">Aday Bilgisi</th>
                                 <th class="px-6 py-4">Başvurulan İlan / Pozisyon</th>
                                 <th class="px-6 py-4">Deneyim</th>
@@ -141,27 +161,25 @@
                         <tbody id="desktopTableBody" class="divide-y divide-gray-200 text-sm text-gray-700"></tbody>
                     </table>
                 </div>
-
                 <div id="mobileCardsContainer" class="block md:hidden p-4 space-y-3"></div>
-
-                <div id="emptyState" class="hidden p-12 text-center text-gray-500 text-sm font-medium">
-                    Kriterlere uygun başvuru kaydı bulunamadı.
-                </div>
+                <div id="emptyState" class="hidden p-12 text-center text-gray-500 text-sm font-medium">Kriterlere uygun
+                    başvuru bulunamadı.</div>
             </div>
-
         </div>
 
         <!-- ========================================== -->
         <!-- SEKMELER 2: İLAN YÖNETİMİ GÖRÜNÜMÜ          -->
         <!-- ========================================== -->
         <div id="jobsTabSection" class="hidden space-y-6">
-
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-5 sm:p-6 border border-gray-200 rounded-2xl shadow-sm gap-4">
+            <div
+                class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-5 sm:p-6 border border-gray-200 rounded-2xl shadow-sm gap-4">
                 <div>
                     <h2 class="text-lg font-bold text-gray-900">Yayınlanan İş İlanları</h2>
-                    <p class="text-xs text-gray-500 mt-1">Sistemde aktif veya pasif durumda olan tüm ilanları yönetin.</p>
+                    <p class="text-xs text-gray-500 mt-1">Sistemde aktif veya pasif durumda olan tüm ilanları yönetin.
+                    </p>
                 </div>
-                <button onclick="openCreateJobModal()" class="w-full sm:w-auto justify-center bg-[#e11b3a] hover:bg-[#c51631] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+                <button onclick="openCreateJobModal()"
+                    class="w-full sm:w-auto justify-center bg-[#e11b3a] hover:bg-[#c51631] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-1.5">
                     <span>+ Yeni İlan Aç</span>
                 </button>
             </div>
@@ -171,7 +189,8 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse min-w-[700px]">
                         <thead>
-                            <tr class="bg-gray-50 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                            <tr
+                                class="bg-gray-50 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                                 <th class="px-6 py-4">İlan Başlığı</th>
                                 <th class="px-6 py-4">Çalışma Modeli</th>
                                 <th class="px-6 py-4">Oluşturulma Tarihi</th>
@@ -182,11 +201,9 @@
                         <tbody id="jobsTableBody" class="divide-y divide-gray-200 text-sm text-gray-700"></tbody>
                     </table>
                 </div>
-                <div id="emptyJobsState" class="hidden p-12 text-center text-gray-500 text-sm font-medium">
-                    Henüz açılmış bir iş ilanı bulunmuyor.
-                </div>
+                <div id="emptyJobsState" class="hidden p-12 text-center text-gray-500 text-sm font-medium">Henüz açılmış
+                    bir iş ilanı bulunmuyor.</div>
             </div>
-
         </div>
 
     </main>
@@ -199,59 +216,59 @@
                     <h2 id="modalName" class="text-lg font-bold text-slate-800"></h2>
                     <p id="modalPosition" class="text-xs text-gray-500 mt-0.5"></p>
                 </div>
-                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">✕</button>
+                <button onclick="closeDetailModal()"
+                    class="text-slate-400 hover:text-slate-600 text-xl leading-none">✕</button>
             </div>
 
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 text-sm flex-1">
-                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div
+                    class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <span class="text-xs font-semibold text-gray-600 uppercase">Başvuru Durumu</span>
-                    <select id="modalStatusSelect" class="w-full sm:w-auto border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-1 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                    <select id="modalStatusSelect"
+                        class="w-full sm:w-auto border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-1 focus:ring-[#e11b3a] outline-none cursor-pointer">
                         <option value="Applied">Yeni Başvuru</option>
                         <option value="Under_Review">İncelemede</option>
                         <option value="Accepted">Kabul Edildi</option>
                         <option value="Rejected">Reddedildi</option>
                     </select>
                 </div>
-
                 <div>
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">İletişim & Kişisel Bilgiler</h3>
-                    <div id="modalPersonalInfo" class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-gray-700"></div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">İletişim & Kişisel
+                        Bilgiler</h3>
+                    <div id="modalPersonalInfo" class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-gray-700">
+                    </div>
                 </div>
-
                 <div>
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Sosyal Medya & Portfolyo</h3>
-                    <div id="modalSocialLinks" class="flex flex-col gap-2 text-gray-700"></div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Sosyal Ağlar & Linkler
+                    </h3>
+                    <div id="modalSocialLinks" class="flex flex-col gap-1"></div>
                 </div>
-
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Eğitim Bilgileri</h3>
+                    <div id="modalEducations" class="space-y-2"></div>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Yabancı Dil</h3>
+                    <div id="modalLanguages" class="flex flex-wrap gap-2"></div>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">İş & Proje Deneyimleri
+                    </h3>
+                    <p id="modalExperience" class="text-gray-700 leading-relaxed"></p>
+                </div>
                 <div>
                     <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Yetkinlikler</h3>
                     <p id="modalSkills" class="text-gray-700 leading-relaxed"></p>
                 </div>
-
                 <div>
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Eğitim</h3>
-                    <div id="modalEducations" class="space-y-2"></div>
-                </div>
-
-                <div>
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Yabancı Diller</h3>
-                    <div id="modalLanguages" class="flex flex-wrap gap-2"></div>
-                </div>
-
-                <div>
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Deneyimler</h3>
-                    <p id="modalExperience" class="text-gray-700 leading-relaxed"></p>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Ön Yazı</h3>
+                    <p id="modalCoverLetter" class="text-gray-700 leading-relaxed"></p>
                 </div>
                 <div>
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Önyazı</h3>
-                    <p id="modalCoverLetter" class="text-gray-700 italic leading-relaxed"></p>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Referans</h3>
+                    <div id="modalReference" class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-gray-700">
+                    </div>
                 </div>
-
-                <div>
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Referans Bilgisi</h3>
-                    <div id="modalReference" class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-700 space-y-1"></div>
-                </div>
-
                 <div id="modalCvSection" class="pt-2"></div>
             </div>
         </div>
@@ -259,31 +276,40 @@
 
     <!-- YENİ İLAN OLUŞTURMA / DÜZENLEME MODALI -->
     <div id="jobModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-5 sm:p-6 max-h-[95vh] overflow-y-auto flex flex-col">
+        <div
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-5 sm:p-6 max-h-[95vh] overflow-y-auto flex flex-col">
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
                 <h3 id="jobModalTitle" class="text-base font-bold text-gray-900">Yeni İş İlanı Ekle</h3>
                 <button onclick="closeJobModal()" class="text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
             </div>
 
+            <!-- Form başlangıcı -->
             <form id="jobForm" class="space-y-4">
                 <input type="hidden" id="jobEditId">
-                
+
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Pozisyon Seçin <span class="text-red-500">*</span></label>
-                    <select id="jobPositionSelect" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#e11b3a] cursor-pointer">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Pozisyon Seçin <span
+                            class="text-red-500">*</span></label>
+                    <select id="jobPositionSelect" required
+                        class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#e11b3a] cursor-pointer">
                         <option value="">Pozisyon Seçiniz</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">İlan Başlığı <span class="text-red-500">*</span></label>
-                    <input type="text" id="jobTitleInput" required placeholder="Örn: Senior Backend Developer" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#e11b3a]">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">İlan Başlığı <span
+                            class="text-red-500">*</span></label>
+                    <input type="text" id="jobTitleInput" required placeholder="Örn: Senior Backend Developer"
+                        class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#e11b3a]">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Çalışma Modeli <span class="text-red-500">*</span></label>
-                    <select id="jobLocationInput" required class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#e11b3a] cursor-pointer">
-                        <option value="">Çalışma Modeli Seçiniz</option>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Çalışma Modeli <span
+                            class="text-red-500">*</span></label>
+                    <!-- YENİ: Manuel metin girişi yerine Dropdown yapıldı -->
+                    <select id="jobLocationInput" required
+                        class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#e11b3a] cursor-pointer">
+                        <option value="">Model Seçiniz</option>
                         <option value="Ofis (On-site)">Ofis (On-site)</option>
                         <option value="Hibrit (Hybrid)">Hibrit (Hybrid)</option>
                         <option value="Uzaktan (Remote)">Uzaktan (Remote)</option>
@@ -291,13 +317,17 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Detaylı İlan Açıklaması <span class="text-red-500">*</span></label>
-                    <textarea id="jobDescriptionInput" required rows="5" placeholder="Genel nitelikler ve iş tanımı..." class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#e11b3a] resize-none"></textarea>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Detaylı İlan Açıklaması <span
+                            class="text-red-500">*</span></label>
+                    <textarea id="jobDescriptionInput" required rows="5" placeholder="Genel nitelikler ve iş tanımı..."
+                        class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#e11b3a] resize-none"></textarea>
                 </div>
 
                 <div class="pt-4 mt-2 flex justify-end gap-2 border-t border-gray-100">
-                    <button type="button" onclick="closeJobModal()" class="px-5 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors">İptal</button>
-                    <button type="submit" class="px-6 py-2.5 bg-[#e11b3a] text-white rounded-xl text-sm font-semibold hover:bg-[#c51631] shadow-sm transition-colors">Kaydet</button>
+                    <button type="button" onclick="closeJobModal()"
+                        class="px-5 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors">İptal</button>
+                    <button type="submit"
+                        class="px-6 py-2.5 bg-[#e11b3a] text-white rounded-xl text-sm font-semibold hover:bg-[#c51631] shadow-sm transition-colors">Kaydet</button>
                 </div>
             </form>
         </div>
@@ -332,10 +362,10 @@
         let currentModalAppId = null;
 
         const statusConfig = {
-            "Applied":      { label: "Applied",      cls: "bg-blue-50 text-blue-700 border-blue-200" },
-            "Under_Review": { label: "Under Review",  cls: "bg-amber-50 text-amber-700 border-amber-200" },
-            "Accepted":     { label: "Accepted",      cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-            "Rejected":     { label: "Rejected",      cls: "bg-red-50 text-red-700 border-red-200" }
+            "Applied": { label: "Applied", cls: "bg-blue-50 text-blue-700 border-blue-200" },
+            "Under_Review": { label: "Under Review", cls: "bg-amber-50 text-amber-700 border-amber-200" },
+            "Accepted": { label: "Accepted", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+            "Rejected": { label: "Rejected", cls: "bg-red-50 text-red-700 border-red-200" }
         };
 
         function logoutAdmin() {
@@ -343,7 +373,6 @@
             window.location.href = "/static/login.html";
         }
 
-        // --- SEKME DEĞİŞTİRME MANITIĞI ---
         function switchTab(tab) {
             const candSec = document.getElementById("candidatesTabSection");
             const jobsSec = document.getElementById("jobsTabSection");
@@ -352,14 +381,16 @@
 
             if (tab === 'candidates') {
                 candSec.classList.remove("hidden");
+                candSec.classList.add("block");
                 jobsSec.classList.add("hidden");
-                candBtn.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg transition-all bg-white text-gray-900 shadow-sm text-center";
-                jobsBtn.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg transition-all text-gray-500 hover:text-gray-900 text-center";
+                candBtn.className = "flex-1 sm:flex-none px-6 py-2.5 rounded-lg transition-all bg-[#e11b3a] text-white shadow-sm text-center";
+                jobsBtn.className = "flex-1 sm:flex-none px-6 py-2.5 rounded-lg transition-all text-gray-500 hover:text-gray-900 text-center hover:bg-white/50";
             } else {
                 candSec.classList.add("hidden");
+                candSec.classList.remove("block");
                 jobsSec.classList.remove("hidden");
-                jobsBtn.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg transition-all bg-white text-gray-900 shadow-sm text-center";
-                candBtn.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg transition-all text-gray-500 hover:text-gray-900 text-center";
+                jobsBtn.className = "flex-1 sm:flex-none px-6 py-2.5 rounded-lg transition-all bg-[#e11b3a] text-white shadow-sm text-center";
+                candBtn.className = "flex-1 sm:flex-none px-6 py-2.5 rounded-lg transition-all text-gray-500 hover:text-gray-900 text-center hover:bg-white/50";
                 loadJobsData();
             }
         }
@@ -370,10 +401,7 @@
             try {
                 const base64Url = token.split('.')[1];
                 const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                return JSON.parse(jsonPayload);
+                return JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
             } catch (e) {
                 return {};
             }
@@ -390,9 +418,7 @@
             adminAlert.textContent = "";
         }
 
-        function departmentLabel(value) {
-            return value || "-";
-        }
+        function departmentLabel(value) { return value || "-"; }
 
         async function syncDashboardFilters() {
             if (!filterPosition) return;
@@ -405,18 +431,27 @@
                 const isManager = userInfo.role === "manager";
                 const userDept = userInfo.department;
 
-                const res = await fetch(`${BASE_URL}/departments`);
+                // Backend'in Admin prefix rotasına göre dinamik kontrol yapıyoruz
+                const token = localStorage.getItem("admin_token");
+                let res = await fetch(`${BASE_URL}/admin/departments`, { headers: { "Authorization": `Bearer ${token}` } });
+                if (!res.ok) {
+                    res = await fetch(`${BASE_URL}/departments`);
+                }
                 if (!res.ok) throw new Error("Departmanlar çekilemedi.");
+
                 const departments = await res.json();
-        
                 let allPositions = [];
+
                 departments.forEach(dept => {
                     if (isManager && userDept && dept.name !== userDept) return;
 
                     if (dept.is_active !== false && dept.positions && dept.positions.length > 0) {
                         dept.positions.forEach(pos => {
                             if (pos.is_active !== false) {
-                                allPositions.push({ id: pos.id, name: pos.name || pos.title });
+                                // YENİ: ID ve Name değerlerinin null olmadığından emin oluyoruz!
+                                if (pos.id != null && pos.name != null) {
+                                    allPositions.push({ id: pos.id, name: pos.name });
+                                }
                             }
                         });
                     }
@@ -457,9 +492,7 @@
             } else {
                 const currentValue = filterDepartment.value;
                 const uniqueDepartments = [...new Set(
-                    allApplications
-                        .map(app => app.department)
-                        .filter(dep => dep && dep.trim() !== "")
+                    allApplications.map(app => app.department).filter(dep => dep && dep.trim() !== "")
                 )].sort((a, b) => a.localeCompare(b, "tr"));
 
                 filterDepartment.innerHTML = '<option value="">Tüm Departmanlar</option>';
@@ -499,59 +532,35 @@
                     opt.textContent = `İlan: ${j.title}`;
                     filterJobPosting.appendChild(opt);
                 });
-            } catch (err) {
-                console.error("İlanlar filtreye yüklenemedi:", err);
-            }
+            } catch (err) { }
         }
 
         function buildApplicantSearchIndex(applicant) {
             if (!applicant) return "";
-            const parts = [
+            return [
                 applicant.first_name, applicant.last_name, applicant.email, applicant.phone,
                 applicant.city, applicant.district, applicant.nationality, applicant.driving_license,
                 applicant.skills, applicant.address_detail
-            ];
-            if (Array.isArray(applicant.educations)) {
-                applicant.educations.forEach(edu => parts.push(edu.school_name, edu.education_level, edu.department));
-            }
-            if (Array.isArray(applicant.languages)) {
-                applicant.languages.forEach(lang => parts.push(lang.language_name, lang.level));
-            }
-            return parts.filter(Boolean).join(" ").toLowerCase();
+            ].filter(Boolean).join(" ").toLowerCase();
         }
 
-        let countriesList = null; 
-        function normalizeCountriesData(data) {
-            if (!Array.isArray(data)) return [];
-            return data.map(item => {
-                if (typeof item === "string") return item;
-                if (item && typeof item === "object") return item.name || item.country || item.title || null;
-                return null;
-            }).filter(Boolean);
-        }
-
-        async function loadCountriesList() {
-            if (countriesList) return countriesList;
-            try {
-                const res = await fetch(`${BASE_URL}/static/countries.json`);
-                if (!res.ok) throw new Error(`countries.json çekilemedi.`);
-                const data = await res.json();
-                countriesList = normalizeCountriesData(data).sort((a, b) => a.localeCompare(b, "tr"));
-            } catch (error) {
-                countriesList = null;
-            }
-            return countriesList;
-        }
-
+        let countriesList = null;
         async function populateNationalityFilter() {
             if (!filterNationality) return;
             const currentValue = filterNationality.value;
-            const countries = await loadCountriesList();
 
-            const uniqueNationalities = countries || [...new Set(
-                Object.values(applicantCache)
-                    .map(applicant => applicant.nationality)
-                    .filter(nat => nat && nat.trim() !== "")
+            if (!countriesList) {
+                try {
+                    const res = await fetch(`${BASE_URL}/static/countries.json`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        countriesList = data.map(item => typeof item === "string" ? item : item.name).filter(Boolean).sort((a, b) => a.localeCompare(b, "tr"));
+                    }
+                } catch (error) { }
+            }
+
+            const uniqueNationalities = countriesList || [...new Set(
+                Object.values(applicantCache).map(app => app.nationality).filter(nat => nat && nat.trim() !== "")
             )].sort((a, b) => a.localeCompare(b, "tr"));
 
             filterNationality.innerHTML = '<option value="">Tüm Uyruklar</option>';
@@ -633,9 +642,7 @@
                         if (applicantRes.ok) {
                             applicantCache[id] = await applicantRes.json();
                         }
-                    } catch (err) {
-                        console.error(`Aday ID ${id} çekilirken hata:`, err);
-                    }
+                    } catch (err) { }
                 });
 
                 await Promise.all(applicantPromises);
@@ -772,7 +779,7 @@
 
                 allJobsList.forEach(job => {
                     const cDate = job.created_at ? new Date(job.created_at).toLocaleDateString("tr-TR") : "-";
-                    const statusBadge = job.is_active 
+                    const statusBadge = job.is_active
                         ? `<span class="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-200">Yayında</span>`
                         : `<span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2.5 py-1 rounded-full border border-gray-200">Pasif</span>`;
 
@@ -798,7 +805,7 @@
         }
 
         async function openCreateJobModal() {
-            await syncDashboardFilters(); // Pozisyonları yeniden yükle
+            await syncDashboardFilters();
             hideAdminError();
             document.getElementById("jobModalTitle").innerText = "Yeni İş İlanı Ekle";
             document.getElementById("jobEditId").value = "";
@@ -831,16 +838,27 @@
             hideAdminError();
         }
 
+        // YENİ: KATI GÜVENLİ FORM GÖNDERİMİ (NULL HATASINI %100 ÇÖZER)
         document.getElementById("jobForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const token = localStorage.getItem("admin_token");
             const editId = document.getElementById("jobEditId").value;
             const posVal = document.getElementById("jobPositionSelect").value;
 
-            // Oluşturma esnasında pozisyon id boş geçilemez!
-            if (!editId && (!posVal || posVal === "")) {
-                alert("Lütfen geçerli bir pozisyon seçiniz.");
-                return;
+            let parsedPositionId = null;
+
+            // Oluşturma Modu: Sıkı Kontrol
+            if (!editId) {
+                if (!posVal || posVal === "" || posVal === "undefined") {
+                    showAdminError("Hata: Lütfen geçerli bir pozisyon seçiniz.");
+                    return;
+                }
+
+                parsedPositionId = parseInt(posVal, 10);
+                if (isNaN(parsedPositionId)) {
+                    showAdminError("Hata: Pozisyon kimliği geçersiz. Lütfen sayfayı yenileyin.");
+                    return;
+                }
             }
 
             const payload = {
@@ -857,7 +875,7 @@
                     url = `${BASE_URL}/jobs/${editId}`;
                     method = "PATCH";
                 } else {
-                    payload.position_id = parseInt(posVal, 10);
+                    payload.position_id = parsedPositionId;
                 }
 
                 const res = await fetch(url, {
@@ -868,7 +886,7 @@
 
                 if (!res.ok) {
                     const err = await res.json();
-                    throw new Error(err.detail || "İşlem başarısız.");
+                    throw new Error(err.detail ? JSON.stringify(err.detail) : "İşlem başarısız.");
                 }
 
                 closeJobModal();
@@ -919,39 +937,30 @@
             `;
 
             const socialBox = document.getElementById("modalSocialLinks");
-            if (applicant.social_links && (applicant.social_links.link_1 || applicant.social_links.link_2)) {
-                let linksHTML = "";
-                if (applicant.social_links.link_1) linksHTML += `<a href="${applicant.social_links.link_1}" target="_blank" class="text-[#e11b3a] hover:underline text-sm truncate flex items-center gap-1">🔗 ${applicant.social_links.link_1}</a>`;
-                if (applicant.social_links.link_2) linksHTML += `<a href="${applicant.social_links.link_2}" target="_blank" class="text-[#e11b3a] hover:underline text-sm truncate flex items-center gap-1">🔗 ${applicant.social_links.link_2}</a>`;
-                socialBox.innerHTML = linksHTML;
-            } else {
-                socialBox.innerHTML = '<p class="text-gray-400 italic text-sm">Link eklenmemiş.</p>';
-            }
+            socialBox.innerHTML = (applicant.social_links && (applicant.social_links.link_1 || applicant.social_links.link_2))
+                ? `${applicant.social_links.link_1 ? `<a href="${applicant.social_links.link_1}" target="_blank" class="text-[#e11b3a] hover:underline text-sm truncate flex items-center gap-1">🔗 ${applicant.social_links.link_1}</a>` : ''}
+                   ${applicant.social_links.link_2 ? `<a href="${applicant.social_links.link_2}" target="_blank" class="text-[#e11b3a] hover:underline text-sm truncate flex items-center gap-1">🔗 ${applicant.social_links.link_2}</a>` : ''}`
+                : '<p class="text-gray-400 italic text-sm">Link eklenmemiş.</p>';
 
             document.getElementById("modalSkills").textContent = applicant.skills || "Belirtilmedi";
 
             const eduBox = document.getElementById("modalEducations");
-            if (applicant.educations && applicant.educations.length > 0) {
-                eduBox.innerHTML = applicant.educations.map(edu => `<div class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2"><span class="font-medium text-gray-800">${edu.school_name}</span><span class="text-gray-500 block text-xs mt-1">${edu.education_level}${edu.department ? ' • ' + edu.department : ''}${edu.graduation_year ? ' • ' + edu.graduation_year : ''}</span></div>`).join("");
-            } else {
-                eduBox.innerHTML = '<p class="text-gray-400 italic">Eğitim bilgisi eklenmemiş.</p>';
-            }
+            eduBox.innerHTML = (applicant.educations && applicant.educations.length > 0)
+                ? applicant.educations.map(edu => `<div class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2"><span class="font-medium text-gray-800">${edu.school_name}</span><span class="text-gray-500 block text-xs mt-1">${edu.education_level}${edu.department ? ' • ' + edu.department : ''}${edu.graduation_year ? ' • ' + edu.graduation_year : ''}</span></div>`).join("")
+                : '<p class="text-gray-400 italic">Eğitim bilgisi eklenmemiş.</p>';
 
             const langBox = document.getElementById("modalLanguages");
-            if (applicant.languages && applicant.languages.length > 0) {
-                langBox.innerHTML = applicant.languages.map(lang => `<span class="bg-[#e11b3a]/10 text-[#e11b3a] text-xs font-semibold px-2.5 py-1 rounded-md">${lang.language_name} (${lang.level})</span>`).join("");
-            } else {
-                langBox.innerHTML = '<p class="text-gray-400 italic">Dil bilgisi eklenmemiş.</p>';
-            }
+            langBox.innerHTML = (applicant.languages && applicant.languages.length > 0)
+                ? applicant.languages.map(lang => `<span class="bg-[#e11b3a]/10 text-[#e11b3a] text-xs font-semibold px-2.5 py-1 rounded-md">${lang.language_name} (${lang.level})</span>`).join("")
+                : '<p class="text-gray-400 italic">Dil bilgisi eklenmemiş.</p>';
 
             document.getElementById("modalExperience").textContent = app.experience_detail ? `${app.experience_detail} (Toplam ${app.experience_years} Yıl)` : `Belirtilmedi (Toplam ${app.experience_years || 0} Yıl)`;
             document.getElementById("modalCoverLetter").textContent = app.cover_letter || "Önyazı eklenmemiş.";
+
             const refBox = document.getElementById("modalReference");
-            if (app.reference_name) {
-                refBox.innerHTML = `<div><span class="text-gray-400">Ad Soyad:</span> ${app.reference_name}</div><div><span class="text-gray-400">Pozisyon / Kurum:</span> ${app.reference_position || '-'}</div><div><span class="text-gray-400">İletişim:</span> ${app.reference_contact || '-'}</div>`;
-            } else {
-                refBox.innerHTML = '<p class="text-gray-400 italic">Referans bilgisi eklenmemiş.</p>';
-            }
+            refBox.innerHTML = app.reference_name
+                ? `<div><span class="text-gray-400">Ad Soyad:</span> ${app.reference_name}</div><div><span class="text-gray-400">Pozisyon/Kurum:</span> ${app.reference_position || '-'}</div><div><span class="text-gray-400">İletişim:</span> ${app.reference_contact || '-'}</div>`
+                : '<p class="text-gray-400 italic">Referans bilgisi eklenmemiş.</p>';
 
             document.getElementById("modalCvSection").innerHTML = app.cv_url ? `<button onclick="downloadCV(${app.id})" class="w-full bg-red-50 text-[#e11b3a] font-semibold text-sm py-2.5 rounded-xl hover:bg-red-100 transition-colors">CV İndir</button>` : `<div class="text-center text-xs text-gray-400 bg-gray-50 border border-gray-200 rounded-xl py-2.5">CV Yüklenmemiş</div>`;
             document.getElementById("detailModal").classList.remove("hidden");
@@ -961,7 +970,7 @@
             document.getElementById("detailModal").classList.add("hidden");
             currentModalAppId = null;
         }
-        document.getElementById("detailModal").addEventListener("click", function(e) { if (e.target === this) closeDetailModal(); });
+        document.getElementById("detailModal").addEventListener("click", function (e) { if (e.target === this) closeDetailModal(); });
 
         document.getElementById("modalStatusSelect").addEventListener("change", (e) => {
             if (currentModalAppId) updateApplicationStatus(currentModalAppId, e.target.value);
@@ -1029,4 +1038,5 @@
         });
     </script>
 </body>
+
 </html>

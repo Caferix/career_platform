@@ -125,8 +125,8 @@ async def get_public_positions(db: AsyncSession = Depends(get_db)):
 @app.get("/departments")
 async def get_departments(db: AsyncSession = Depends(get_db)):
     """
-    apply.html'in beklediği iç içe (nested) formatı döner:
-    [{ name, is_active, positions: [{ name, is_active }, ...] }, ...]
+    apply.html ve dashboard.html'in beklediği iç içe (nested) formatı döner:
+    [{ id, name, is_active, positions: [{ id, name, is_active }, ...] }, ...]
     """
     stmt = (
         select(Department)
@@ -137,10 +137,15 @@ async def get_departments(db: AsyncSession = Depends(get_db)):
 
     return [
         {
+            "id": dept.id,  # Departman ID'si eklendi
             "name": dept.name,
             "is_active": dept.is_active,
             "positions": [
-                {"name": pos.name, "is_active": pos.is_active}
+                {
+                    "id": pos.id,  # KESİN ÇÖZÜM: Pozisyon ID'si veritabanından çekilip eklendi!
+                    "name": pos.name, 
+                    "is_active": pos.is_active
+                }
                 for pos in dept.positions
             ],
         }
