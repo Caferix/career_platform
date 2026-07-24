@@ -523,19 +523,20 @@
             }
         }
 
-        async function deleteEducation(eduId) {
-            if (!confirm("Bu eğitim kaydını silmek istediğinize emin misiniz?")) return;
-            try {
-                const res = await fetch(`${BASE_URL}/applicants/educations/${eduId}`, {
-                    method: "DELETE",
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                if (!res.ok) throw new Error("Eğitim silinemedi.");
-                showAlert("Eğitim bilgisi silindi.", "success");
-                await fetchProfile();
-            } catch (err) {
-                showAlert(err.message);
-            }
+        function deleteEducation(eduId) {
+            showConfirm("Bu eğitim kaydını silmek istediğinize emin misiniz?", async () => {
+                try {
+                    const res = await fetch(`${BASE_URL}/applicants/educations/${eduId}`, {
+                        method: "DELETE",
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+                    if (!res.ok) throw new Error("Eğitim silinemedi.");
+                    showAlert("Eğitim bilgisi silindi.", "success");
+                    await fetchProfile();
+                } catch (err) {
+                    showAlert(err.message);
+                }
+            });
         }
 
         // --- DİL: EKLEME / SİLME ---
@@ -566,19 +567,20 @@
             }
         }
 
-        async function deleteLanguage(langId) {
-            if (!confirm("Bu dil kaydını silmek istediğinize emin misiniz?")) return;
-            try {
-                const res = await fetch(`${BASE_URL}/applicants/languages/${langId}`, {
-                    method: "DELETE",
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                if (!res.ok) throw new Error("Dil silinemedi.");
-                showAlert("Dil bilgisi silindi.", "success");
-                await fetchProfile();
-            } catch (err) {
-                showAlert(err.message);
-            }
+        function deleteLanguage(langId) {
+            showConfirm("Bu dil kaydını silmek istediğinize emin misiniz?", async () => {
+                try {
+                    const res = await fetch(`${BASE_URL}/applicants/languages/${langId}`, {
+                        method: "DELETE",
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+                    if (!res.ok) throw new Error("Dil silinemedi.");
+                    showAlert("Dil bilgisi silindi.", "success");
+                    await fetchProfile();
+                } catch (err) {
+                    showAlert(err.message);
+                }
+            });
         }
 
         async function fetchProfile() {
@@ -663,9 +665,15 @@
                                     <h3 class="font-bold text-gray-900 text-base">${app.position}</h3>
                                     <p class="text-xs text-gray-500 mt-1">${localDate} • ${app.department || 'Genel Başvuru'}</p>
                                 </div>
-                                <span class="text-[11px] font-bold px-3 py-1.5 rounded-full border ${sc.cls} whitespace-nowrap text-center">
-                                    ${sc.label}
-                                </span>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[11px] font-bold px-3 py-1.5 rounded-full border ${sc.cls} whitespace-nowrap text-center">
+                                        ${sc.label}
+                                    </span>
+                                    ${["pending", "applied", "taslak", "draft"].includes(app.status ? app.status.toLowerCase() : "") 
+                                        ? `<button onclick="withdrawApplication(${app.id})" class="text-xs font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 transition">İptal Et</button>`
+                                        : ''
+                                    }
+                                </div>
                             </div>
                         `;
                     }).join("");
@@ -777,21 +785,96 @@
                     });
                 }
 
-                alert("Başvurunuz başarıyla alındı!");
+                showAlert("Başvurunuz başarıyla alındı!", "success");
                 closeQuickApplyModal();
                 await fetchProfile(); // UI'ı yenile
             } catch (err) {
-                alert("Hata: " + err.message);
+                showAlert("Hata: " + err.message);
             } finally {
                 btn.disabled = false;
                 btn.textContent = "Başvuruyu Tamamla";
             }
         });
+        function withdrawApplication(appId) {
+            showConfirm("Başvurunuzu iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz.", async () => {
+                try {
+                    const res = await fetch(`${BASE_URL}/applications/${appId}/withdraw`, {
+                        method: "PATCH",
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+                    
+                    if (res.ok) {
+                        showAlert("Başvurunuz başarıyla iptal edildi.", "success");
+                        await fetchProfile();
+                    } else {
+                        const err = await res.json();
+                        showAlert(err.detail || "Başvuru iptal edilemedi.", "error");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showAlert("Bir hata oluştu.", "error");
+                }
+            });
+        }
 
         // ÖNCE ÜLKELERİ SONRA PROFİLİ ÇEK
         window.addEventListener("DOMContentLoaded", async () => {
             await fetchCountries();
             await fetchProfile();
+        });
+    </script>
+    
+    <!-- Custom Modal UI -->
+    <div id="custom-modal-overlay" class="fixed inset-0 bg-gray-900/60 hidden items-center justify-center z-[60] backdrop-blur-sm transition-opacity">
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4 transform scale-95 transition-transform" id="custom-modal-box">
+            <h3 id="custom-modal-title" class="text-lg font-bold text-gray-900 mb-2"></h3>
+            <p id="custom-modal-message" class="text-sm text-gray-600 mb-5"></p>
+
+            <div class="flex justify-end gap-3 mt-4">
+                <button id="custom-modal-cancel" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">İptal</button>
+                <button id="custom-modal-confirm" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-500 rounded-lg transition-colors">Evet, Onaylıyorum</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let modalConfirmCallback = null;
+
+        function showConfirm(message, onConfirm) {
+            document.getElementById('custom-modal-title').textContent = "Onay Gerekli";
+            document.getElementById('custom-modal-message').textContent = message;
+            
+            modalConfirmCallback = onConfirm;
+            openModal();
+        }
+
+        function openModal() {
+            const overlay = document.getElementById('custom-modal-overlay');
+            const box = document.getElementById('custom-modal-box');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            setTimeout(() => {
+                box.classList.remove('scale-95');
+                box.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const overlay = document.getElementById('custom-modal-overlay');
+            const box = document.getElementById('custom-modal-box');
+            box.classList.remove('scale-100');
+            box.classList.add('scale-95');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+                modalConfirmCallback = null;
+            }, 200);
+        }
+
+        document.getElementById('custom-modal-cancel').addEventListener('click', closeModal);
+        document.getElementById('custom-modal-confirm').addEventListener('click', () => {
+            if (modalConfirmCallback) modalConfirmCallback();
+            closeModal();
         });
     </script>
 </body>
