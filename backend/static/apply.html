@@ -418,11 +418,11 @@
     <script>
         const BASE_URL = "http://localhost:8000";
         const token = localStorage.getItem("auth_token");
-        if (!token) window.location.href = "/static/index.html";
+        if (!token) window.location.href = "/";
 
         document.getElementById("logoutBtn").addEventListener("click", () => {
             localStorage.clear();
-            window.location.href = "/static/index.html";
+            window.location.href = "/";
         });
 
 
@@ -763,7 +763,7 @@
                     const currentCandidate = await checkRes.json();
 
                     if (currentCandidate.first_name && currentCandidate.last_name) {
-                        window.location.href = "/static/profile.html";
+                        window.location.href = "/profile";
                         return;
                     }
                 }
@@ -955,7 +955,7 @@
                 document.getElementById("formContainer").classList.add("hidden");
                 document.getElementById("successContainer").classList.remove("hidden");
 
-                setTimeout(() => window.location.href = "/static/profile.html", 2000);
+                setTimeout(() => window.location.href = "/profile", 2000);
 
             } catch (error) {
                 showAlert(error.message);

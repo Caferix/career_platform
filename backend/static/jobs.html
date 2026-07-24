@@ -21,7 +21,7 @@
             <h1 class="text-lg font-bold text-slate-800">Açık Pozisyonlar</h1>
         </div>
         <div>
-            <a href="/static/index.html" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl transition-all font-medium border border-slate-200">
+            <a href="/" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl transition-all font-medium border border-slate-200">
                 Genel Başvuru / Giriş Yap
             </a>
         </div>
@@ -138,10 +138,10 @@
 
             if (token) {
                 // Giriş yapılmış -> Doğrudan ilanın başvuru formuna
-                window.location.href = `/static/apply.html?job_id=${selectedJob.id}`;
+                window.location.href = `/apply?job_id=${selectedJob.id}`;
             } else {
                 // Giriş yapılmamış -> OTP sayfasına job_id ile git
-                window.location.href = `/static/index.html?job_id=${selectedJob.id}`;
+                window.location.href = `/?job_id=${selectedJob.id}`;
             }
         }
     </script>

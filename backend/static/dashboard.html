@@ -370,7 +370,7 @@
 
         function logoutAdmin() {
             localStorage.clear();
-            window.location.href = "/static/login.html";
+            window.location.href = "/login";
         }
 
         function switchTab(tab) {
@@ -605,7 +605,7 @@
         function checkAdminAuth() {
             const token = localStorage.getItem("admin_token");
             if (!token || token === "undefined" || token === "null") {
-                window.location.href = "/static/login.html";
+                window.location.href = "/login";
             } else {
                 loadDashboardData();
             }
@@ -623,7 +623,7 @@
 
                 if (appRes.status === 401 || appRes.status === 403) {
                     localStorage.removeItem("admin_token");
-                    window.location.href = "/static/login.html";
+                    window.location.href = "/login";
                     return;
                 }
 

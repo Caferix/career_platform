@@ -61,16 +61,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # --- TEMEL ENDPOINT'LER ---
-@app.get("/", tags=["Root"])
-async def root():
-    """Uygulamanın ayakta olup olmadığını kontrol eden kök dizin."""
-    return {
-        "message": "Welcome to Career Platform API",
-        "status": "Healthy",
-        "environment": "Development"
-    }
-
-
 @app.get("/test-db", tags=["Root"])
 async def test_database_connection():
     try:
@@ -87,13 +77,40 @@ async def test_database_connection():
             "details": "Veritabanı bağlantısı başarısız oldu veya sorgu yorumlanamadı."
         }
     
-@app.get("/", response_class=HTMLResponse)
-async def read_index():
-    index_path = os.path.join(static_dir_path, "index.html")
-    if os.path.exists(index_path):
-        with open(index_path, "r", encoding="utf-8") as f:
+def serve_html(filename: str):
+    file_path = os.path.join(static_dir_path, filename)
+    if os.path.exists(file_path):
+        with open(file_path, "r", encoding="utf-8") as f:
             return f.read()
-    return "<h3>Statik index.html dosyası bulunamadı. Lütfen backend/static/ altında oluşturun.</h3>"
+    return f"<h3>{filename} bulunamadı.</h3>"
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+async def read_index():
+    return serve_html("index.html")
+
+@app.get("/login", response_class=HTMLResponse, include_in_schema=False)
+async def read_login():
+    return serve_html("login.html")
+
+@app.get("/apply", response_class=HTMLResponse, include_in_schema=False)
+async def read_apply():
+    return serve_html("apply.html")
+
+@app.get("/profile", response_class=HTMLResponse, include_in_schema=False)
+async def read_profile():
+    return serve_html("profile.html")
+
+@app.get("/careers", response_class=HTMLResponse, include_in_schema=False)
+async def read_jobs():
+    return serve_html("jobs.html")
+
+@app.get("/dashboard", response_class=HTMLResponse, include_in_schema=False)
+async def read_dashboard():
+    return serve_html("dashboard.html")
+
+@app.get("/admin", response_class=HTMLResponse, include_in_schema=False)
+async def read_admin():
+    return serve_html("admin.html")
 
 
 # --- DİNAMİK ORGANİZASYON ŞEMASI ENDPOINT'İ ---
