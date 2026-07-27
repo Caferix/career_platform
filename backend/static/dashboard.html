@@ -65,17 +65,17 @@
                     </select>
                 </div>
                 <div>
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Departman</label>
+                    <select id="filterDepartment" onchange="syncDashboardFilters(); filterTable()"
+                        class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
+                        <option value="">Tüm Departmanlar</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Pozisyon</label>
                     <select id="filterPosition"
                         class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
                         <option value="">Tüm Pozisyonlar</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[11px] font-semibold text-gray-500 uppercase mb-1">Departman</label>
-                    <select id="filterDepartment"
-                        class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer">
-                        <option value="">Tüm Departmanlar</option>
                     </select>
                 </div>
                 <div>
@@ -288,6 +288,15 @@
                 <input type="hidden" id="jobEditId">
 
                 <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Departman Seçin <span
+                            class="text-red-500">*</span></label>
+                    <select id="jobDepartmentSelect" required onchange="syncDashboardFilters()"
+                        class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#e11b3a] cursor-pointer">
+                        <option value="">Departman Seçiniz</option>
+                    </select>
+                </div>
+
+                <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Pozisyon Seçin <span
                             class="text-red-500">*</span></label>
                     <select id="jobPositionSelect" required
@@ -422,6 +431,11 @@
 
         async function syncDashboardFilters() {
             if (!filterPosition) return;
+            
+            // Keep current selection to restore if possible
+            const currentPosValue = filterPosition.value;
+            const currentJobPosValue = document.getElementById("jobPositionSelect")?.value;
+            
             filterPosition.innerHTML = '<option value="">Tüm Pozisyonlar</option>';
             const jobPosSelect = document.getElementById("jobPositionSelect");
             if (jobPosSelect) jobPosSelect.innerHTML = '<option value="">Pozisyon Seçiniz</option>';
@@ -430,8 +444,15 @@
                 const userInfo = getUserInfoFromToken();
                 const isManager = userInfo.role === "manager";
                 const userDept = userInfo.department;
+                
+                // Get selected department from UI filters (for cascading effect)
+                const filterDeptSelect = document.getElementById("filterDepartment");
+                const selectedDeptName = filterDeptSelect ? filterDeptSelect.value : "";
+                
+                // For job modal, get selected department if it exists
+                const jobDeptSelect = document.getElementById("jobDepartmentSelect");
+                const selectedJobDeptName = jobDeptSelect ? jobDeptSelect.value : "";
 
-                // Backend'in Admin prefix rotasına göre dinamik kontrol yapıyoruz
                 const token = localStorage.getItem("admin_token");
                 let res = await fetch(`${BASE_URL}/admin/departments`, { headers: { "Authorization": `Bearer ${token}` } });
                 if (!res.ok) {
@@ -440,38 +461,61 @@
                 if (!res.ok) throw new Error("Departmanlar çekilemedi.");
 
                 const departments = await res.json();
+                
+                // Populate Dashboard Filter Dropdown
                 let allPositions = [];
-
                 departments.forEach(dept => {
                     if (isManager && userDept && dept.name !== userDept) return;
+                    if (selectedDeptName && dept.name !== selectedDeptName) return;
 
                     if (dept.is_active !== false && dept.positions && dept.positions.length > 0) {
                         dept.positions.forEach(pos => {
-                            if (pos.is_active !== false) {
-                                // YENİ: ID ve Name değerlerinin null olmadığından emin oluyoruz!
-                                if (pos.id != null && pos.name != null) {
-                                    allPositions.push({ id: pos.id, name: pos.name });
-                                }
+                            if (pos.is_active !== false && pos.id != null && pos.name != null) {
+                                allPositions.push({ id: pos.id, name: pos.name });
                             }
                         });
                     }
                 });
-
+                
                 allPositions.sort((a, b) => a.name.localeCompare(b.name, "tr"));
-
                 allPositions.forEach(pos => {
                     const opt = document.createElement("option");
                     opt.value = pos.name;
                     opt.textContent = pos.name;
                     filterPosition.appendChild(opt);
-
-                    if (jobPosSelect) {
-                        const opt2 = document.createElement("option");
-                        opt2.value = pos.id;
-                        opt2.textContent = pos.name;
-                        jobPosSelect.appendChild(opt2);
-                    }
                 });
+                
+                if (currentPosValue) filterPosition.value = currentPosValue;
+                
+                // Populate Job Modal Dropdown
+                if (jobPosSelect) {
+                    let jobPositions = [];
+                    departments.forEach(dept => {
+                        if (isManager && userDept && dept.name !== userDept) return;
+                        if (selectedJobDeptName && dept.name !== selectedJobDeptName) return;
+                        
+                        if (dept.is_active !== false && dept.positions && dept.positions.length > 0) {
+                            dept.positions.forEach(pos => {
+                                if (pos.is_active !== false && pos.id != null && pos.name != null) {
+                                    jobPositions.push({ id: pos.id, name: pos.name });
+                                }
+                            });
+                        }
+                    });
+                    
+                    jobPositions.sort((a, b) => a.name.localeCompare(b.name, "tr"));
+                    jobPositions.forEach(pos => {
+                        const opt = document.createElement("option");
+                        opt.value = pos.id;
+                        opt.textContent = pos.name;
+                        jobPosSelect.appendChild(opt);
+                    });
+                    
+                    if (currentJobPosValue) jobPosSelect.value = currentJobPosValue;
+                }
+
+
+
             } catch (err) {
                 console.error("Filtre için pozisyonlar yüklenemedi:", err);
             }
@@ -513,8 +557,28 @@
                         });
 
                         if (uniqueDepartments.includes(currentValue)) {
-                            filterDepartment.value = currentValue;
-                        }
+                    filterDepartment.value = currentValue;
+                }
+                
+                // Populate Job Form Department Select
+                const jobDeptSelect = document.getElementById("jobDepartmentSelect");
+                if (jobDeptSelect) {
+                    const currentJobDept = jobDeptSelect.value;
+                    jobDeptSelect.innerHTML = '<option value="">Departman Seçiniz</option>';
+                    uniqueDepartments.forEach(dep => {
+                        const opt = document.createElement("option");
+                        opt.value = dep;
+                        opt.textContent = dep;
+                        jobDeptSelect.appendChild(opt);
+                    });
+                    if (isManager && userDept) {
+                        jobDeptSelect.value = userDept;
+                        jobDeptSelect.disabled = true;
+                        jobDeptSelect.classList.add("bg-gray-100", "cursor-not-allowed", "opacity-70");
+                    } else if (currentJobDept) {
+                        jobDeptSelect.value = currentJobDept;
+                    }
+                }
                     }
                 } catch (err) {
                     console.error("Departman filtresi doldurulurken hata:", err);

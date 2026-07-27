@@ -98,7 +98,7 @@ async def update_department(
         db=db,
         user_id=int(current_user["sub"]),
         user_role=current_user.get("role"),
-        action="updated_department",
+        action=f"Departman Güncellendi: {department.name}",
         target_id=department.id,
         ip_address=request.client.host
     )
@@ -151,7 +151,7 @@ async def delete_department(
         db=db,
         user_id=int(current_user["sub"]),
         user_role=current_user.get("role"),
-        action="deleted_department",
+        action=f"Departman Askıya Alındı: {department.name}",
         target_id=department.id,
         ip_address=request.client.host
     )
@@ -235,7 +235,7 @@ async def update_position(
         db=db,
         user_id=int(current_user["sub"]),
         user_role=current_user.get("role"),
-        action="updated_position",
+        action=f"Pozisyon Güncellendi: {position.name}",
         target_id=position.id,
         ip_address=request.client.host
     )
@@ -280,7 +280,7 @@ async def delete_position(
         db=db,
         user_id=int(current_user["sub"]),
         user_role=current_user.get("role"),
-        action="deleted_position",
+        action=f"Pozisyon Askıya Alındı: {position.name}",
         target_id=position.id,
         ip_address=request.client.host
     )
@@ -565,7 +565,7 @@ async def toggle_user_status(
             db=db,
             user_id=int(current_user["sub"]),
             user_role=current_user.get("role"),
-            action="toggled_user_status",
+            action=f"Kullanıcı Durumu Değiştirildi: {user.login_name}",
             target_id=user.id,
             ip_address=request.client.host
         )
