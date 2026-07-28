@@ -327,7 +327,7 @@ Destekleyici statik dosyalar: `company-structure.js` (organizasyon şeması rend
 
 ```bash
 # 1. Repoyu klonla ve backend dizinine gir
-git clone <repo-url>
+git clone <repo-url>https://github.com/Caferix/career_platform
 cd career_platform/backend
 
 # 2. İzole Python ortamı oluştur ve aktif et
@@ -387,28 +387,27 @@ OTP_EXPIRY_MINUTES=3
 
 ---
 
-## 🐳 9. Docker ile Veritabanı
+## 🐳 9. Docker ile Tek Tıkla Kurulum (Production-Ready)
 
-Proje kök dizinindeki `docker-compose.yml`, yalnızca PostgreSQL servisini ayağa kaldırır (backend konteynerize edilmemiştir, doğrudan `uvicorn` ile çalıştırılır):
-
-```yaml
-services:
-  db:
-    image: postgres:15-alpine
-    container_name: career_platform_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-```
+Proje, canlı ortama (production) veya herhangi bir sunucuya saniyeler içinde kurulabilmesi için tamamen konteynerize edilmiştir. `docker-compose.yml` dosyası hem PostgreSQL veritabanını hem de FastAPI backend'ini ayağa kaldırır.
 
 ```bash
-docker compose up -d      # veritabanını başlat
-docker compose down       # durdur
-docker compose down -v    # durdur ve veriyi sil
+# İlk kurulumda veya Dockerfile güncellendiğinde:
+docker-compose up --build -d
+
+# Sadece durdurmak için:
+docker-compose stop
+
+# Tamamen silmek için (dikkat: veritabanı volume silinmezse veri kalır):
+docker-compose down
 ```
 
-> ⚠️ `docker-compose.yml` içindeki `POSTGRES_PASSWORD` değeri düz metin olarak repoda duruyor. Production ortamında bu değerin `.env` üzerinden enjekte edilmesi ve repoya commit edilmemesi önerilir.
+### Kalıcı Veri Depolama (Volumes)
+Sistemde iki farklı Docker hacmi (volume) kullanılır:
+1.  **`postgres_data`**: Veritabanı tablolarının kalıcı olarak saklandığı yer.
+2.  **`backend_uploads`**: Adayların sisteme yüklediği PDF özgeçmiş (CV) dosyalarının konteyner silinse bile kaybolmaması için kullanılır.
+
+> **Geliştirici Notu:** Geliştirme (development) aşamasında, Uvicorn'un "hot-reload" özelliğinden faydalanmak isterseniz sadece veritabanını (`docker-compose up -d db`) ayağa kaldırıp, backend'i kendi terminalinizden (`uvicorn app.main:app --reload`) başlatabilirsiniz.
 
 ---
 
