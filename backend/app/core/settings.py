@@ -37,16 +37,13 @@ class Settings(BaseSettings):
     # Maksimum dosya boyutu 5MB
     MAX_FILE_SIZE_BYTES: int = 5 * 1024 * 1024  
 
-    # Güvenlik kuralı: Sadece izin verilen döküman formatları
+    # Sadece izin verilen döküman formatları
     ALLOWED_EXTENSIONS: List[str] = [".pdf", ".doc", ".docx"]
 
     BASE_URL: str = "http://localhost:8000"
 
-    SEED_HR_LOGIN: str = "hr_admin"
-    SEED_HR_PASSWORD: str = ""
-    SEED_MANAGER_LOGIN: str = "manager_admin"
-    SEED_MANAGER_PASSWORD: str = ""
-    SEED_MANAGER_DEPARTMENT: str = "Yazılım Geliştirme"
+    ADMIN_LOGIN: str
+    ADMIN_PASSWORD: str
    
 
 

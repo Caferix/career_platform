@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Açık Pozisyonlar — Dener Kariyer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="inline-flex items-center justify-center w-9 h-9 bg-[#e11b3a] rounded-lg text-white font-bold text-sm">
+                DK
+            </div>
+            <h1 class="text-lg font-bold text-slate-800">Açık Pozisyonlar</h1>
+        </div>
+        <div>
+            <a href="/" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl transition-all font-medium border border-slate-200">
+                Genel Başvuru / Giriş Yap
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-8">
+        <div class="mb-8 flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-slate-200 pb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">Kariyer Fırsatları</h2>
+                <p class="text-sm text-slate-500 mt-0.5">Açık pozisyonlarımızı inceleyip hemen başvurabilirsiniz.</p>
+            </div>
+            
+            <input 
+                type="text" 
+                id="searchInput" 
+                onkeyup="filterJobs()" 
+                placeholder="Pozisyon ara..." 
+                class="w-full sm:w-64 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#e11b3a]"
+            >
+        </div>
+
+        <!-- Container -->
+        <div id="jobsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="col-span-2 text-center py-10 text-slate-400 text-sm">İlanlar yükleniyor...</div>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div id="jobModal" class="fixed inset-0 bg-black/50 hidden flex justify-center items-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+
+            <div class="mb-3 pr-6">
+                <span id="modalLocation" class="text-[11px] font-semibold uppercase text-[#e11b3a] bg-red-50 px-2.5 py-1 rounded-md border border-red-100"></span>
+                <h3 id="modalTitle" class="text-xl font-bold text-slate-800 mt-2"></h3>
+            </div>
+
+            <div class="overflow-y-auto flex-1 text-sm text-slate-600 space-y-3 border-y border-slate-100 py-4 my-2 leading-relaxed" id="modalDescription"></div>
+
+            <div class="flex justify-end gap-3 pt-3">
+                <button onclick="closeModal()" class="px-4 py-2 bg-slate-100 text-slate-600 text-sm rounded-xl hover:bg-slate-200 font-medium transition">Kapat</button>
+                <button onclick="handleJobApply()" class="px-6 py-2 bg-[#e11b3a] hover:bg-[#c51631] text-white text-sm font-semibold rounded-xl transition shadow-sm">İlana Başvur</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allJobs = [];
+        let selectedJob = null;
+
+        document.addEventListener("DOMContentLoaded", fetchJobs);
+
+        async function fetchJobs() {
+            try {
+                const res = await fetch("/public/jobs");
+                if (!res.ok) throw new Error("İlanlar çekilemedi.");
+                allJobs = await res.json();
+                renderJobs(allJobs);
+            } catch (err) {
+                document.getElementById("jobsContainer").innerHTML = `<div class="col-span-2 text-center py-10 text-red-500 text-sm">İlanlar yüklenemedi.</div>`;
+            }
+        }
+
+        function renderJobs(jobs) {
+            const container = document.getElementById("jobsContainer");
+            container.innerHTML = "";
+
+            if (!jobs || jobs.length === 0) {
+                container.innerHTML = `<div class="col-span-2 text-center py-10 text-slate-400 text-sm">Şu an aktif açık pozisyon bulunmamaktadır.</div>`;
+                return;
+            }
+
+            jobs.forEach(job => {
+                container.innerHTML += `
+                    <div class="bg-white border border-slate-200 hover:border-red-200 rounded-2xl p-5 shadow-sm transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start gap-2 mb-2">
+                                <h3 class="font-bold text-slate-800 text-base">${job.title}</h3>
+                                <span class="text-[10px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200">${job.location || 'Belirtilmedi'}</span>
+                            </div>
+                            <p class="text-xs text-slate-500 line-clamp-3 mb-4 leading-relaxed">${job.description}</p>
+                        </div>
+                        <div class="pt-3 border-t border-slate-100 flex justify-end">
+                            <button onclick="openModal(${job.id})" class="text-xs text-[#e11b3a] font-semibold hover:underline">Detaylar & Başvur →</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterJobs() {
+            const q = document.getElementById("searchInput").value.toLowerCase();
+            renderJobs(allJobs.filter(j => j.title.toLowerCase().includes(q) || j.description.toLowerCase().includes(q)));
+        }
+
+        function openModal(id) {
+            selectedJob = allJobs.find(j => j.id === id);
+            if (!selectedJob) return;
+            document.getElementById("modalTitle").innerText = selectedJob.title;
+            document.getElementById("modalLocation").innerText = selectedJob.location || "Lokasyon Esnek";
+            document.getElementById("modalDescription").innerText = selectedJob.description;
+            document.getElementById("jobModal").classList.remove("hidden");
+        }
+
+        function closeModal() {
+            document.getElementById("jobModal").classList.add("hidden");
+            selectedJob = null;
+        }
+
+        function handleJobApply() {
+            if (!selectedJob) return;
+            // index.html'deki gibi token ismini "auth_token" olarak kontrol ediyoruz
+            const token = localStorage.getItem("auth_token");
+
+            if (token) {
+                // Giriş yapılmış -> Doğrudan ilanın başvuru formuna
+                window.location.href = `/apply?job_id=${selectedJob.id}`;
+            } else {
+                // Giriş yapılmamış -> OTP sayfasına job_id ile git
+                window.location.href = `/?job_id=${selectedJob.id}`;
+            }
+        }
+    </script>
+</body>
+</html>

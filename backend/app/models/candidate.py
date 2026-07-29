@@ -14,39 +14,39 @@ class Candidate(Base):
     first_name = Column(String(50), nullable=True)
     last_name = Column(String(50), nullable=True)
     
-    # Kural 15: Hassas kişisel veriler (PII) şifreli saklanır.
+    # Hassas kişisel veriler (PII) şifreli saklanır.
     _email = Column("email", String(255), nullable=True)
     _phone = Column("phone", String(255), nullable=False, unique=True, index=True)
     hashed_phone = Column(String(64), nullable=False, index=True)
     
-    #  Yeni Kişisel ve Profil Alanları (Düz Metin & Doğru Tipler)
+    # Kişisel ve Profil Alanları
     birth_date = Column(Date, nullable=True) # Takvim seçimi için saf Date
     nationality = Column(String(50), nullable=True)
-    marital_status = Column(String(10), nullable=True) # Evli / Bekar (Pydantic kontrollü)
+    marital_status = Column(String(10), nullable=True) # Evli / Bekar
     driving_license = Column(String(50), nullable=True) # Çoklu seçim: "B, C" gibi virgülle ayrılmış
     gender = Column(String(10), nullable=True) # Kadın / Erkek
     
-    #  Adres Alanları (Şehir/İlçe arama için düz metin, açık adres şifreli)
+    # Adres Alanları
     city = Column(String(50), nullable=True)
     district = Column(String(100), nullable=True)
-    _address_detail = Column("address_detail", Text, nullable=True) # Kural 15: Fernet Encrypt
+    _address_detail = Column("address_detail", Text, nullable=True) # Fernet Encrypt
     
-    #  Askerlik Durumu (Erkek adaylar için dinamik)
+    # Askerlik Durumu
     military_status = Column(String(20), nullable=True) # Yapıldı, Muaf, Tecilli
     
-    #  Yetenekler / Nitelikler
+    # Yetenekler / Nitelikler
     skills = Column(Text, nullable=True) # Virgülle ayrılmış serbest metin
     social_links = Column(JSONB, nullable=True)
     is_phone_verified = Column(Boolean, nullable=False, default=False)
     
-    # Kural 8: Soft Delete
+    # Soft Delete
     is_deleted = Column(Boolean, nullable=False, default=False)
     deleted_at = Column(DateTime, nullable=True)
     
     created_at = Column(DateTime, nullable=False, default=datetime.now(timezone.utc).replace(tzinfo=None))
     updated_at = Column(DateTime, nullable=False, default=datetime.now(timezone.utc).replace(tzinfo=None), onupdate=datetime.utcnow)
 
-    # İlişkiler (Kural 13: ON DELETE CASCADE yok, kod seviyesinde silinecek)
+    # İlişkiler (ON DELETE CASCADE yok, kod seviyesinde silinecek)
     applications = relationship("Application", back_populates="candidate")
     educations = relationship("CandidateEducation", back_populates="candidate")
     languages = relationship("CandidateLanguage", back_populates="candidate")
@@ -85,7 +85,7 @@ class Candidate(Base):
 
 
 class CandidateEducation(Base):
-    """ Yeni Tablo: Adayın birden fazla eğitim bilgisini tutar."""
+    """Adayın birden fazla eğitim bilgisini tutar."""
     __tablename__ = "candidate_educations"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -100,7 +100,7 @@ class CandidateEducation(Base):
 
 
 class CandidateLanguage(Base):
-    """ Yeni Tablo: Adayın birden fazla yabancı dil bilgisini tutar."""
+    """Adayın birden fazla yabancı dil bilgisini tutar."""
     __tablename__ = "candidate_languages"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -117,28 +117,29 @@ class Application(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     applicant_id = Column(Integer, ForeignKey("applicants.id"), nullable=False)
+
+    # İş ilanına özel başvuru bağlantısı
+    job_posting_id = Column(Integer, ForeignKey("job_postings.id"), nullable=True)
     
     position = Column(String(100), nullable=False)
     department = Column(String(100), nullable=True)
     
-    #  Deneyim Alanları (Yıl ayrı, detay serbest metin)
+    # Deneyim Alanları
     experience_years = Column(Integer, nullable=True)
     experience_detail = Column(Text, nullable=True) # Nerede ne yaptığının özeti
     
-    #  Adı değişen ve tipi genişleyen sütun: notes -> cover_letter
-    cover_letter = Column(Text, nullable=True) 
+    cover_letter = Column(Text, nullable=True)
     
-    #  Referans Alanları (Şirket içi referansın iletişim bilgisi şifreli)
+    # Referans Alanları
     reference_name = Column(String(100), nullable=True) # Referans Ad-Soyad
     reference_position = Column(String(100), nullable=True) # Referans Pozisyon
-    _reference_contact = Column("reference_contact", Text, nullable=True) # Kural 15: Şifreli iletişim bilgisi
+    _reference_contact = Column("reference_contact", Text, nullable=True) # Şifreli iletişim bilgisi
     
     cv_url = Column(String(255), nullable=True)
     
-    # Kural 14: status VARCHAR, Pydantic'te kontrol edilir
     status = Column(String(20), nullable=False, default="pending")
     
-    # Kural 8: Soft Delete Alanları
+    # Soft Delete Alanları
     is_deleted = Column(Boolean, nullable=False, default=False)
     deleted_at = Column(DateTime, nullable=True)
     
@@ -146,6 +147,7 @@ class Application(Base):
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     candidate = relationship("Candidate", back_populates="applications")
+    job_posting = relationship("JobPosting", back_populates="applications")  #job posting ilişkisi
 
     @property
     def reference_contact(self) -> Optional[str]:

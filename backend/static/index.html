@@ -138,6 +138,17 @@
                         </svg>
                     </button>
 
+                    <div class="text-center pt-2">
+                        <button
+                            type="button"
+                            id="resendOtpBtn"
+                            disabled
+                            class="text-sm font-semibold text-[#e11b3a] disabled:text-slate-400 disabled:cursor-not-allowed hover:text-[#c51631] transition-colors"
+                        >
+                            Tekrar Gönder (60s)
+                        </button>
+                    </div>
+
                     <button
                         type="button"
                         id="backToPhoneBtn"
@@ -215,12 +226,14 @@
         const kvkkCheckbox    = document.getElementById("kvkkCheckbox");
         const phoneSubmitBtn  = document.getElementById("phoneSubmitBtn");
         const otpSubmitBtn    = document.getElementById("otpSubmitBtn");
+        const resendOtpBtn    = document.getElementById("resendOtpBtn");
         const backToPhoneBtn  = document.getElementById("backToPhoneBtn");
         const step1indicator  = document.getElementById("step1indicator");
         const step2indicator  = document.getElementById("step2indicator");
         const sentPhoneDisplay = document.getElementById("sentPhoneDisplay");
 
         let activePhone = "";
+        let otpTimerInterval = null;
 
         // --- YARDIMCI FONKSİYONLAR ---
 
@@ -264,6 +277,25 @@
             step2indicator.classList.add("text-[#e11b3a]", "border-[#e11b3a]");
             sentPhoneDisplay.textContent = activePhone;
             otpInput.focus();
+            startOtpTimer();
+        }
+
+        function startOtpTimer() {
+            let timeLeft = 60;
+            resendOtpBtn.disabled = true;
+            resendOtpBtn.textContent = `Tekrar Gönder (${timeLeft}s)`;
+            
+            clearInterval(otpTimerInterval);
+            otpTimerInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(otpTimerInterval);
+                    resendOtpBtn.disabled = false;
+                    resendOtpBtn.textContent = "Tekrar Gönder";
+                } else {
+                    resendOtpBtn.textContent = `Tekrar Gönder (${timeLeft}s)`;
+                }
+            }, 1000);
         }
 
         function goToPhoneStep() {
@@ -275,6 +307,7 @@
             step1indicator.classList.remove("text-slate-400", "border-transparent");
             step1indicator.classList.add("text-[#e11b3a]", "border-[#e11b3a]");
             otpInput.value = "";
+            clearInterval(otpTimerInterval);
             hideAlert();
         }
 
@@ -346,6 +379,36 @@
             }
         });
 
+        // --- ADIM 1.5: YENİDEN KOD GÖNDER ---
+        resendOtpBtn.addEventListener("click", async () => {
+            if (resendOtpBtn.disabled) return;
+            hideAlert();
+            
+            resendOtpBtn.disabled = true;
+            resendOtpBtn.textContent = "Gönderiliyor...";
+
+            try {
+                const response = await fetch(`${BASE_URL}/auth/send-otp`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        phone: activePhone,
+                        kvkk_approved: true
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || "Kod gönderilemedi.");
+                
+                showAlert("Yeni doğrulama kodu başarıyla gönderildi.", "success");
+                startOtpTimer();
+            } catch (error) {
+                showAlert(error.message);
+                resendOtpBtn.disabled = false;
+                resendOtpBtn.textContent = "Tekrar Gönder";
+            }
+        });
+
         // --- ADIM 2: OTP DOĞRULA ---
 
         otpForm.addEventListener("submit", async (e) => {
@@ -396,21 +459,28 @@
                 });
 
                 setTimeout(async () => {
+                    // URL'deki job_id parametresini okuyoruz
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const jobId = urlParams.get("job_id");
+
                     if (profileRes.ok) {
-                        const candidate = await profileRes.json();
-        
-                        
-                        // Eğer veritabanında kaydı varsa (200) ama ad soyad alanları boşsa (Gölge adaysa):
+                       const candidate = await profileRes.json();
+
+                        // Gölge aday ise veya bilgileri eksikse başvuru formuna gider
                         if (!candidate.first_name || !candidate.last_name) {
                             showAlert("Profilinizin eksik kısımlarını tamamlamak üzere yönlendiriliyorsunuz...", "success");
-                            window.location.href = "/static/apply.html";
+                            window.location.href = jobId ? `/apply?job_id=${jobId}` : "/apply";
                         } else {
-                            // Aday kaydını tamamen bitirmiş gerçek bir kullanıcıysa:
-                            window.location.href = "/static/profile.html";
+                            // Aday zaten kayıtlıysa: Eğer bir ilana tıklayıp geldiyse doğrudan ilanın başvuru formuna, yoksa profil sayfasına gider
+                            if (jobId) {
+                                window.location.href = `/apply?job_id=${jobId}`;
+                            } else {
+                                window.location.href = "/profile";
+                            }
                         }
                     } else {
-                        // Eğer hiçbir şekilde token/profil eşleşmediyse başvuru formuna yönlendir
-                        window.location.href = "/static/apply.html";
+                        // Profil eşleşmediyse varsayılan başvuru formuna git
+                        window.location.href = jobId ? `/apply?job_id=${jobId}` : "/apply";
                     }
                 }, 1000);
 

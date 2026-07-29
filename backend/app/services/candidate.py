@@ -8,6 +8,7 @@ from app.models.candidate import Candidate, CandidateEducation, CandidateLanguag
 from app.models.consents import Consent
 from app.schemas.candidate import CandidateCreate, CandidateUpdate, EducationSchema, LanguageSchema
 from app.core.security import hash_data
+from app.models.candidate import Application
 
 async def create_candidate(
     db: AsyncSession, 
@@ -32,7 +33,7 @@ async def create_candidate(
     existing = result.scalars().first()
     
     if existing:
-        # Kural 8: Veri sızıntısını (User Enumeration) önlemek için jenerik hata
+        # Veri sızıntısını (User Enumeration) önlemek için jenerik hata
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, 
             detail="Girilen bilgilerle daha önce işlem yapılmıştır. Lütfen kontrol edip tekrar deneyiniz."
@@ -116,7 +117,7 @@ async def create_candidate(
 
     except Exception:
         await db.rollback()
-        # Kural 8: Hata detayı gizlendi
+        # Hata detayı gizlendi
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Aday profil kaydı esnasında sistem hatası oluştu."
@@ -143,9 +144,43 @@ async def get_candidate(db: AsyncSession, candidate_id: int):
         
     return candidate
 
-async def list_candidates(db: AsyncSession, skip: int = 0, limit: int = 10) -> list[Candidate]:
-    """Aktif adayları sayfalayarak listeler."""
-    query = select(Candidate).where(Candidate.is_deleted == False).offset(skip).limit(limit)
+async def list_candidates(db: AsyncSession, skip: int = 0, limit: int = 10, current_user: dict = None) -> list[Candidate]:
+    """
+    Aktif adayları yetki ve departman sınırlarına göre filtreleyerek asenkron listeler.
+    - Admin/HR: Tüm aday havuzunu görebilir.
+    - Manager: Sadece kendi departmanındaki pozisyonlara başvurmuş adayları görebilir.
+    """
+    # 1. Temel sorgumuzu aktif adaylar için oluşturuyoruz
+    query = select(Candidate).where(Candidate.is_deleted == False)
+
+    if current_user:
+        user_role = current_user.get("role")
+        user_dept = current_user.get("department")
+
+        # Güvenlik Kontrolü: Dış adaylar genel havuzu listeleyemez
+        if user_role == "applicant":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, 
+                detail="Bu işlem için yetkiniz bulunmamaktadır."
+            )
+
+        # Manager Filtresi: Sadece kendi departmanının başvurularını içeren adayları SQL seviyesinde kısıtla
+        if user_role == "manager":
+            if not user_dept:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Yönetici departman bilgisi eksik."
+                )
+            
+            # İlişkisel join ve distinct filtrelemesi uyguluyoruz
+            query = (
+                query.join(Candidate.applications)
+                .where(Application.department == user_dept)
+                .distinct()
+            )
+
+    # 2. Sayfalama uygulayıp asenkron olarak veritabanından çekiyoruz
+    query = query.offset(skip).limit(limit)
     result = await db.execute(query)
     return list(result.scalars().all())
 
@@ -399,7 +434,7 @@ async def complete_shadow_candidate(
 
     except Exception as e:
         await db.rollback()
-        # Kural 8: Güvenli hata mesajı
+        # Güvenli hata mesajı
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Gölge aday profilini tamamlama esnasında bir hata oluştu: {str(e)}"

@@ -1,19 +1,43 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aday Başvuru Formu</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/static/company-structure.js"></script>
     <style>
-        .step-hidden { display: none; }
-        .fade-in { animation: fadeIn 0.4s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; }
-        input[type="date"]:focus::-webkit-calendar-picker-indicator { opacity: 1; }
+        .step-hidden {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.6;
+        }
+
+        input[type="date"]:focus::-webkit-calendar-picker-indicator {
+            opacity: 1;
+        }
     </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen pb-12">
 
     <nav class="bg-white border-b border-gray-200 px-6 py-4 mb-8 sticky top-0 z-40 shadow-sm">
@@ -32,7 +56,9 @@
         <!-- WIZARD PROGRESS BAR -->
         <div class="mb-8 relative">
             <div class="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-gray-200">
-                <div id="progressBar" style="width: 25%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-[#e11b3a] transition-all duration-500"></div>
+                <div id="progressBar" style="width: 25%"
+                    class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-[#e11b3a] transition-all duration-500">
+                </div>
             </div>
             <div class="flex justify-between text-xs font-semibold text-gray-500 px-1">
                 <span id="indicator1" class="text-[#e11b3a]">Kişisel</span>
@@ -42,7 +68,8 @@
             </div>
         </div>
 
-        <div id="formContainer" class="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm relative overflow-hidden">
+        <div id="formContainer"
+            class="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm relative overflow-hidden">
 
             <form id="mainApplyForm" class="space-y-6">
 
@@ -55,27 +82,36 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Adı <span class="text-red-500">*</span></label>
-                            <input type="text" id="firstName" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Adı <span
+                                    class="text-red-500">*</span></label>
+                            <input type="text" id="firstName" required
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Soyadı <span class="text-red-500">*</span></label>
-                            <input type="text" id="lastName" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Soyadı <span
+                                    class="text-red-500">*</span></label>
+                            <input type="text" id="lastName" required
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">E-Posta <span class="text-red-500">*</span></label>
-                            <input type="email" id="email" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">E-Posta <span
+                                    class="text-red-500">*</span></label>
+                            <input type="email" id="email" required
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Doğum Tarihi <span class="text-red-500">*</span></label>
-                            <input type="date" id="birthDate" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Doğum Tarihi <span
+                                    class="text-red-500">*</span></label>
+                            <input type="date" id="birthDate" required
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#e11b3a] outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Uyruk</label>
-                            <select id="nationality" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                            <select id="nationality"
+                                class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none">
                                 <option value="Türkiye">Türkiye</option>
                             </select>
                         </div>
@@ -83,24 +119,30 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Cinsiyet <span class="text-red-500">*</span></label>
-                            <select id="gender" onchange="handleGenderChange()" required class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Cinsiyet <span
+                                    class="text-red-500">*</span></label>
+                            <select id="gender" onchange="handleGenderChange()" required
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
                                 <option value="">Seçiniz</option>
                                 <option value="Kadın">Kadın</option>
                                 <option value="Erkek">Erkek</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Medeni Durum <span class="text-red-500">*</span></label>
-                            <select id="maritalStatus" required class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Medeni Durum <span
+                                    class="text-red-500">*</span></label>
+                            <select id="maritalStatus" required
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
                                 <option value="">Seçiniz</option>
                                 <option value="Bekar">Bekar</option>
                                 <option value="Evli">Evli</option>
                             </select>
                         </div>
                         <div id="militaryStatusContainer" style="display: none;">
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Askerlik Durumu <span class="text-red-500">*</span></label>
-                            <select id="militaryStatus" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Askerlik Durumu
+                                <span class="text-red-500">*</span></label>
+                            <select id="militaryStatus"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-[#e11b3a]">
                                 <option value="">Seçiniz</option>
                                 <option value="Yapıldı">Yapıldı</option>
                                 <option value="Muaf">Muaf</option>
@@ -112,14 +154,18 @@
                     <!-- DİNAMİK İL/İLÇE -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">İl <span class="text-red-500">*</span></label>
-                            <select id="citySelect" onchange="loadDistricts()" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">İl <span
+                                    class="text-red-500">*</span></label>
+                            <select id="citySelect" onchange="loadDistricts()" required
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none">
                                 <option value="">İl Seçiniz</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">İlçe <span class="text-red-500">*</span></label>
-                            <select id="districtSelect" disabled required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none disabled:bg-gray-100 disabled:opacity-50">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">İlçe <span
+                                    class="text-red-500">*</span></label>
+                            <select id="districtSelect" disabled required
+                                class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none disabled:bg-gray-100 disabled:opacity-50">
                                 <option value="">Önce İl Seçiniz</option>
                             </select>
                         </div>
@@ -127,22 +173,27 @@
 
                     <div class="my-6 pt-4 border-t border-gray-100">
                         <div class="flex justify-between items-center mb-1.5">
-                            <label class="block text-xs font-semibold text-gray-600 uppercase">Sürücü Belgeleri (Ehliyet)</label>
-                            <button type="button" onclick="addLicenseRow()" class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Ehliyet Ekle</button>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase">Sürücü Belgeleri
+                                (Ehliyet)</label>
+                            <button type="button" onclick="addLicenseRow()"
+                                class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Ehliyet Ekle</button>
                         </div>
-                        <!-- Izgara yapısı dikeyde ferah olsun diye space-y-1 ve padding ayarları yapıldı -->
                         <div id="licenseContainer" class="space-y-1">
                             <!-- Dinamik ehliyet satırları buraya eklenecek -->
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Açık Adres (Opsiyonel)</label>
-                        <textarea id="addressDetail" rows="2" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none resize-none"></textarea>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Açık Adres
+                            (Opsiyonel)</label>
+                        <textarea id="addressDetail" rows="2"
+                            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#e11b3a] outline-none resize-none"></textarea>
                     </div>
 
                     <div class="flex justify-end pt-4">
-                        <button type="button" onclick="nextStep(2)" class="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition">İleri →</button>
+                        <button type="button" onclick="nextStep(2)"
+                            class="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition">İleri
+                            →</button>
                     </div>
                 </div>
 
@@ -153,22 +204,23 @@
                         <p class="text-sm text-gray-500 mt-1">Eğitim bilgilerinizi ve bildiğiniz dilleri ekleyin.</p>
                     </div>
 
-                    <!-- Dinamik Eğitim Alanı -->
                     <div class="mb-8">
                         <div class="flex justify-between items-center mb-3">
-                            <h3 class="text-sm font-semibold text-gray-800">Eğitim Bilgileri <span class="text-red-500">*</span></h3>
-                            <button type="button" onclick="addEducationRow()" class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Yeni Okul Ekle</button>
+                            <h3 class="text-sm font-semibold text-gray-800">Eğitim Bilgileri <span
+                                    class="text-red-500">*</span></h3>
+                            <button type="button" onclick="addEducationRow()"
+                                class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Yeni Okul Ekle</button>
                         </div>
                         <div id="educationContainer" class="space-y-3">
                             <!-- JS ile doldurulacak -->
                         </div>
                     </div>
 
-                    <!-- Dinamik Dil Alanı -->
                     <div class="mb-4">
                         <div class="flex justify-between items-center mb-3">
                             <h3 class="text-sm font-semibold text-gray-800">Yabancı Dil Bilgisi</h3>
-                            <button type="button" onclick="addLanguageRow()" class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Yeni Dil Ekle</button>
+                            <button type="button" onclick="addLanguageRow()"
+                                class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Yeni Dil Ekle</button>
                         </div>
                         <div id="languageContainer" class="space-y-3">
                             <!-- JS ile doldurulacak -->
@@ -176,8 +228,12 @@
                     </div>
 
                     <div class="flex justify-between pt-4">
-                        <button type="button" onclick="prevStep(1)" class="text-gray-500 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 transition">← Geri</button>
-                        <button type="button" onclick="nextStep(3)" class="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition">İleri →</button>
+                        <button type="button" onclick="prevStep(1)"
+                            class="text-gray-500 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 transition">←
+                            Geri</button>
+                        <button type="button" onclick="nextStep(3)"
+                            class="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition">İleri
+                            →</button>
                     </div>
                 </div>
 
@@ -189,59 +245,79 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Pozisyon <span class="text-red-500">*</span></label>
-                        <select id="position" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-[#e11b3a]"></select>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Pozisyon <span
+                                class="text-red-500">*</span></label>
+                        <select id="position" required
+                            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-[#e11b3a]"></select>
                     </div>
 
-                    <!-- DİNAMİK DENEYİM SATIRLARI -->
                     <div class="mb-6">
                         <div class="flex justify-between items-center mb-3">
-                            <label class="block text-xs font-semibold text-gray-600 uppercase">İş / Proje Deneyimleri</label>
-                            <button type="button" onclick="addExperienceRow()" class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Deneyim Ekle</button>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase">İş / Proje
+                                Deneyimleri</label>
+                            <button type="button" onclick="addExperienceRow()"
+                                class="text-xs text-[#e11b3a] font-semibold hover:underline">+ Deneyim Ekle</button>
                         </div>
-                        <p class="text-[11px] text-gray-400 mb-2">Her satıra bir firma/proje adı ve o işteki yıl sayınızı girin.</p>
+                        <p class="text-[11px] text-gray-400 mb-2">Her satıra bir firma/proje adı ve o işteki yıl
+                            sayınızı girin.</p>
                         <div id="experienceContainer" class="space-y-2"></div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Teknik Yetkinlikler</label>
-                        <input type="text" id="skills" placeholder="Java, Python, Jetpack Compose vb. (Virgülle ayırın)" class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a]">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Teknik
+                            Yetkinlikler</label>
+                        <input type="text" id="skills" placeholder="İletişim, AutoCAD, Analitik Düşünme vb. (Virgülle ayırın)"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a]">
                     </div>
 
-                    <!-- SOSYAL LİNKLER -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Sosyal Medya / Portfolyo 1</label>
-                            <input type="url" id="socialLink1" placeholder="https://..." class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] outline-none">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Sosyal Medya /
+                                Portfolyo 1</label>
+                            <input type="url" id="socialLink1" placeholder="https://..."
+                                class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Sosyal Medya / Portfolyo 2</label>
-                            <input type="url" id="socialLink2" placeholder="https://..." class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] outline-none">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Sosyal Medya /
+                                Portfolyo 2</label>
+                            <input type="url" id="socialLink2" placeholder="https://..."
+                                class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] outline-none">
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Önyazı</label>
-                        <textarea id="coverLetter" rows="4" placeholder="Kısaca kendinizden ve hedeflerinizden bahsedin..." class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] resize-none"></textarea>
+                        <textarea id="coverLetter" rows="4"
+                            placeholder="Kısaca kendinizden ve hedeflerinizden bahsedin..."
+                            class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] resize-none"></textarea>
                     </div>
 
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4">
                         <h3 class="text-xs font-semibold text-gray-800 uppercase mb-3">Referans Bilgisi</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <input type="text" id="refName" placeholder="Ad Soyad" class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
-                            <input type="text" id="refPosition" placeholder="Pozisyon / Kurum" class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
-                            <input type="text" id="refContact" placeholder="İletişim" class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
+                            <input type="text" id="refName" placeholder="Ad Soyad"
+                                class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
+                            <input type="text" id="refPosition" placeholder="Pozisyon / Kurum"
+                                class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
+                            <input type="text" id="refContact" placeholder="İletişim"
+                                class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Özgeçmiş (CV) Yükle <span class="text-red-500">*</span></label>
-                        <input type="file" id="cvFile" accept=".pdf" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#e11b3a]/10 file:text-[#e11b3a] hover:file:bg-[#e11b3a]/20 cursor-pointer">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Özgeçmiş (CV) Yükle
+                            <span class="text-red-500">*</span></label>
+                        <input type="file" id="cvFile" accept=".pdf"
+                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#e11b3a]/10 file:text-[#e11b3a] hover:file:bg-[#e11b3a]/20 cursor-pointer">
                     </div>
 
                     <div class="flex justify-between pt-4">
-                        <button type="button" onclick="prevStep(2)" class="text-gray-500 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 transition">← Geri</button>
-                        <button type="button" onclick="nextStep(4)" class="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition">İleri →</button>
+                        <button type="button" onclick="prevStep(2)"
+                            class="text-gray-500 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 transition">←
+                            Geri</button>
+                        <button type="button" onclick="nextStep(4)"
+                            class="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition">İleri
+                            →</button>
                     </div>
                 </div>
 
@@ -253,17 +329,20 @@
                     </div>
 
                     <div class="space-y-4 mb-8">
-                        <label class="flex items-start gap-3 cursor-pointer bg-white p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
+                        <label
+                            class="flex items-start gap-3 cursor-pointer bg-white p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
                             <input type="checkbox" id="kvkkGeneral" class="w-5 h-5 mt-0.5 accent-[#e11b3a]">
                             <span class="text-sm text-gray-600 leading-relaxed">
                                 Başvuru süreçlerimin yürütülmesi amacıyla kişisel verilerimin işlenmesine ilişkin
-                                <!-- DEĞİŞİKLİK: iframe modalını tetikleyecek şekilde onclick bağlandı -->
-                                <button type="button" onclick="openKvkkPdfModal()" class="text-[#e11b3a] font-semibold underline underline-offset-2 hover:text-[#c51631]">Aydınlatma Metnini</button>
+                                <button type="button" onclick="openKvkkPdfModal()"
+                                    class="text-[#e11b3a] font-semibold underline underline-offset-2 hover:text-[#c51631]">Aydınlatma
+                                    Metnini</button>
                                 okudum ve onaylıyorum. <span class="text-red-500">*</span>
                             </span>
                         </label>
 
-                        <label class="flex items-start gap-3 cursor-pointer bg-white p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
+                        <label
+                            class="flex items-start gap-3 cursor-pointer bg-white p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
                             <input type="checkbox" id="marketingConsent" class="w-5 h-5 mt-0.5 accent-[#e11b3a]">
                             <span class="text-sm text-gray-600 leading-relaxed">
                                 Kariyer fırsatları için tarafımla iletişime geçilmesine izin veriyorum. (Opsiyonel)
@@ -272,8 +351,11 @@
                     </div>
 
                     <div class="flex justify-between items-center pt-4 border-t border-gray-100">
-                        <button type="button" onclick="prevStep(3)" class="text-gray-500 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 transition">← Geri</button>
-                        <button type="submit" id="submitApplyBtn" class="bg-[#e11b3a] hover:bg-[#c51631] text-white px-8 py-3 rounded-xl font-medium transition-all shadow-md flex items-center gap-2">
+                        <button type="button" onclick="prevStep(3)"
+                            class="text-gray-500 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-100 transition">←
+                            Geri</button>
+                        <button type="submit" id="submitApplyBtn"
+                            class="bg-[#e11b3a] hover:bg-[#c51631] text-white px-8 py-3 rounded-xl font-medium transition-all shadow-md flex items-center gap-2">
                             <span>Başvuruyu Tamamla</span>
                         </button>
                     </div>
@@ -283,38 +365,52 @@
         </div>
 
         <!-- BAŞARILI EKRANI -->
-        <div id="successContainer" class="hidden bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm space-y-4">
-            <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100 text-2xl font-bold">✓</div>
+        <div id="successContainer"
+            class="hidden bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm space-y-4">
+            <div
+                class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100 text-2xl font-bold">
+                ✓</div>
             <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Başvurunuz Alındı!</h2>
-            <p class="text-sm text-gray-500 max-w-md mx-auto">Verileriniz sisteme güvenle kaydedildi. Profil sayfanıza yönlendiriliyorsunuz...</p>
+            <p class="text-sm text-gray-500 max-w-md mx-auto">Verileriniz sisteme güvenle kaydedildi. Profil sayfanıza
+                yönlendiriliyorsunuz...</p>
         </div>
 
     </main>
 
-    <!-- 🌟 YENİ: KVKK PDF IFRAME MODAL -->
+    <!-- KVKK PDF IFRAME MODAL -->
     <div id="kvkkPdfModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden">
             <div class="flex items-center justify-between p-4 border-b border-slate-100 bg-gray-50">
                 <span class="text-sm font-bold text-slate-800">KVKK Aydınlatma Metni</span>
                 <div class="flex items-center gap-4">
-                    <a href="/static/kvkk.pdf" target="_blank" rel="noopener" class="text-xs font-semibold text-[#e11b3a] hover:text-[#c51631] underline underline-offset-2">Yeni sekmede aç</a>
-                    <button type="button" onclick="closeKvkkPdfModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">✕</button>
+                    <a href="/static/kvkk.pdf" target="_blank" rel="noopener"
+                        class="text-xs font-semibold text-[#e11b3a] hover:text-[#c51631] underline underline-offset-2">Yeni
+                        sekmede aç</a>
+                    <button type="button" onclick="closeKvkkPdfModal()"
+                        class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">✕</button>
                 </div>
             </div>
             <!-- PDF Önizleme iframe alanı -->
             <div class="flex-1 bg-slate-100 relative">
-                <div id="kvkkLoading" class="hidden absolute inset-0 flex items-center justify-center text-sm text-gray-500 font-medium">
+                <div id="kvkkLoading"
+                    class="hidden absolute inset-0 flex items-center justify-center text-sm text-gray-500 font-medium">
                     Yükleniyor...
                 </div>
-                <div id="kvkkError" class="hidden absolute inset-0 flex items-center justify-center text-sm text-red-600 font-medium p-6 text-center"></div>
-                <div id="kvkkMobileFallback" class="hidden absolute inset-0 flex flex-col items-center justify-center gap-4 text-center p-6">
+                <div id="kvkkError"
+                    class="hidden absolute inset-0 flex items-center justify-center text-sm text-red-600 font-medium p-6 text-center">
+                </div>
+                <div id="kvkkMobileFallback"
+                    class="hidden absolute inset-0 flex flex-col items-center justify-center gap-4 text-center p-6">
                     <p class="text-sm text-gray-600">Mobil tarayıcılar PDF önizlemesini bu pencerede gösteremiyor.</p>
-                    <a href="/static/kvkk.pdf" target="_blank" rel="noopener" class="bg-[#e11b3a] hover:bg-[#c51631] text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors">PDF'i Aç</a>
+                    <a href="/static/kvkk.pdf" target="_blank" rel="noopener"
+                        class="bg-[#e11b3a] hover:bg-[#c51631] text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors">PDF'i
+                        Aç</a>
                 </div>
                 <embed id="kvkkIframe" src="" type="application/pdf" class="w-full h-full border-0" />
             </div>
             <div class="p-4 border-t border-slate-100 bg-gray-50 flex justify-end">
-                <button type="button" onclick="closeKvkkPdfModal()" class="bg-[#e11b3a] hover:bg-[#c51631] text-white px-6 py-2 rounded-xl text-xs font-semibold transition-colors">Kapat</button>
+                <button type="button" onclick="closeKvkkPdfModal()"
+                    class="bg-[#e11b3a] hover:bg-[#c51631] text-white px-6 py-2 rounded-xl text-xs font-semibold transition-colors">Kapat</button>
             </div>
         </div>
     </div>
@@ -322,20 +418,60 @@
     <script>
         const BASE_URL = "http://localhost:8000";
         const token = localStorage.getItem("auth_token");
-        if (!token) window.location.href = "/static/index.html";
+        if (!token) window.location.href = "/";
 
         document.getElementById("logoutBtn").addEventListener("click", () => {
             localStorage.clear();
-            window.location.href = "/static/index.html";
+            window.location.href = "/";
         });
 
-        // 🌟 KVKK IFRAME MODAL GÖSTERİM FONKSİYONLARI
-        // Mobil tarayıcılar (gerçek cihaz) ve dar viewport'lar genelde <embed>/<iframe> içinde
-        // PDF'i native render edemiyor. Sadece user-agent'a güvenmek yeterli değil (DevTools'ta
-        // cihaz seçilmeden sadece pencere daraltıldığında UA hâlâ masaüstü olarak kalabiliyor ve
-        // Chrome'un PDF eklentisi dar genişlikte başlatılamayabiliyor). Bu yüzden üç sinyali
-        // birlikte kullanıyoruz: user-agent, viewport genişliği ve tarayıcının PDF görüntüleme
-        // yeteneğini doğrudan bildiren navigator.pdfViewerEnabled (destekleniyorsa).
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const jobId = urlParams.get("job_id");
+
+        // 🌟 YENİ EKLENEN: DİNAMİK POZİSYON VE DEPARTMAN VERİSİ
+        let departmentMap = {};
+
+        async function loadDynamicPositions() {
+            try {
+                const res = await fetch(`${BASE_URL}/departments`);
+                if (!res.ok) throw new Error("Departman ve pozisyon verisi çekilemedi.");
+
+                const departments = await res.json();
+                const positionSelect = document.getElementById("position");
+                positionSelect.innerHTML = '<option value="">Pozisyon Seçiniz</option>';
+
+                departments.forEach(dept => {
+                    if (dept.is_active !== false && dept.positions && dept.positions.length > 0) {
+                        const activePositions = dept.positions.filter(p => p.is_active !== false);
+
+                        if (activePositions.length > 0) {
+                            const optgroup = document.createElement("optgroup");
+                            optgroup.label = dept.name;
+
+                            activePositions.forEach(pos => {
+                                departmentMap[pos.name] = dept.name;
+
+                                const option = document.createElement("option");
+                                option.value = pos.name;
+                                option.textContent = pos.name;
+                                optgroup.appendChild(option);
+                            });
+
+                            positionSelect.appendChild(optgroup);
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error("Pozisyon yükleme hatası:", err);
+            }
+        }
+
+        function getDepartmentByPosition(positionTitle) {
+            return departmentMap[positionTitle] || "Genel";
+        }
+
+
         function isMobileBrowser() {
             const uaLooksMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
             const narrowViewport = window.innerWidth < 768;
@@ -346,7 +482,6 @@
         let kvkkPdfObjectUrl = null;
 
         async function openKvkkPdfModal() {
-            // Modalı önce görünür yapıyoruz (display:none iken PDF render sorunlarını önlemek için).
             document.getElementById("kvkkPdfModal").classList.remove("hidden");
 
             const embedEl = document.getElementById("kvkkIframe");
@@ -367,20 +502,12 @@
             loadingBox.classList.remove("hidden");
 
             try {
-                // 304 Not Modified + boş/bozuk tarayıcı önbelleği kombinasyonunun iframe içinde
-                // boş sayfa göstermesini engellemek için dosyayı doğrudan fetch ile çekip blob
-                // URL'e çeviriyoruz. cache: "no-store" ile tarayıcı önbelleğini tamamen devre dışı
-                // bırakıyoruz, böylece 304 kaynaklı boş gövde riski ortadan kalkıyor.
                 const res = await fetch("/static/kvkk.pdf", { cache: "no-store" });
                 if (!res.ok) throw new Error(`PDF alınamadı (durum: ${res.status})`);
 
                 const rawBlob = await res.blob();
                 if (rawBlob.size === 0) throw new Error("PDF dosyası boş geldi.");
 
-                // Sunucu Content-Type header'ını doğru göndermeyebilir (örn. application/octet-stream
-                // veya Content-Disposition: attachment ile birlikte). Blob'un MIME tipini burada elle
-                // application/pdf olarak zorluyoruz, aksi halde tarayıcı iframe içinde PDF olarak
-                // render etmeyi reddedip boş sayfa gösterebiliyor.
                 const blob = rawBlob.type === "application/pdf"
                     ? rawBlob
                     : new Blob([rawBlob], { type: "application/pdf" });
@@ -408,12 +535,10 @@
             }
         }
 
-        // Modal dışına tıklayınca kapanma desteği
-        document.getElementById("kvkkPdfModal").addEventListener("click", function(e) {
+        document.getElementById("kvkkPdfModal").addEventListener("click", function (e) {
             if (e.target === this) closeKvkkPdfModal();
         });
 
-        // ASKERLİK GÖSTER/GİZLE KONTROLÜ
         function handleGenderChange() {
             const gender = document.getElementById("gender").value;
             const militaryContainer = document.getElementById("militaryStatusContainer");
@@ -423,19 +548,18 @@
                 militaryContainer.style.display = "block";
             } else {
                 militaryContainer.style.display = "none";
-                militarySelect.value = ""; 
+                militarySelect.value = "";
             }
         }
 
-        // --- ÜLKELERİ GETİR (countries.json) ---
         async function fetchCountries() {
             try {
                 const response = await fetch('/static/countries.json');
                 if (!response.ok) throw new Error("Ülkeler JSON yüklenemedi.");
                 const countries = await response.json();
-                
+
                 const natSelect = document.getElementById("nationality");
-                
+
                 countries.forEach(country => {
                     if (country !== "Türkiye") {
                         natSelect.add(new Option(country, country));
@@ -446,7 +570,6 @@
             }
         }
 
-        // --- İL / İLÇE (locations.json) ---
         let locationData = {};
         const citySelect = document.getElementById("citySelect");
         const distSelect = document.getElementById("districtSelect");
@@ -475,7 +598,6 @@
             }
         }
 
-        // --- WIZARD YÖNETİMİ ---
         let currentStep = 1;
         function nextStep(step) {
             if (step === 2) {
@@ -523,7 +645,7 @@
             document.getElementById(`step${currentStep}`).classList.add("step-hidden");
             document.getElementById(`step${step}`).classList.remove("step-hidden");
 
-            document.getElementById("progressBar").style.width = `${(step/4)*100}%`;
+            document.getElementById("progressBar").style.width = `${(step / 4) * 100}%`;
             document.querySelectorAll("[id^='indicator']").forEach((el, idx) => {
                 el.classList.toggle("text-[#e11b3a]", idx + 1 <= step);
             });
@@ -535,7 +657,7 @@
         function prevStep(step) {
             document.getElementById(`step${currentStep}`).classList.add("step-hidden");
             document.getElementById(`step${step}`).classList.remove("step-hidden");
-            document.getElementById("progressBar").style.width = `${(step/4)*100}%`;
+            document.getElementById("progressBar").style.width = `${(step / 4) * 100}%`;
 
             document.querySelectorAll("[id^='indicator']").forEach((el, idx) => {
                 el.classList.toggle("text-[#e11b3a]", idx + 1 <= step);
@@ -544,7 +666,6 @@
             hideAlert();
         }
 
-        // --- DİNAMİK ALANLAR: EĞİTİM ---
         const currentYear = new Date().getFullYear();
         let yearOptions = `<option value="">Mezuniyet Yılı</option>`;
         for (let y = currentYear + 5; y >= 1980; y--) { yearOptions += `<option value="${y}">${y}</option>`; }
@@ -554,10 +675,11 @@
             div.className = "grid grid-cols-1 md:grid-cols-4 gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200 relative";
             div.innerHTML = `
                 <select class="edu-level text-xs border rounded-lg px-2 py-1.5">
+                    <option value="Ortaöğretim">Ortaöğretim</option>
+                    <option value="Önlisans">Önlisans</option>
                     <option value="Lisans">Lisans</option>
-                    <option value="Önlisans">Ön Lisans</option>
                     <option value="Yüksek Lisans">Yüksek Lisans</option>
-                    <option value="Ortaöğretim">Lise</option>
+                    <option value="Doktora">Doktora</option>
                 </select>
                 <input type="text" class="edu-school text-xs border rounded-lg px-2 py-1.5" placeholder="Okul Adı">
                 <input type="text" class="edu-dept text-xs border rounded-lg px-2 py-1.5" placeholder="Bölüm">
@@ -571,29 +693,26 @@
 
         const LICENSE_OPTIONS = ["M", "A1", "A2", "A", "B1", "B", "BE", "C1", "C1E", "C", "CE", "D1", "D1E", "D", "DE", "F", "G"];
 
-            function addLicenseRow(val = "") {
-                const container = document.getElementById("licenseContainer");
-                const rowCount = container.children.length; // Mevcut satır sayısı
+        function addLicenseRow(val = "") {
+            const container = document.getElementById("licenseContainer");
+            const rowCount = container.children.length;
 
-                // Eğer tüm ehliyet sınıfları zaten eklenmişse daha fazla ekletme
-                if (rowCount >= LICENSE_OPTIONS.length) return;
+            if (rowCount >= LICENSE_OPTIONS.length) return;
 
-                const div = document.createElement("div");
-                // Arka planı transparan, padding ve gap değerleri diğer form elemanlarıyla birebir uyumlu
-                div.className = "flex gap-4 items-center py-1.5 max-w-sm relative";
-    
-                let optionsHtml = LICENSE_OPTIONS.map(opt => 
-                    `<option value="${opt}" ${opt === val ? "selected" : ""}>${opt} Sınıfı</option>`
-                ).join("");
+            const div = document.createElement("div");
+            div.className = "flex gap-4 items-center py-1.5 max-w-sm relative";
 
-                div.innerHTML = `
+            let optionsHtml = LICENSE_OPTIONS.map(opt =>
+                `<option value="${opt}" ${opt === val ? "selected" : ""}>${opt} Sınıfı</option>`
+            ).join("");
+
+            div.innerHTML = `
                     <div class="flex-1">
                         <select class="license-select w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-[#e11b3a] outline-none cursor-pointer transition-all">
                             ${optionsHtml}
                         </select>
                     </div>
                     <div class="w-20 flex items-center justify-end">
-                        <!-- 🌟 Eğer ilk satırsa (rowCount === 0) silme butonunu hiç göstermiyoruz -->
                         ${rowCount > 0 ? `
                             <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 font-bold px-3 py-2 hover:bg-red-50 rounded-xl text-xs transition-colors">
                                 ✕ <span class="hidden md:inline font-medium">Kaldır</span>
@@ -601,11 +720,9 @@
                         ` : ''}
                     </div>
                 `;
-                container.appendChild(div);
-            }
+            container.appendChild(div);
+        }
 
-
-        // --- DİNAMİK ALANLAR: DİL  ---
         function addLanguageRow() {
             const div = document.createElement("div");
             div.className = "grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200 relative";
@@ -623,7 +740,6 @@
             document.getElementById("languageContainer").appendChild(div);
         }
 
-        // --- DİNAMİK ALANLAR: DENEYİM (firma/proje adı + yıl) ---
         function addExperienceRow() {
             const div = document.createElement("div");
             div.className = "flex gap-2 bg-gray-50 p-2 rounded-xl border border-gray-200";
@@ -638,48 +754,82 @@
         }
 
         document.addEventListener("DOMContentLoaded", async () => {
-
             try {
-                    const checkRes = await fetch(`${BASE_URL}/applicants/me`, {
-                        headers: { "Authorization": `Bearer ${token}` }
-                    });
-        
-                    if (checkRes.ok) {
-                        const currentCandidate = await checkRes.json();
-            
-                        if (currentCandidate.first_name && currentCandidate.last_name) {
-                            window.location.href = "/static/profile.html";
-                            return; 
-                        }
+                const checkRes = await fetch(`${BASE_URL}/applicants/me`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (checkRes.ok) {
+                    const currentCandidate = await checkRes.json();
+
+                    if (currentCandidate.first_name && currentCandidate.last_name) {
+                        window.location.href = "/profile";
+                        return;
                     }
-                } catch (err) {
-                    console.error("Profil kontrolü başarısız:", err);
                 }
+            } catch (err) {
+                console.error("Profil kontrolü başarısız:", err);
+            }
 
             fetchLocations();
             fetchCountries();
             addEducationRow();
             addLanguageRow();
             addExperienceRow();
+            if (jobId) {
+                // Spesifik ilana başvuru: İlanı bul, seç, menüyü gizle!
+                try {
+                    const jobsRes = await fetch(`${BASE_URL}/public/jobs`);
+                    if (jobsRes.ok) {
+                        const jobs = await jobsRes.json();
+                        const selectedJob = jobs.find(j => j.id == jobId);
 
-            const positionSelect = document.getElementById("position");
-            positionSelect.innerHTML = '<option value="">Pozisyon Seçiniz</option>';
-            getAllPositionsAlphabetical().forEach(pos => {
-                positionSelect.add(new Option(pos, pos));
-            });
+                        if (selectedJob) {
+                            const posSelect = document.getElementById("position");
+
+                            // Arka planda <select> içine sadece o ilanı ekle ve seçili yap
+                            posSelect.innerHTML = `<option value="${selectedJob.title}" selected>${selectedJob.title}</option>`;
+
+                            // YENİ DÜZENLEME: Departman adını çekip doğru şekilde atıyoruz
+                            try {
+                                const deptRes = await fetch(`${BASE_URL}/departments`);
+                                if (deptRes.ok) {
+                                    const departments = await deptRes.json();
+                                    const matchedDept = departments.find(d => d.id === selectedJob.department_id);
+                                    departmentMap[selectedJob.title] = matchedDept ? matchedDept.name : "Genel";
+                                } else {
+                                    departmentMap[selectedJob.title] = "Genel";
+                                }
+                            } catch (e) {
+                                departmentMap[selectedJob.title] = "Genel";
+                            }
+
+                            // Adayın bu menüyü görmesini engelle (tüm etiketiyle birlikte gizle)
+                            posSelect.parentElement.style.display = "none";
+                        } else {
+
+                            await loadDynamicPositions(); // İlan silinmişse/bulunamazsa normale dön
+                        }
+                    }
+                } catch (err) {
+                    console.error("İlan verisi alınamadı:", err);
+                    await loadDynamicPositions();
+                }
+            } else {
+                // Genel başvuru: URL'de job_id yoksa, eski usül tüm pozisyon listesini yükle
+                await loadDynamicPositions();
+            }
         });
 
-        // --- YARDIMCI FONKSİYONLAR ---
         function showAlert(msg) {
             const alert = document.getElementById("statusAlert");
             alert.textContent = msg;
             alert.classList.remove("hidden");
             alert.classList.add("bg-red-50", "text-red-700", "border-red-200");
-            alert.scrollIntoView({behavior: "smooth"});
+            alert.scrollIntoView({ behavior: "smooth" });
         }
         function hideAlert() { document.getElementById("statusAlert").classList.add("hidden"); }
 
-        // --- SUBMIT (TÜM VERİLERİ API'YE GÖNDERME) ---
         document.getElementById("mainApplyForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             if (!document.getElementById("kvkkGeneral").checked) return showAlert("KVKK onayını vermelisiniz.");
@@ -689,25 +839,29 @@
             btn.textContent = "Kaydediliyor...";
 
             try {
-                // 1. Eğitim verilerini topla
-                const educations = Array.from(document.querySelectorAll("#educationContainer > div")).map(row => ({
-                    education_level: row.querySelector(".edu-level").value,
-                    school_name: row.querySelector(".edu-school").value || "Belirtilmedi",
-                    department: row.querySelector(".edu-dept").value || null,
-                    graduation_year: row.querySelector(".edu-year").value ? parseInt(row.querySelector(".edu-year").value) : null
-                })).filter(e => e.school_name !== "Belirtilmedi");
+                const educations = Array.from(document.querySelectorAll("#educationContainer > div")).map(row => {
+                    const school = row.querySelector(".edu-school")?.value.trim();
+                    const yearVal = row.querySelector(".edu-year")?.value;
+                    return school ? {
+                        education_level: row.querySelector(".edu-level").value,
+                        school_name: school,
+                        department: row.querySelector(".edu-dept")?.value.trim() || null,
+                        graduation_year: yearVal ? parseInt(yearVal, 10) : null
+                    } : null;
+                }).filter(Boolean);
 
-                // 2. Dil verilerini topla
-                const languages = Array.from(document.querySelectorAll("#languageContainer > div")).map(row => ({
-                    language_name: row.querySelector(".lang-name").value,
-                    level: row.querySelector(".lang-level").value
-                })).filter(l => l.language_name);
+                const languages = Array.from(document.querySelectorAll("#languageContainer > div")).map(row => {
+                    const name = row.querySelector(".lang-name")?.value.trim();
+                    return name ? {
+                        language_name: name,
+                        level: row.querySelector(".lang-level").value
+                    } : null;
+                }).filter(Boolean);
 
-                // 3. Deneyim verilerini topla (dinamik satırlardan otomatik hesaplama)
                 const experiences = Array.from(document.querySelectorAll("#experienceContainer > div")).map(row => {
-                    const name = row.querySelector(".exp-name").value.trim();
-                    const year = row.querySelector(".exp-year").value;
-                    return name ? { name, year: parseInt(year) || 0 } : null;
+                    const name = row.querySelector(".exp-name")?.value.trim();
+                    const year = row.querySelector(".exp-year")?.value;
+                    return name ? { name, year: parseInt(year, 10) || 0 } : null;
                 }).filter(Boolean);
 
                 const experienceDetailStr = experiences.length > 0
@@ -715,25 +869,34 @@
                     : null;
                 const totalExperienceYears = experiences.reduce((sum, e) => sum + e.year, 0);
 
-                // 4. Aday (Candidate) Gövdesi
+                const selectedLicenses = Array.from(document.querySelectorAll(".license-select"))
+                    .map(select => select.value)
+                    .filter(Boolean);
+                const drivingLicenseStr = selectedLicenses.length > 0
+                    ? [...new Set(selectedLicenses)].join(", ")
+                    : null;
+
+                const rawBirthDate = document.getElementById("birthDate").value;
+                const cleanBirthDate = rawBirthDate && rawBirthDate.trim() !== "" ? rawBirthDate : null;
+
                 const applicantPayload = {
-                    first_name: document.getElementById("firstName").value,
-                    last_name: document.getElementById("lastName").value,
-                    email: document.getElementById("email").value,
+                    first_name: document.getElementById("firstName").value.trim(),
+                    last_name: document.getElementById("lastName").value.trim(),
+                    email: document.getElementById("email").value.trim(),
                     phone: localStorage.getItem("phone") || "",
-                    birth_date: document.getElementById("birthDate").value || null,
+                    birth_date: cleanBirthDate,
                     nationality: document.getElementById("nationality").value || "Türkiye",
                     gender: document.getElementById("gender").value || null,
                     marital_status: document.getElementById("maritalStatus").value || null,
-                    driving_license: document.getElementById("drivingLicense").value.trim() || null,
+                    driving_license: drivingLicenseStr,
                     military_status: document.getElementById("militaryStatus").value || null,
                     city: document.getElementById("citySelect").value || null,
                     district: document.getElementById("districtSelect").value || null,
-                    address_detail: document.getElementById("addressDetail").value.trim(),
-                    skills: document.getElementById("skills").value || null,
+                    address_detail: document.getElementById("addressDetail").value.trim() || null,
+                    skills: document.getElementById("skills").value.trim() || null,
                     social_links: {
-                    link_1: document.getElementById("socialLink1").value.trim(),
-                    link_2: document.getElementById("socialLink2").value.trim()
+                        link_1: document.getElementById("socialLink1").value.trim() || "",
+                        link_2: document.getElementById("socialLink2").value.trim() || ""
                     },
                     educations: educations,
                     languages: languages
@@ -741,7 +904,6 @@
 
                 const isCommConsented = document.getElementById("marketingConsent").checked;
 
-                // ADIM 1: Adayı Yarat
                 const appRes = await fetch(`${BASE_URL}/applicants/?is_communication_consented=${isCommConsented}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
@@ -756,7 +918,6 @@
                     applicantId = (await meRes.json()).id;
                 } else if (!appRes.ok) throw new Error(applicantData.detail || "Aday profili oluşturulamadı.");
 
-                // ADIM 2: Başvuruyu (Application) Yarat
                 const applicationPayload = {
                     applicant_id: applicantId,
                     position: document.getElementById("position").value,
@@ -769,6 +930,10 @@
                     reference_contact: document.getElementById("refContact").value || null
                 };
 
+                if (jobId) {
+                    applicationPayload.job_posting_id = parseInt(jobId);
+                }
+
                 const applRes = await fetch(`${BASE_URL}/applications/`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
@@ -778,7 +943,6 @@
                 if (!applRes.ok) throw new Error((await applRes.json()).detail || "Başvuru oluşturulamadı.");
                 const applicationId = (await applRes.json()).id;
 
-                // ADIM 3: CV Yükleme
                 const cvFile = document.getElementById("cvFile").files[0];
                 if (cvFile) {
                     const formData = new FormData();
@@ -788,11 +952,10 @@
                     });
                 }
 
-                // BAŞARILI
                 document.getElementById("formContainer").classList.add("hidden");
                 document.getElementById("successContainer").classList.remove("hidden");
 
-                setTimeout(() => window.location.href = "/static/profile.html", 2000);
+                setTimeout(() => window.location.href = "/profile", 2000);
 
             } catch (error) {
                 showAlert(error.message);
@@ -802,4 +965,5 @@
         });
     </script>
 </body>
+
 </html>

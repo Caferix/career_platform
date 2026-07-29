@@ -5,7 +5,7 @@ from datetime import datetime, date
 # --- Alt İlişkisel Şemalar (Eğitim ve Dil) ---
 
 class EducationSchema(BaseModel):
-    education_level: Literal["İlkokul", "Lise", "Önlisans", "Lisans", "Yüksek Lisans", "Doktora"]
+    education_level: Literal["Ortaöğretim", "Önlisans", "Lisans", "Yüksek Lisans", "Doktora"]
     school_name: str = Field(..., min_length=2, max_length=150)
     department: Optional[str] = Field(None, max_length=150)
     graduation_year: Optional[int] = Field(None, ge=1980, le=2040)
@@ -88,6 +88,7 @@ class CandidateUpdate(BaseModel):
 
 class ApplicationShortResponse(BaseModel):
     id: int
+    job_posting_id: Optional[int] = None
     position: str
     department: Optional[str]
     status: str

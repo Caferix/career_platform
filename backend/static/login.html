@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yönetici Giriş Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white border border-gray-200 p-8 rounded-2xl w-full max-w-md shadow-2xl space-y-6 relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#e11b3a] to-[#c51631]"></div>
+        <div class="text-center">
+            <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Yönetici Girişi</h2>
+            <p class="text-xs text-gray-500 mt-1">Lütfen yetkili kullanıcı bilgilerinizle giriş yapın.</p>
+        </div>
+        
+        <div id="loginError" class="hidden text-xs bg-red-50 border border-[#e11b3a]/40 text-red-700 p-3 rounded-xl transition-all"></div>
+        
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Kullanıcı Adı</label>
+                <input type="text" id="loginName" placeholder="Kullanıcı Adı" required
+                       class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:border-[#e11b3a] focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all placeholder-slate-400">
+            </div>
+            <div>
+                <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Şifre</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" required
+                       class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:border-[#e11b3a] focus:ring-1 focus:ring-[#e11b3a] outline-none transition-all placeholder-slate-400">
+            </div>
+            <button type="submit" id="submitBtn"
+                    class="w-full bg-[#e11b3a] hover:bg-[#c51631] text-white font-medium py-3 rounded-xl transition-all text-sm shadow-lg shadow-[#e11b3a]/10 hover:shadow-[#c51631]/20 active:scale-[0.98]">
+                Sisteme Giriş Yap
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.origin;
+        const loginForm = document.getElementById("loginForm");
+        const loginError = document.getElementById("loginError");
+        const submitBtn = document.getElementById("submitBtn");
+
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            loginError.classList.add("hidden");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Giriş Yapılıyor...";
+
+            const login_name = document.getElementById("loginName").value.trim();
+            const password = document.getElementById("loginPassword").value;
+
+            try {
+                const res = await fetch(`${BASE_URL}/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ login_name, password })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.detail || "Giriş bilgileri hatalı.");
+                }
+
+                const data = await res.json();
+                
+                // Gelen verileri tarayıcı belleğine güvenle mühürle
+                localStorage.setItem("admin_token", data.access_token);
+                localStorage.setItem("user_role", data.role);
+                if (data.department) localStorage.setItem("user_department", data.department);
+
+                // AKILLI YÖNLENDİRME (Role-Based Routing)
+                if (data.role === "admin" || data.role === "superadmin") {
+                    window.location.href = "/admin";
+                } else {
+                    // HR veya Manager ise aday havuzuna şutla
+                    window.location.href = "/dashboard";
+                }
+
+            } catch (error) {
+                loginError.textContent = error.message;
+                loginError.classList.remove("hidden");
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Sisteme Giriş Yap";
+            }
+        });
+    </script>
+</body>
+</html>

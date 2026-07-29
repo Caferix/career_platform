@@ -7,7 +7,7 @@ from app.core.settings import settings
 
 logger = logging.getLogger(__name__)
 
-# Kural: backend/uploads/ klasörü yoksa proje çalışırken otomatik oluşturulur
+# backend/uploads/ klasörü yoksa proje çalışırken otomatik oluşturulur
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 
 async def save_file(file: UploadFile) -> str:

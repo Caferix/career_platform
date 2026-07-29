@@ -14,5 +14,25 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  web:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: career_platform_web
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      # Override DATABASE_URL to point to the db container instead of localhost
+      - DATABASE_URL=postgresql+asyncpg://career_admin:career_secure_password_2026@db:5432/career_platform_prod
+    depends_on:
+      - db
+    volumes:
+      # Mount uploads folder to persist CVs even if the container restarts
+      - backend_uploads:/app/uploads
+
 volumes:
   postgres_data:
+  backend_uploads:
