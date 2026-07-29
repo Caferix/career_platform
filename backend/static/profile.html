@@ -264,6 +264,18 @@
                     <textarea id="qaCoverLetter" rows="3" placeholder="Bu pozisyona neden uygun olduğunuzdan bahsedin..." class="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-[#e11b3a] resize-none"></textarea>
                 </div>
                 
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <h3 class="text-xs font-semibold text-gray-800 uppercase mb-3">Referans Bilgisi (Opsiyonel)</h3>
+                    <div class="grid grid-cols-1 gap-3">
+                        <input type="text" id="qaRefName" placeholder="Ad Soyad"
+                            class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
+                        <input type="text" id="qaRefPosition" placeholder="Pozisyon / Kurum"
+                            class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
+                        <input type="text" id="qaRefContact" placeholder="İletişim"
+                            class="border border-gray-200 rounded-lg px-3 py-2 text-xs focus:ring-[#e11b3a]">
+                    </div>
+                </div>
+                
                 <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
                     <button type="button" onclick="closeQuickApplyModal()" class="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">İptal</button>
                     <button type="submit" id="qaSubmitBtn" class="bg-[#e11b3a] hover:bg-[#c51631] text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-md flex items-center gap-2">Başvuruyu Tamamla</button>
@@ -694,9 +706,10 @@
                 const res = await fetch(`${BASE_URL}/public/jobs`);
                 if (!res.ok) return;
                 const jobs = await res.json();
-                
                 const activeJobs = jobs.filter(j => j.is_active);
-                const appliedJobIds = applications.map(a => a.job_posting_id);
+                // Sadece iptal edilmemiş başvuruları aktif sayıyoruz
+                const activeApplications = applications.filter(a => (a.status || "").toLowerCase() !== "withdrawn");
+                const appliedJobIds = activeApplications.map(a => a.job_posting_id);
                 
                 const jobsList = document.getElementById("activeJobsList");
                 if (activeJobs.length === 0) {
@@ -764,7 +777,10 @@
                     department: deptName, 
                     job_posting_id: parseInt(jobId),
                     experience_years: parseInt(document.getElementById("qaExpYears").value) || 0,
-                    cover_letter: document.getElementById("qaCoverLetter").value || null
+                    cover_letter: document.getElementById("qaCoverLetter").value || null,
+                    reference_name: document.getElementById("qaRefName").value || null,
+                    reference_position: document.getElementById("qaRefPosition").value || null,
+                    reference_contact: document.getElementById("qaRefContact").value || null
                 };
 
                 const applRes = await fetch(`${BASE_URL}/applications/`, {

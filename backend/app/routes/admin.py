@@ -38,8 +38,24 @@ async def create_department(
 
     stmt = select(Department).where(Department.name == payload.name)
     result = await db.execute(stmt)
-    if result.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Bu departman zaten mevcut.")
+    existing_dept = result.scalar_one_or_none()
+    
+    if existing_dept:
+        if existing_dept.is_deleted:
+            # Soft-delete restore mantığı
+            existing_dept.is_deleted = False
+            existing_dept.deleted_at = None
+            existing_dept.is_active = payload.is_active
+            await db.commit()
+            await db.refresh(existing_dept)
+            return DepartmentResponse(
+                id=existing_dept.id,
+                name=existing_dept.name,
+                is_active=existing_dept.is_active,
+                positions=[]
+            )
+        else:
+            raise HTTPException(status_code=400, detail="Bu departman zaten mevcut.")
     
     new_dept = Department(name=payload.name, is_active=payload.is_active)
     db.add(new_dept)
@@ -183,8 +199,19 @@ async def create_position(
         Position.department_id == payload.department_id
     )
     pos_result = await db.execute(pos_stmt)
-    if pos_result.scalar_one_or_none():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bu departman altında bu pozisyon zaten mevcut.")
+    existing_pos = pos_result.scalar_one_or_none()
+    
+    if existing_pos:
+        if existing_pos.is_deleted:
+            # Soft-delete restore mantığı
+            existing_pos.is_deleted = False
+            existing_pos.deleted_at = None
+            existing_pos.is_active = payload.is_active
+            await db.commit()
+            await db.refresh(existing_pos)
+            return existing_pos
+        else:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bu departman altında bu pozisyon zaten mevcut.")
 
     # description'ı çıkardık, title yerine name kullandık
     new_position = Position(

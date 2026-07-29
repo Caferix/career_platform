@@ -290,6 +290,8 @@
                         deptSelect.appendChild(opt);
                     });
                 }
+                // Tetikleyici ekleniyor: Varsayılan "hr" seçili olduğu için HR mantığını işlet (İnsan Kaynakları'na kilitle)
+                document.getElementById("user-role").dispatchEvent(new Event("change"));
             } catch(e) { console.error(e); }
         }
 
@@ -445,6 +447,7 @@
 
                 if (res.ok) {
                     document.getElementById("user-form").reset();
+                    document.getElementById("user-role").dispatchEvent(new Event("change"));
                     fetchUsers();
                 } else {
                     const err = await res.json();
