@@ -28,5 +28,5 @@ def verify_token(token: str) -> dict | None:
         payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.ALGORITHM])
         return payload
     except JWTError:
-        # Kural 8: Hata detayları (imza geçersiz, süre dolmuş vb.) dışarı sızdırılmaz
+        # Hata detayları (imza geçersiz, süre dolmuş vb.) dışarı sızdırılmaz
         return None

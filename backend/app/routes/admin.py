@@ -351,7 +351,7 @@ async def soft_delete_candidate(
             detail="Bu işlem için yetkiniz bulunmuyor. Aday silme yetkisi sadece Süperadmin rütbesine aittir."
         )
 
-    # Kural 11: Her sorguda is_deleted=False süzgeci işletilir (Aktif adayı bul)
+    # Her sorguda is_deleted=False süzgeci işletilir (Aktif adayı bul)
     stmt = select(Candidate).where(Candidate.id == id, Candidate.is_deleted == False)
     result = await db.execute(stmt)
     candidate = result.scalar_one_or_none()

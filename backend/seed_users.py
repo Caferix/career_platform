@@ -19,10 +19,10 @@ async def seed():
             print("❌ HATA: .env dosyasında ADMIN_LOGIN veya ADMIN_PASSWORD okunamadı!")
             return
 
-        # Kural 4: db.query() yasak, asenkron get_user_by_login_name servisimiz select() ile kontrol ediyor
+        # db.query() yasak, asenkron get_user_by_login_name servisimiz select() ile kontrol ediyor
         existing_admin = await user_service.get_user_by_login_name(db, admin_name)
         if not existing_admin:
-            # Kural 2: Rotalar ince, iş servislerde. Kayıt işlemini asenkron servise paslıyoruz.
+            # Rotalar ince, iş servislerde. Kayıt işlemini asenkron servise paslıyoruz.
             await user_service.create_user(
                 db=db,
                 payload=UserCreate(

@@ -21,7 +21,7 @@ async def save_consent(db: AsyncSession, payload: ConsentCreate, ip_address: str
     existing_consent = result.scalar_one_or_none()
 
     if existing_consent:
-        # 🌟 GÜNCELLEME: Mükerrer kaydı engelle, mevcut kaydı tazele
+        # Mükerrer kaydı engelle, mevcut kaydı tazele
         existing_consent.created_at = datetime.utcnow()
         existing_consent.ip_address = ip_address
         existing_consent.user_agent = user_agent

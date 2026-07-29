@@ -17,14 +17,14 @@ class JobPosting(Base):
     
     is_active = Column(Boolean, default=True, nullable=False)
     
-    # Kural 8 uyumlu: Soft Delete
+    # Soft Delete
     is_deleted = Column(Boolean, nullable=False, default=False)
     deleted_at = Column(DateTime, nullable=True)
 
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     expires_at = Column(DateTime, nullable=True)
 
-    # İlişkiler (Kural 12: CASCADE yok)
+    # İlişkiler (CASCADE yok)
     department = relationship("Department")
     position = relationship("Position")
     created_by = relationship("User")

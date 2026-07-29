@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from sqlalchemy.orm import declarative_base
 from app.core.settings import settings
 
-# Kural 5 ve 11: Bağlantı tek yerden ve .env'den gelen gizli URL ile kurulur
+# Bağlantı tek yerden ve .env'den gelen gizli URL ile kurulur
 DATABASE_URL = settings.DATABASE_URL
 
 # Veritabanı asenkron motoru

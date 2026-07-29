@@ -103,7 +103,7 @@ async def list_all_candidates(
     skip: int = 0, 
     limit: int = 10, 
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user)  # 🌟 Token doğrulama bariyeri eklendi
+    current_user: dict = Depends(get_current_user)  #  Token doğrulama bariyeri eklendi
 ):
     """
     Aktif adayları yetki ve departman filtresine göre 

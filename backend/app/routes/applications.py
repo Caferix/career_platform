@@ -187,7 +187,7 @@ async def withdraw_application(
     if not application:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Başvuru bulunamadı.")
         
-    # İş kuralı: "applied" dışındakiler iptal edilemez (veya pending vb)
+    # "applied" dışındakiler iptal edilemez (veya pending vb)
     # Varsayılan başlangıç durumu "pending" veya "applied" ise izin ver.
     valid_withdraw_statuses = ["pending", "applied", "taslak", "draft"]
     if application.status.lower() not in valid_withdraw_statuses:
