@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     # Maksimum dosya boyutu 5MB
     MAX_FILE_SIZE_BYTES: int = 5 * 1024 * 1024  
 
-    # Güvenlik kuralı: Sadece izin verilen döküman formatları
+    # Sadece izin verilen döküman formatları
     ALLOWED_EXTENSIONS: List[str] = [".pdf", ".doc", ".docx"]
 
     BASE_URL: str = "http://localhost:8000"

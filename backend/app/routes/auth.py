@@ -21,7 +21,7 @@ naive_utc_now = datetime.now(timezone.utc).replace(tzinfo=None)
 router = APIRouter()
 
 # --- 1. GERÇEK VERİTABANI BAĞLANTILI ADMİN GİRİŞ ENDPOINT'İ ---
-@router.post("/login", response_model=TokenResponse) # 🌟 response_model geri geldi!
+@router.post("/login", response_model=TokenResponse) #  response_model geri geldi!
 @limiter.limit("5/minute")
 async def admin_login(
     request: Request, 
@@ -48,7 +48,7 @@ async def admin_login(
         db.add(failed_attempt)
         await db.commit()
 
-        # Kural 8 & 19: Güvenlik sızıntısı vermemek için jenerik hata mesajı
+        # Güvenlik sızıntısı vermemek için jenerik hata mesajı
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Kullanıcı adı veya şifre hatalı."

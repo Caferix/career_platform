@@ -10,7 +10,7 @@ class Department(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False, server_default="false")
 
-    # Kural 12: ON DELETE CASCADE kesinlikle yok. İlişki seviyesinde yönetilecek.
+    # ON DELETE CASCADE kesinlikle yok. İlişki seviyesinde yönetilecek.
     positions = relationship("Position", back_populates="department")
 
 class Position(Base):

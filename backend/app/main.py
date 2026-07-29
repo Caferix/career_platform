@@ -4,10 +4,10 @@ from sqlalchemy import text, select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.settings import settings
-from app.db.database import engine, get_db  # get_db eklendi
+from app.db.database import engine, get_db
 from app.routes import auth, applications, consents 
 from app.routes.candidates import router as candidate_router
-from app.routes.admin import router as admin_router  # Yeni admin router'ı
+from app.routes.admin import router as admin_router
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.core.security import limiter
@@ -17,8 +17,7 @@ from fastapi.responses import HTMLResponse
 from app.routes.public_jobs import router as public_jobs_router
 from app.routes.job_postings import router as job_postings_router
 
-# Modellerimizi asenkron select sorgusunda kullanmak için import ediyoruz
-from app.models.company import Department, Position  # Source 6'daki modeller
+from app.models.company import Department, Position
 
 app = FastAPI(
     title="Career Platform API",
@@ -40,7 +39,7 @@ app.include_router(public_jobs_router)
 app.include_router(job_postings_router)
 
 
-# 2. CORS Yapılandırması
+# CORS Yapılandırması
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -49,7 +48,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 3. Static Files Serving (Statik Dosya Sunumu)
+# Statik Dosya Sunumu
 current_dir = os.path.dirname(os.path.abspath(__file__)) 
 backend_dir = os.path.dirname(current_dir) 
 static_dir_path = os.path.join(backend_dir, "static")
@@ -120,7 +119,7 @@ async def get_public_positions(db: AsyncSession = Depends(get_db)):
     Ön yüzlerin (apply ve dashboard) pozisyon-departman ilişkisini
     veritabanından canlı olarak çekebilmesi için düzleştirilmiş sözlüğü döner.
     """
-    # Kural 4: select() ve ilişkili pozisyonları tek seferde çekmek için selectinload kullanımı
+    # select() ve ilişkili pozisyonları tek seferde çekmek için selectinload kullanımı
     stmt = (
         select(Department)
         .where(Department.is_active == True)
@@ -154,12 +153,12 @@ async def get_departments(db: AsyncSession = Depends(get_db)):
 
     return [
         {
-            "id": dept.id,  # Departman ID'si eklendi
+            "id": dept.id,
             "name": dept.name,
             "is_active": dept.is_active,
             "positions": [
                 {
-                    "id": pos.id,  # KESİN ÇÖZÜM: Pozisyon ID'si veritabanından çekilip eklendi!
+                    "id": pos.id,
                     "name": pos.name, 
                     "is_active": pos.is_active
                 }

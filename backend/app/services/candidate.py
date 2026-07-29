@@ -33,7 +33,7 @@ async def create_candidate(
     existing = result.scalars().first()
     
     if existing:
-        # Kural 8: Veri sızıntısını (User Enumeration) önlemek için jenerik hata
+        # Veri sızıntısını (User Enumeration) önlemek için jenerik hata
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, 
             detail="Girilen bilgilerle daha önce işlem yapılmıştır. Lütfen kontrol edip tekrar deneyiniz."
@@ -117,7 +117,7 @@ async def create_candidate(
 
     except Exception:
         await db.rollback()
-        # Kural 8: Hata detayı gizlendi
+        # Hata detayı gizlendi
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Aday profil kaydı esnasında sistem hatası oluştu."
@@ -434,7 +434,7 @@ async def complete_shadow_candidate(
 
     except Exception as e:
         await db.rollback()
-        # Kural 8: Güvenli hata mesajı
+        # Güvenli hata mesajı
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Gölge aday profilini tamamlama esnasında bir hata oluştu: {str(e)}"

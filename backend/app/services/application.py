@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 async def create_application(db: AsyncSession, payload: ApplicationCreate) -> Application:
     """Mükerrer başvuru kontrolü yaparak yeni bir başvuru kaydı oluşturur."""
     
-    # İş Kuralı: Bir aday aynı pozisyona aktif (silinmemiş) tek bir başvuru yapabilir.
+    # Bir aday aynı pozisyona aktif (silinmemiş) tek bir başvuru yapabilir.
     query = select(Application).where(
         and_(
             Application.applicant_id == payload.applicant_id,

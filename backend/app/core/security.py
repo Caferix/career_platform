@@ -81,7 +81,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         return payload
     except Exception:
-        # Kural 8 & 19: İç detay vermeden standart hata
+        # İç detay vermeden standart hata
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Oturum süresi dolmuş veya geçersiz token."
