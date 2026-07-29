@@ -167,3 +167,50 @@ async def change_application_status(
 
     return updated_record
 
+@router.patch("/{app_id}/withdraw", status_code=status.HTTP_200_OK)
+async def withdraw_application(
+    app_id: int,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Adayın başvurusunu iptal etmesini (Geri Çekmesini) sağlar."""
+    if current_user.get("role") != "applicant":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Sadece adaylar başvuru iptali yapabilir.")
+
+    candidate_id = int(current_user.get("user_id"))
+    
+    stmt = select(Application).where(Application.id == app_id, Application.applicant_id == candidate_id, Application.is_deleted == False)
+    result = await db.execute(stmt)
+    application = result.scalar_one_or_none()
+    
+    if not application:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Başvuru bulunamadı.")
+        
+    # İş kuralı: "applied" dışındakiler iptal edilemez (veya pending vb)
+    # Varsayılan başlangıç durumu "pending" veya "applied" ise izin ver.
+    valid_withdraw_statuses = ["pending", "applied", "taslak", "draft"]
+    if application.status.lower() not in valid_withdraw_statuses:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Bu başvuru değerlendirme aşamasına geçtiği için geri çekilemez."
+        )
+        
+    # Başvuruyu geri çekme mantığı:
+    application.is_deleted = True
+    application.status = "withdrawn"
+    application.deleted_at = __import__('datetime').datetime.utcnow()
+    
+    await db.commit()
+    
+    await log_access(
+        db=db,
+        user_id=candidate_id,
+        user_role="candidate",
+        action="withdrew_application",
+        target_id=application.id,
+        ip_address=request.client.host
+    )
+    
+    return {"message": "Başvurunuz başarıyla geri çekilmiştir."}
+

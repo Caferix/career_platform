@@ -71,10 +71,10 @@
 
                 // AKILLI YÖNLENDİRME (Role-Based Routing)
                 if (data.role === "admin" || data.role === "superadmin") {
-                    window.location.href = "/static/admin.html";
+                    window.location.href = "/admin";
                 } else {
                     // HR veya Manager ise aday havuzuna şutla
-                    window.location.href = "/static/dashboard.html";
+                    window.location.href = "/dashboard";
                 }
 
             } catch (error) {

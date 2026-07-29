@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, with_loader_criteria
 from datetime import datetime, timezone
 from app.db.database import get_db
 from app.core.security import require_admin, hash_data, get_current_user,require_hr_or_manager # Rol kontrol dependency'si
 from app.core.permissions import get_department_filter, can_manage_users, can_delete_candidate
 from app.models.user_model import User  # User modeli (Source 9'daki yapı)
 from app.models.company import Department, Position  # Organizasyon modelleri (Source 6)
-from app.schemas.admin import DepartmentCreate, DepartmentResponse, PositionCreate, PositionResponse
+from app.schemas.admin import DepartmentCreate, DepartmentUpdate, DepartmentResponse, PositionCreate, PositionUpdate, PositionResponse
 from app.schemas.user import UserCreate  # Şema klasörünüzdeki mevcut yapı varsayımıyla
 from app.models.candidate import Candidate
 from app.models.consents import AccessLog
@@ -57,10 +57,106 @@ async def create_department(
 @router.get("/departments", response_model=list[DepartmentResponse])
 async def list_departments(db: AsyncSession = Depends(get_db)):
     """Sistemdeki tüm departmanları bağlı pozisyonları ile asenkron getirir."""
-    # Kural 4: selectinload ile ilişkisel veriyi asenkron çekme
-    stmt = select(Department).options(selectinload(Department.positions))
+    stmt = (
+        select(Department)
+        .where(Department.is_deleted == False)
+        .options(
+            selectinload(Department.positions),
+            with_loader_criteria(Position, Position.is_deleted == False)
+        )
+    )
     result = await db.execute(stmt)
     return result.scalars().all()
+
+@router.patch("/departments/{id}", response_model=DepartmentResponse)
+async def update_department(
+    id: int,
+    payload: DepartmentUpdate,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    if not can_manage_users(current_user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu işlem için yetkiniz bulunmuyor.")
+
+    stmt = select(Department).where(Department.id == id, Department.is_deleted == False)
+    result = await db.execute(stmt)
+    department = result.scalar_one_or_none()
+    
+    if not department:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Departman bulunamadı.")
+        
+    if payload.name is not None:
+        department.name = payload.name
+    if payload.is_active is not None:
+        department.is_active = payload.is_active
+        
+    await db.commit()
+    await db.refresh(department)
+    
+    await log_access(
+        db=db,
+        user_id=int(current_user["sub"]),
+        user_role=current_user.get("role"),
+        action=f"Departman Güncellendi: {department.name}",
+        target_id=department.id,
+        ip_address=request.client.host
+    )
+    
+    return department
+
+@router.delete("/departments/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_department(
+    id: int,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Departmanı siler (Soft Delete). Bağlı pozisyonlar ve ilanlar da pasife çekilir/silinir."""
+    if not can_manage_users(current_user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu işlem için yetkiniz bulunmuyor.")
+
+    stmt = select(Department).where(Department.id == id, Department.is_deleted == False)
+    result = await db.execute(stmt)
+    department = result.scalar_one_or_none()
+    
+    if not department:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Departman bulunamadı.")
+        
+    # Soft delete department
+    department.is_deleted = True
+    department.is_active = False
+    
+    # Soft cascade on positions
+    pos_stmt = select(Position).where(Position.department_id == department.id, Position.is_deleted == False)
+    pos_result = await db.execute(pos_stmt)
+    positions = pos_result.scalars().all()
+    for pos in positions:
+        pos.is_deleted = True
+        pos.is_active = False
+        
+    # Import JobPosting here if not imported at top
+    from app.models.job_posting import JobPosting
+    job_stmt = select(JobPosting).where(JobPosting.department_id == department.id, JobPosting.is_deleted == False)
+    job_result = await db.execute(job_stmt)
+    jobs = job_result.scalars().all()
+    for job in jobs:
+        job.is_deleted = True
+        job.is_active = False
+        job.deleted_at = datetime.utcnow()
+        
+    await db.commit()
+    
+    await log_access(
+        db=db,
+        user_id=int(current_user["sub"]),
+        user_role=current_user.get("role"),
+        action=f"Departman Askıya Alındı: {department.name}",
+        target_id=department.id,
+        ip_address=request.client.host
+    )
+    
+    return None
 
 # --- POZİSYON YÖNETİMİ ---
 
@@ -101,6 +197,95 @@ async def create_position(
     await db.refresh(new_position)
     
     return new_position
+
+@router.patch("/positions/{id}", response_model=PositionResponse)
+async def update_position(
+    id: int,
+    payload: PositionUpdate,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    if not can_manage_users(current_user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu işlem için yetkiniz bulunmuyor.")
+
+    stmt = select(Position).where(Position.id == id, Position.is_deleted == False)
+    result = await db.execute(stmt)
+    position = result.scalar_one_or_none()
+    
+    if not position:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pozisyon bulunamadı.")
+        
+    if payload.name is not None:
+        position.name = payload.name
+    if payload.is_active is not None:
+        position.is_active = payload.is_active
+    if payload.department_id is not None:
+        # Check if new department exists
+        dept_stmt = select(Department).where(Department.id == payload.department_id, Department.is_deleted == False)
+        dept_res = await db.execute(dept_stmt)
+        if not dept_res.scalar_one_or_none():
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Belirtilen departman bulunamadı.")
+        position.department_id = payload.department_id
+        
+    await db.commit()
+    await db.refresh(position)
+    
+    await log_access(
+        db=db,
+        user_id=int(current_user["sub"]),
+        user_role=current_user.get("role"),
+        action=f"Pozisyon Güncellendi: {position.name}",
+        target_id=position.id,
+        ip_address=request.client.host
+    )
+    
+    return position
+
+@router.delete("/positions/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_position(
+    id: int,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Pozisyonu siler (Soft Delete). Bağlı ilanlar da pasife çekilir/silinir."""
+    if not can_manage_users(current_user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu işlem için yetkiniz bulunmuyor.")
+
+    stmt = select(Position).where(Position.id == id, Position.is_deleted == False)
+    result = await db.execute(stmt)
+    position = result.scalar_one_or_none()
+    
+    if not position:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pozisyon bulunamadı.")
+        
+    # Soft delete position
+    position.is_deleted = True
+    position.is_active = False
+    
+    # Soft cascade on job postings
+    from app.models.job_posting import JobPosting
+    job_stmt = select(JobPosting).where(JobPosting.position_id == position.id, JobPosting.is_deleted == False)
+    job_result = await db.execute(job_stmt)
+    jobs = job_result.scalars().all()
+    for job in jobs:
+        job.is_deleted = True
+        job.is_active = False
+        job.deleted_at = datetime.utcnow()
+        
+    await db.commit()
+    
+    await log_access(
+        db=db,
+        user_id=int(current_user["sub"]),
+        user_role=current_user.get("role"),
+        action=f"Pozisyon Askıya Alındı: {position.name}",
+        target_id=position.id,
+        ip_address=request.client.host
+    )
+    
+    return None
 
 @router.post("/users", status_code=status.HTTP_201_CREATED)
 async def create_system_user(
@@ -380,7 +565,7 @@ async def toggle_user_status(
             db=db,
             user_id=int(current_user["sub"]),
             user_role=current_user.get("role"),
-            action="toggled_user_status",
+            action=f"Kullanıcı Durumu Değiştirildi: {user.login_name}",
             target_id=user.id,
             ip_address=request.client.host
         )

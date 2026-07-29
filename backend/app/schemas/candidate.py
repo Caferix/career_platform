@@ -88,6 +88,7 @@ class CandidateUpdate(BaseModel):
 
 class ApplicationShortResponse(BaseModel):
     id: int
+    job_posting_id: Optional[int] = None
     position: str
     department: Optional[str]
     status: str

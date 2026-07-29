@@ -1,5 +1,5 @@
 import logging
-#import httpx  # NetGSM HTTP API istekleri için asenkron istemci
+import httpx  # NetGSM HTTP API istekleri için asenkron istemci
 from app.core.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -40,9 +40,15 @@ async def send_sms(phone: str, code: str) -> bool:
     try:
         # Not: httpx asenkron çalıştığı için FastAPI event loop'unu bloklamaz.
         async with httpx.AsyncClient() as client:
-            # Şimdilik entegrasyon tamamlanmadığı ve mock devrede olduğu için log atıp geçiyoruz
-            logger.warning(f"[NETGSM] Canlı bağlantı için SMS_MOCK_MODE=False yapılmalı. İstek atılamadı.")
-            return False
+            response = await client.post(url, json=payload, timeout=10.0)
+            
+            # Başarılı gönderim kontrolü (NetGSM HTTP statüsü 200 döner ve body'de hata kodu yazar)
+            if response.status_code == 200 and "00" in response.text:
+                logger.info(f"NetGSM SMS gönderildi: {masked_phone}")
+                return True
+            else:
+                logger.warning(f"NetGSM SMS gönderilemedi! Status: {response.status_code}, Body: {response.text}")
+                return False
             
     except Exception as e:
         logger.error(f"NetGSM SMS gönderim hatası ({masked_phone}): {str(e)}")

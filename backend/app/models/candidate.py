@@ -117,6 +117,9 @@ class Application(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     applicant_id = Column(Integer, ForeignKey("applicants.id"), nullable=False)
+
+    # İş ilanına özel başvuru bağlantısı
+    job_posting_id = Column(Integer, ForeignKey("job_postings.id"), nullable=True)
     
     position = Column(String(100), nullable=False)
     department = Column(String(100), nullable=True)
@@ -146,6 +149,7 @@ class Application(Base):
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     candidate = relationship("Candidate", back_populates="applications")
+    job_posting = relationship("JobPosting", back_populates="applications")  #job posting ilişkisi
 
     @property
     def reference_contact(self) -> Optional[str]:

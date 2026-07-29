@@ -1,8 +1,9 @@
 import logging
 from fastapi import HTTPException, status, UploadFile
 from sqlalchemy import select, and_
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.candidate import Application
+from app.models.candidate import Application, Candidate
 from app.schemas.application import ApplicationCreate, ApplicationStatusUpdate
 from app.services import storage
 
@@ -31,6 +32,7 @@ async def create_application(db: AsyncSession, payload: ApplicationCreate) -> Ap
     # Yeni model alanlarına göre güncellenmiş kayıt
     new_app = Application(
         applicant_id=payload.applicant_id,
+        job_posting_id=payload.job_posting_id,
         position=payload.position,
         department=payload.department,
         experience_years=payload.experience_years,
@@ -43,12 +45,21 @@ async def create_application(db: AsyncSession, payload: ApplicationCreate) -> Ap
     )
     db.add(new_app)
     await db.commit()
-    await db.refresh(new_app)
-    return new_app
+    
+    # Yeni eklenen nesneyi candidate ilişkisiyle beraber dönmek için yeniden çekiyoruz (MissingGreenletError'u önler)
+    fetch_query = select(Application).where(Application.id == new_app.id).options(
+        selectinload(Application.candidate).selectinload(Candidate.educations),
+        selectinload(Application.candidate).selectinload(Candidate.languages)
+    )
+    fetch_result = await db.execute(fetch_query)
+    return fetch_result.scalar_one()
 
 async def upload_cv_to_application(db: AsyncSession, app_id: int, file: UploadFile) -> Application:
     """Başvuru kaydına güvenli bir şekilde CV atar, varsa eskisini diskten temizler."""
-    query = select(Application).where(and_(Application.id == app_id, Application.is_deleted == False))
+    query = select(Application).where(and_(Application.id == app_id, Application.is_deleted == False)).options(
+        selectinload(Application.candidate).selectinload(Candidate.educations),
+        selectinload(Application.candidate).selectinload(Candidate.languages)
+    )
     result = await db.execute(query)
     app_record = result.scalar_one_or_none()
     
@@ -73,6 +84,12 @@ async def list_applications(db: AsyncSession, department: str = None) -> list[Ap
     """Aktif başvuruları kronolojik olarak listeler, isteğe bağlı departman filtresi sunar."""
     query = select(Application).where(Application.is_deleted == False).order_by(Application.id.desc())
     
+    # N+1 Problemini çözmek için candidate ilişkilerini peşin (eager) yüklüyoruz
+    query = query.options(
+        selectinload(Application.candidate).selectinload(Candidate.educations),
+        selectinload(Application.candidate).selectinload(Candidate.languages)
+    )
+
     if department:
         query = query.where(Application.department == department)
         
@@ -81,7 +98,10 @@ async def list_applications(db: AsyncSession, department: str = None) -> list[Ap
 
 async def update_application_status(db: AsyncSession, app_id: int, payload: ApplicationStatusUpdate) -> Application:
     """Başvurunun statüsünü (İK süreç adımlarını) günceller."""
-    query = select(Application).where(and_(Application.id == app_id, Application.is_deleted == False))
+    query = select(Application).where(and_(Application.id == app_id, Application.is_deleted == False)).options(
+        selectinload(Application.candidate).selectinload(Candidate.educations),
+        selectinload(Application.candidate).selectinload(Candidate.languages)
+    )
     result = await db.execute(query)
     app_record = result.scalar_one_or_none()
     
