@@ -10,9 +10,6 @@
 
 Dener Makina için geliştirilmiş, kurum içi açık pozisyonların yönetilmesini, uçtan uca aday başvurularının toplanmasını ve İK (İnsan Kaynakları) süreçlerinin dijitalleştirilmesini sağlayan tam asenkron, KVKK'ya duyarlı bir **Applicant Tracking System (ATS)** projesidir. Backend tamamen FastAPI üzerinde, arayüz ise API'den veri çeken vanilla JS/Tailwind sayfalarından oluşur.
 
-> Bu proje staj kapsamında **Caferix** tarafından, önceden backend deneyimi olmadan sıfırdan geliştirilmiştir. Kodda görülen yoğun Türkçe yorumlar ve "Kural N" referansları, proje boyunca oluşturulan 22 maddelik dahili kodlama standardına atıftır.
-
----
 
 ## İçindekiler
 
@@ -450,13 +447,12 @@ Sisteme yeni bir tablo veya API eklemek için standart iş akışı:
 
 - **SMS servis katmanı:** Şu an tek fonksiyon (`send_sms()`); `SMSProvider` base class + `TwilioProvider`/`NetGSMProvider` alt sınıflarıyla dependency inversion uygulanması planlanıyor.
 - **KVKK silme talepleri:** Şu an soft delete (`is_deleted=True`) yapılıyor; ileride kişisel verilerin anonimleştirilmesi (ad/soyad/telefon/e-posta maskeleme, CV dosyasının fiziksel silinmesi) ve 30 gün sonrasında hard-delete job'ı eklenmesi hedefleniyor.
-- **Twilio senkron çağrısı:** `sms.py` içindeki Twilio entegrasyonu şu an senkron; `run_in_executor` veya `httpx` ile tam asenkron hale getirilmesi planlanıyor.
 - **CORS:** Geliştirme kolaylığı için `allow_origins=["*"]` açık; production'a geçişte belirli origin'lerle sınırlandırılmalı.
 
 ---
 
 ## 📌 13. Proje Durumu ve Katkı
 
-Bu proje, staj kapsamında **Caferix** tarafından modern yazılım mühendisliği prensipleri (asenkron I/O, gevşek bağlılık/loose coupling, RBAC, veri doğrulama, KVKK farkındalığı) gözetilerek sıfırdan kodlanmıştır. Aktif geliştirme aşamasındadır; kurumsal genişlemelere ve modüler yapıya tamamen açıktır.
+Bu proje, staj kapsamında **Cafer Ceviz** tarafından modern yazılım mühendisliği prensipleri (asenkron I/O, gevşek bağlılık/loose coupling, RBAC, veri doğrulama, KVKK farkındalığı) gözetilerek sıfırdan kodlanmıştır. Aktif geliştirme aşamasındadır; kurumsal genişlemelere ve modüler yapıya tamamen açıktır.
 
 **İletişim:** cafer.ceviz.dev@gmail.com
