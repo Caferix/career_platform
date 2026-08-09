@@ -392,6 +392,12 @@ Proje, canlı ortama (production) veya herhangi bir sunucuya saniyeler içinde k
 # İlk kurulumda veya Dockerfile güncellendiğinde:
 docker-compose up --build -d
 
+# Docker ayağa kalktıktan sonra tabloları oluşturmak için:
+docker exec -it career_platform_web alembic upgrade head
+
+# İlk yönetici (admin) hesabını oluşturmak için:
+docker exec -it career_platform_web python seed_users.py
+
 # Sadece durdurmak için:
 docker-compose stop
 
