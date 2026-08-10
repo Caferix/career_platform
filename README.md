@@ -19,9 +19,9 @@ Dener Makina için geliştirilmiş, kurum içi açık pozisyonların yönetilmes
 4. [Güvenlik ve Kimlik Doğrulama](#-4-güvenlik-ve-kimlik-doğrulama-security-deep-dive)
 5. [API Referansı](#-5-api-referansı-endpoints)
 6. [Frontend Sayfaları](#-6-frontend-sayfaları)
-7. [Kurulum ve Deployment](#-7-kurulum-ve-deployment-adımları-developer-setup)
+7. [Kurulum ve Çalıştırma](#-7-kurulum-ve-çalıştırma-adımları)
 8. [Ortam Değişkenleri (.env)](#-8-kritik-env-konfigürasyonları)
-9. [Docker ile Veritabanı](#-9-docker-ile-veritabanı)
+9. [Docker Mimarisi](#-9-docker-mimarisi-ve-kalıcı-veri-volumes)
 10. [Veritabanı Göçleri (Alembic)](#-10-veritabanı-göçleri-alembic)
 11. [Geliştirici Kılavuzu](#-11-geliştirici-kılavuzu-yeni-özellik-eklemek)
 12. [Bilinen İyileştirme Alanları](#-12-bilinen-i̇yileştirme-alanları)
@@ -312,105 +312,138 @@ Destekleyici statik dosyalar: `company-structure.js` (organizasyon şeması rend
 
 ---
 
-## 🛠️ 7. Kurulum ve Deployment Adımları (Developer Setup)
+## 🛠️ 7. Kurulum ve Çalıştırma Adımları
 
-### 7.1. Gereksinimler
+Proje hem **Docker Compose** ile tek komutla (veritabanı + backend dâhil) hem de **Yerel Python Ortamında** çalıştırılabilir. Başka bir bilgisayarda en kolay ve sorunsuz çalıştırma yöntemi **Docker Compose** kullanmaktır.
 
-- **Python 3.12+**
-- **PostgreSQL** (yerel kurulum veya Docker)
-- *(Windows kullanıcıları için WSL2 veya Docker önerilir.)*
+### 7.1. Ön Gereksinimler
 
-### 7.2. Adım Adım Kurulum
+- **Docker & Docker Compose** (Herhangi bir bilgisayarda projeyi çalıştırmak için yeterlidir)
+- *(Opsiyonel — Yerel geliştirme için)*: **Python 3.12+** ve **PostgreSQL**
+
+---
+
+### 🚀 7.2. Yöntem 1: Docker ile Tek Tıkla Kurulum (Önerilen)
+
+Projeyi başka bir bilgisayarda tamamen sıfırdan çalıştırmak için sırasıyla şu adımları izleyin:
 
 ```bash
-# 1. Repoyu klonla ve backend dizinine gir
-git clone <repo-url>https://github.com/Caferix/career_platform
-cd career_platform/backend
+# 1. Repoyu klonlayın
+git clone https://github.com/Caferix/career_platform.git
+cd career_platform
 
-# 2. İzole Python ortamı oluştur ve aktif et
-python3 -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
+# 2. backend/.env.example dosyasını .env olarak kopyalayın
+cp backend/.env.example backend/.env
 
-# 3. Bağımlılıkları yükle
-pip install -r requirements.txt
+# 3. Docker konteynerlerini (PostgreSQL + FastAPI Web) ayağa kaldırın
+docker-compose up -d --build
 
-# 4. Ortam değişkenlerini ayarla
-cp .env.example .env          # yoksa .env dosyasını manuel oluşturun
-nano .env                     # aşağıdaki konfigürasyon bloğuna bakınız
+# 4. Veritabanı şemasını ve tablolarını oluşturun (Alembic Migration)
+docker exec -it career_platform_web alembic upgrade head
 
-# 5. PostgreSQL'i ayağa kaldır (Docker kullanıyorsanız)
-cd .. && docker compose up -d && cd backend
-
-# 6. Alembic ile veritabanı tablolarını oluştur
-alembic upgrade head
-
-# 7. İlk sistem kullanıcılarını (superadmin dahil) oluştur
-python seed_users.py
-
-# 8. Uvicorn sunucusunu başlat (development mode)
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# 5. İlk sistem kullanıcısını (admin) ve varsayılan verileri oluşturun
+docker exec -it career_platform_web python seed_users.py
 ```
 
-Sunucu ayağa kalktıktan sonra:
-- Uygulama: `http://localhost:8000/`
-- Swagger API dokümantasyonu: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+Uygulama başarıyla çalışmaya başladıktan sonra erişim adresleri:
+- 🌐 **Ana Uygulama / Arayüz**: `http://localhost:8000/`
+- 📄 **Swagger API Dokümantasyonu**: `http://localhost:8000/docs`
+- 📄 **ReDoc**: `http://localhost:8000/redoc`
+
+**Docker Yönetim Komutları:**
+```bash
+# Durdurmak için:
+docker-compose stop
+
+# Yeniden başlatmak için:
+docker-compose start
+
+# Konteynerleri ve ağı tamamen kaldırmak için:
+docker-compose down
+```
+
+---
+
+### 💻 7.3. Yöntem 2: Yerel Geliştirici Kurulumu (Local Development)
+
+Sadece veritabanını Docker'da çalıştırıp backend kodunu kendi bilgisayarınızda (hot-reload ile) geliştirmek isterseniz:
+
+```bash
+# 1. Repoyu klonlayın ve backend dizinine girin
+git clone https://github.com/Caferix/career_platform.git
+cd career_platform/backend
+
+# 2. Python sanal ortamı (venv) oluşturun ve aktif edin
+python3 -m venv venv
+source venv/bin/activate      # Windows için: venv\Scripts\activate
+
+# 3. Bağımlılıkları yükleyin
+pip install -r requirements.txt
+
+# 4. .env dosyasını oluşturun
+cp .env.example .env
+
+# 5. Sadece veritabanı konteynerini ayağa kaldırın
+cd .. && docker-compose up -d db && cd backend
+
+# 6. .env dosyasında DATABASE_URL adresini db yerine localhost yapın:
+# DATABASE_URL=postgresql+asyncpg://career_admin:career_secure_password_2026@localhost:5432/career_platform_prod
+
+# 7. Veritabanı tablolarını ve seed verilerini oluşturun
+alembic upgrade head
+python seed_users.py
+
+# 8. Uvicorn sunucusunu başlatın
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
 
 ---
 
 ## ⚙️ 8. Kritik .env Konfigürasyonları
 
+Uygulamanın `app/core/settings.py` modülü Pydantic `BaseSettings` kullanır ve aşağıdaki tüm ortam değişkenlerinin `.env` dosyasında eksiksiz bulunmasını bekler. Eksik bir değişken olduğunda uygulama başlatma anında doğrulama hatası (ValidationError) verir.
+
+`.env` dosyasındaki güncel ve gerekli değişken listesi:
+
 ```env
-# Veritabanı URL'si (mutlaka asyncpg sürücüsü kullanılmalı)
-DATABASE_URL=postgresql+asyncpg://kullanici:sifre@localhost:5432/career_db
+# Veritabanı URL'si (Docker Compose için 'db', yerel çalıştırma için 'localhost')
+DATABASE_URL=postgresql+asyncpg://career_admin:career_secure_password_2026@db:5432/career_platform_prod
 
-# Güvenlik (JWT)
-SECRET_KEY=openssl_rand_hex_32_ciktisi_buraya
+# JWT Güvenlik Ayarları
+JWT_SECRET_KEY=498d36c9743438a0a2db044a909eb83b52a3a061b5070f49cb44e76d2e6a65d6
 ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=1440   # 24 saat
+ACCESS_TOKEN_EXPIRE_DAYS=7
 
-# PII şifreleme anahtarı (Fernet)
-# FERNET_KEY=...                   # Candidate/Application PII şifrelemesi için gerekli
+# Kişisel Veri Şifreleme Anahtarı (Fernet - PII Encryption Key)
+ENCRYPTION_KEY=a5DtZUEbxQiWe1y3oKA362XurfRBRPF8-qoUqTRhoD0=
 
-# NetGSM SMS entegrasyonu (canlı ortamda SMS_MOCK_MODE=False olmalı)
-NETGSM_USER=bayi_kodu
-NETGSM_PASSWORD=api_sifresi
-NETGSM_HEADER=DENER
-SMS_MOCK_MODE=False
+# SMS Entegrasyonu (NetGSM / Mock Mode)
+NETGSM_USER=mock_user
+NETGSM_PASSWORD=mock_password
+NETGSM_HEADER=mock_header
+SMS_MOCK_MODE=True
 OTP_EXPIRY_MINUTES=3
+
+# Uygulama Temel URL
+BASE_URL=http://localhost:8000
+
+# İlk Yönetici Giriş Bilgileri (seed_users.py tarafından oluşturulur)
+ADMIN_LOGIN=admin
+ADMIN_PASSWORD=AdminSecurePass123!
 ```
 
-> ⚠️ **Güvenlik notu:** `SECRET_KEY` ve şifreleme anahtarları asla repoya commit edilmemeli. Bu proje deposunda örnek/geliştirme amaçlı bir `.env` dosyası bulunuyorsa, production'a geçmeden önce mutlaka yeni ve rastgele üretilmiş anahtarlarla değiştirilmelidir.
+> ⚠️ **Güvenlik Notu:** Production ortamına canlıya alınırken `JWT_SECRET_KEY` ve `ENCRYPTION_KEY` değerleri rastgele ve güçlü karakter dizileriyle yenilenmelidir.
 
 ---
 
-## 🐳 9. Docker ile Tek Tıkla Kurulum (Production-Ready)
+## 🐳 9. Docker Mimarisi ve Kalıcı Veri (Volumes)
 
-Proje, canlı ortama (production) veya herhangi bir sunucuya saniyeler içinde kurulabilmesi için tamamen konteynerize edilmiştir. `docker-compose.yml` dosyası hem PostgreSQL veritabanını hem de FastAPI backend'ini ayağa kaldırır.
-
-```bash
-# İlk kurulumda veya Dockerfile güncellendiğinde:
-docker-compose up --build -d
-
-# Docker ayağa kalktıktan sonra tabloları oluşturmak için:
-docker exec -it career_platform_web alembic upgrade head
-
-# İlk yönetici (admin) hesabını oluşturmak için:
-docker exec -it career_platform_web python seed_users.py
-
-# Sadece durdurmak için:
-docker-compose stop
-
-# Tamamen silmek için (dikkat: veritabanı volume silinmezse veri kalır):
-docker-compose down
-```
+Projede hem veritabanı hem de FastAPI backend servisi Docker konteynerleri olarak yapılandırılmıştır (`docker-compose.yml`).
 
 ### Kalıcı Veri Depolama (Volumes)
-Sistemde iki farklı Docker hacmi (volume) kullanılır:
-1.  **`postgres_data`**: Veritabanı tablolarının kalıcı olarak saklandığı yer.
-2.  **`backend_uploads`**: Adayların sisteme yüklediği PDF özgeçmiş (CV) dosyalarının konteyner silinse bile kaybolmaması için kullanılır.
-
-> **Geliştirici Notu:** Geliştirme (development) aşamasında, Uvicorn'un "hot-reload" özelliğinden faydalanmak isterseniz sadece veritabanını (`docker-compose up -d db`) ayağa kaldırıp, backend'i kendi terminalinizden (`uvicorn app.main:app --reload`) başlatabilirsiniz.
+Sistemde veri kaybını önlemek için iki adet Docker hacmi (volume) kullanılır:
+1. **`postgres_data`**: Veritabanı tablolarının ve verilerinin konteyner silinse bile kalıcı olarak kalmasını sağlar.
+2. **`backend_uploads`**: Adaylar tarafından sisteme yüklenen özgeçmiş (CV PDF) dosyalarının diskte kalıcı saklandığı dizindir.
 
 ---
 
